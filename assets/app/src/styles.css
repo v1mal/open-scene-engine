@@ -1,0 +1,9 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+#openscene-root {
+  background: #000;
+  color: #fff;
+  font-family: 'Spline Sans', 'Inter', system-ui, sans-serif;
+}

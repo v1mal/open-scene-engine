@@ -1,0 +1,18 @@
+.toplevel_page_openscene-engine .wrap,
+.openscene_page_openscene-engine-settings .wrap,
+.openscene-admin-wrap {
+  max-width: 900px;
+}
+.toplevel_page_openscene-engine .wrap h1,
+.openscene_page_openscene-engine-settings .wrap h1,
+.openscene-admin-wrap h1 {
+  font-size: 28px;
+  margin-bottom: 12px;
+}
+.toplevel_page_openscene-engine code,
+.openscene_page_openscene-engine-settings code,
+.openscene-admin-wrap code {
+  background: #f4f4f4;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
