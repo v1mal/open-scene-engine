@@ -690,6 +690,7 @@
     const deleteEnabled = isFeatureEnabled('delete');
     const canDeletePost = canDeleteAnyPost && !isRemoved && (deleteEnabled || canManageOptions);
     const canReportPost = reportingEnabled && isLoggedIn && isPublished && (!isOwner || canModerate || canManageOptions);
+    const canSeeReportCount = canModerate || canManageOptions;
 
     function closeActionsMenu(event) {
       if (!event || !event.currentTarget || typeof event.currentTarget.closest !== 'function') {
@@ -718,6 +719,7 @@
         }, Icon('chevron-down'))
       ),
       h('div', { className: 'ose-post-content' },
+        isRemoved ? h('div', { className: 'ose-post-removed-banner' }, 'Removed by moderator') : null,
         h('div', { className: 'ose-post-meta' },
           h('span', { className: 'ose-tag' }, String(communityName).toUpperCase()),
           h('span', { className: 'ose-dot' }, '•'),
@@ -725,32 +727,31 @@
           h('strong', null, author),
           h('span', null, ' · ' + timeAgo(post.created_at))
         ),
-        h('a', { className: 'ose-post-title', href: '/post/' + post.id }, isRemoved ? '[removed]' : post.title),
+        h('div', { className: 'ose-post-title-row' },
+          h('a', { className: 'ose-post-title', href: '/post/' + post.id }, isRemoved ? '[removed]' : post.title),
+          !isRemoved ? h('a', { className: 'ose-post-comment-inline', href: '/post/' + post.id }, Icon('message-circle'), (post.comment_count || 0) + ' comments') : null
+        ),
         h('p', { className: 'ose-post-body' }, isRemoved ? '' : (post.body || '')),
         post.event_summary ? h('div', { className: 'ose-event-summary-inline' },
           Icon('calendar-days'),
           ' ' + formatUtcForDisplay(post.event_summary.event_date) + ' · ' + (post.event_summary.venue_name || '')
         ) : null,
-        h('div', { className: 'ose-post-actions' },
-          h('a', { className: 'ose-post-action', href: '/post/' + post.id }, Icon('message-circle'), (post.comment_count || 0) + ' comments'),
-          reportsCount > 0 ? h('span', { className: 'ose-report-badge', 'aria-label': String(reportsCount) + ' reports' }, Icon('flag', 'ose-report-badge-icon'), String(reportsCount) + ' Reports') : null,
-          h('button', { className: 'ose-post-action', type: 'button' }, Icon('share-2'), 'Share'),
-          h('button', { className: 'ose-post-action', type: 'button' }, Icon('bookmark'), 'Save'),
+        !isRemoved ? h('div', { className: 'ose-post-actions' },
+          canSeeReportCount && reportsCount > 0 ? h('span', { className: 'ose-report-badge', 'aria-label': String(reportsCount) + ' reports' }, Icon('flag', 'ose-report-badge-icon'), String(reportsCount) + ' Reports') : null,
           h('details', { className: 'ose-post-more' },
             h('summary', { className: 'ose-post-more-toggle', 'aria-label': 'More actions' }, Icon('more-horizontal')),
             h('div', { className: 'ose-post-more-menu' },
+              h('button', { type: 'button' }, Icon('share-2'), 'Share'),
+              h('button', { type: 'button' }, Icon('bookmark'), 'Save'),
               canReportPost ? h('button', {
                 type: 'button',
                 onClick: function (event) { closeActionsMenu(event); props.onReport(post.id); },
                 disabled: isReported
               }, Icon('flag'), isReported ? 'Reported' : 'Report') : null,
-              canDeletePost ? h('button', { type: 'button', onClick: function (event) { closeActionsMenu(event); props.onDelete(post.id); } }, Icon('trash-2'), 'Delete') : null,
-              !canReportPost && !canDeletePost
-                ? h('button', { type: 'button', disabled: true }, 'No actions')
-                : null
+              canDeletePost ? h('button', { type: 'button', onClick: function (event) { closeActionsMenu(event); props.onDelete(post.id); } }, Icon('trash-2'), 'Delete') : null
             )
           )
-        )
+        ) : null
       )
     );
   }
@@ -901,7 +902,7 @@
       }).catch(function () {});
     }
 
-    return h('main', { className: 'ose-center' },
+    return h('main', { className: 'ose-center ose-feed-center' },
       h('div', { className: 'ose-feed-header' },
         h(SortTabs, { mode: mode, onChange: setMode }),
         h('a', { className: 'ose-feed-create-btn', href: '/openscene/?view=create' }, Icon('square-pen'), 'Create Post')
@@ -1038,6 +1039,74 @@
     return h('aside', { className: 'ose-right' }, h(SidebarRail));
   }
 
+  function SceneRailShell(props) {
+    const externalCommunities = Array.isArray(props && props.communities) ? props.communities : null;
+    const showRightRail = !(props && props.showRightRail === false);
+    const communitiesRes = useApi(externalCommunities ? '' : '/openscene/v1/communities?limit=20');
+    const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
+    const communities = externalCommunities
+      ? externalCommunities
+      : (Array.isArray(communitiesRes.data)
+        ? communitiesRes.data.map(function (c) {
+            return {
+              id: c.id,
+              name: c.name,
+              slug: c.slug,
+              count: ''
+            };
+          })
+        : []);
+
+    return h('div', { className: 'ose-scene-home' },
+      h(TopHeader, {
+        showDrawerToggle: true,
+        drawerOpen: mobileDrawerOpen,
+        onToggleDrawer: function () { setMobileDrawerOpen(function (v) { return !v; }); }
+      }),
+      h('div', { className: 'ose-scene-grid' },
+        h(LeftSidebar, { communities: communities }),
+        props.children,
+        showRightRail ? h(RightSidebar) : null
+      ),
+      h(MobileUtilityDrawer, {
+        open: mobileDrawerOpen,
+        onClose: function () { setMobileDrawerOpen(false); },
+        communities: communities
+      })
+    );
+  }
+
+  function CommunityHubShell(props) {
+    const externalCommunities = Array.isArray(props && props.communities) ? props.communities : null;
+    const communitiesRes = useApi(externalCommunities ? '' : '/openscene/v1/communities?limit=20');
+    const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
+    const communities = externalCommunities
+      ? externalCommunities
+      : (Array.isArray(communitiesRes.data)
+        ? communitiesRes.data.map(function (c) {
+            return { id: c.id, name: c.name, slug: c.slug, count: '' };
+          })
+        : []);
+
+    return h('div', { className: 'ose-scene-home ose-community-shell' },
+      h(TopHeader, {
+        showDrawerToggle: true,
+        drawerOpen: mobileDrawerOpen,
+        onToggleDrawer: function () { setMobileDrawerOpen(function (v) { return !v; }); }
+      }),
+      h('div', { className: 'ose-scene-grid' },
+        h(LeftSidebar, { communities: communities }),
+        props.children,
+        props.rightRail || h(RightSidebar)
+      ),
+      h(MobileUtilityDrawer, {
+        open: mobileDrawerOpen,
+        onClose: function () { setMobileDrawerOpen(false); },
+        communities: communities
+      })
+    );
+  }
+
   function EventsListPage() {
     const [scope, setScope] = useState('upcoming');
     const [cursor, setCursor] = useState('');
@@ -1065,31 +1134,32 @@
       return function () { canceled = true; };
     }, [scope, cursor]);
 
-    return h('div', { className: 'ose-create-page' },
-      h(TopHeader),
-      h('main', { className: 'ose-events-main' },
-        h('div', { className: 'ose-events-header' },
-          h('h1', null, 'Events'),
-          h('div', { className: 'ose-events-scope' },
-            h('button', { className: scope === 'upcoming' ? 'is-active' : '', onClick: function () { setScope('upcoming'); setCursor(''); setItems([]); } }, 'Upcoming'),
-            h('button', { className: scope === 'past' ? 'is-active' : '', onClick: function () { setScope('past'); setCursor(''); setItems([]); } }, 'Past')
-          )
-        ),
-        loading && items.length === 0 ? h('p', { className: 'ose-events-note' }, 'Loading events...') : null,
-        error ? h('p', { className: 'ose-events-note ose-events-error' }, error) : null,
-        h('section', { className: 'ose-events-list' },
-          items.map(function (ev) {
-            return h('article', { className: 'ose-events-item', key: ev.id },
-              h('div', { className: 'ose-events-item-date' },
-                Icon('calendar-days'),
-                h('span', null, formatUtcForDisplay(ev.event_date))
-              ),
-              h('h3', null, h('a', { href: '/openscene/?view=event&id=' + ev.id }, ev.title || 'Untitled event')),
-              h('p', null, ev.venue_name || 'Venue TBA')
-            );
-          })
-        ),
-        nextCursor ? h('button', { className: 'ose-load-more', onClick: function () { setCursor(nextCursor); }, disabled: loading }, loading ? 'Loading...' : 'Load More') : null
+    return h(SceneRailShell, null,
+      h('main', { className: 'ose-center ose-center-scroll' },
+        h('section', { className: 'ose-events-main' },
+          h('div', { className: 'ose-events-header' },
+            h('h1', null, 'Events'),
+            h('div', { className: 'ose-events-scope' },
+              h('button', { className: scope === 'upcoming' ? 'is-active' : '', onClick: function () { setScope('upcoming'); setCursor(''); setItems([]); } }, 'Upcoming'),
+              h('button', { className: scope === 'past' ? 'is-active' : '', onClick: function () { setScope('past'); setCursor(''); setItems([]); } }, 'Past')
+            )
+          ),
+          loading && items.length === 0 ? h('p', { className: 'ose-events-note' }, 'Loading events...') : null,
+          error ? h('p', { className: 'ose-events-note ose-events-error' }, error) : null,
+          h('section', { className: 'ose-events-list' },
+            items.map(function (ev) {
+              return h('article', { className: 'ose-events-item', key: ev.id },
+                h('div', { className: 'ose-events-item-date' },
+                  Icon('calendar-days'),
+                  h('span', null, formatUtcForDisplay(ev.event_date))
+                ),
+                h('h3', null, h('a', { href: '/openscene/?view=event&id=' + ev.id }, ev.title || 'Untitled event')),
+                h('p', null, ev.venue_name || 'Venue TBA')
+              );
+            })
+          ),
+          nextCursor ? h('button', { className: 'ose-load-more', onClick: function () { setCursor(nextCursor); }, disabled: loading }, loading ? 'Loading...' : 'Load More') : null
+        )
       )
     );
   }
@@ -1106,11 +1176,9 @@
       };
     });
 
-    return h('div', { className: 'ose-scene-home' },
-      h(TopHeader),
-      h('div', { className: 'ose-scene-grid' },
-        h(LeftSidebar, { communities: sidebarCommunities }),
-        h('main', { className: 'ose-center' },
+    return h(SceneRailShell, { communities: sidebarCommunities },
+      h('main', { className: 'ose-center ose-center-scroll' },
+        h('section', { className: 'ose-center-pane' },
           h('section', { className: 'ose-communities-card' },
             h('header', { className: 'ose-communities-header' },
               h('h1', null, 'All Communities'),
@@ -1138,8 +1206,7 @@
               })
             )
           )
-        ),
-        h(RightSidebar)
+        )
       )
     );
   }
@@ -1149,25 +1216,26 @@
     const eventRes = useApi('/openscene/v1/events/' + eventId);
     const event = eventRes.data || null;
 
-    return h('div', { className: 'ose-create-page' },
-      h(TopHeader),
-      h('main', { className: 'ose-events-main' },
-        !event && eventRes.loading ? h('p', { className: 'ose-events-note' }, 'Loading event...') : null,
-        !event && eventRes.error ? h('p', { className: 'ose-events-note ose-events-error' }, eventRes.error) : null,
-        event ? h('article', { className: 'ose-event-detail-card' },
-          h('p', { className: 'ose-event-detail-kicker' }, 'Event'),
-          h('h1', null, event.title || 'Untitled event'),
-          h('p', { className: 'ose-event-detail-meta' }, 'When: ' + formatUtcForDisplay(event.event_date)),
-          event.event_end_date ? h('p', { className: 'ose-event-detail-meta' }, 'Ends: ' + formatUtcForDisplay(event.event_end_date)) : null,
-          h('p', { className: 'ose-event-detail-meta' }, 'Venue: ' + (event.venue_name || 'TBA')),
-          event.venue_address ? h('p', { className: 'ose-event-detail-meta' }, event.venue_address) : null,
-          event.ticket_url ? h('p', { className: 'ose-event-detail-meta' }, h('a', { href: event.ticket_url, target: '_blank', rel: 'noreferrer' }, 'Tickets')) : null,
-          h('div', { className: 'ose-event-detail-body' }, event.body || ''),
-          h('div', { className: 'ose-event-detail-actions' },
-            h('a', { className: 'ose-load-more', href: '/post/' + event.post_id }, 'Open Post Thread'),
-            h('a', { className: 'ose-load-more', href: '/openscene/?view=events' }, 'Back to Events')
-          )
-        ) : null
+    return h(SceneRailShell, null,
+      h('main', { className: 'ose-center ose-center-scroll' },
+        h('section', { className: 'ose-events-main' },
+          !event && eventRes.loading ? h('p', { className: 'ose-events-note' }, 'Loading event...') : null,
+          !event && eventRes.error ? h('p', { className: 'ose-events-note ose-events-error' }, eventRes.error) : null,
+          event ? h('article', { className: 'ose-event-detail-card' },
+            h('p', { className: 'ose-event-detail-kicker' }, 'Event'),
+            h('h1', null, event.title || 'Untitled event'),
+            h('p', { className: 'ose-event-detail-meta' }, 'When: ' + formatUtcForDisplay(event.event_date)),
+            event.event_end_date ? h('p', { className: 'ose-event-detail-meta' }, 'Ends: ' + formatUtcForDisplay(event.event_end_date)) : null,
+            h('p', { className: 'ose-event-detail-meta' }, 'Venue: ' + (event.venue_name || 'TBA')),
+            event.venue_address ? h('p', { className: 'ose-event-detail-meta' }, event.venue_address) : null,
+            event.ticket_url ? h('p', { className: 'ose-event-detail-meta' }, h('a', { href: event.ticket_url, target: '_blank', rel: 'noreferrer' }, 'Tickets')) : null,
+            h('div', { className: 'ose-event-detail-body' }, event.body || ''),
+            h('div', { className: 'ose-event-detail-actions' },
+              h('a', { className: 'ose-load-more', href: '/post/' + event.post_id }, 'Open Post Thread'),
+              h('a', { className: 'ose-load-more', href: '/openscene/?view=events' }, 'Back to Events')
+            )
+          ) : null
+        )
       )
     );
   }
@@ -1226,6 +1294,7 @@
 
   function CommunityHubPage(props) {
     const slug = String(props.communitySlug || '').trim();
+    const communitiesRes = useApi('/openscene/v1/communities?limit=20');
     const [sortMode, setSortMode] = useState('hot');
     const [cursor, setCursor] = useState('');
     const [items, setItems] = useState([]);
@@ -1234,6 +1303,7 @@
     const [postsError, setPostsError] = useState('');
     const [reportedPosts, setReportedPosts] = useState({});
     const [deletedPosts, setDeletedPosts] = useState({});
+    const [optimisticVotes, setOptimisticVotes] = useState({});
 
     const communityRes = useApi('/openscene/v1/communities/' + encodeURIComponent(slug));
     const community = communityRes.data || null;
@@ -1247,10 +1317,7 @@
     }, [communityId, sortMode]);
 
     useEffect(function () {
-      if (!communityId) {
-        return;
-      }
-
+      if (!communityId) return;
       let canceled = false;
       setLoadingPosts(true);
       setPostsError('');
@@ -1273,13 +1340,8 @@
 
     function reportPost(postId) {
       if (!isFeatureEnabled('reporting')) return;
-      if (!postId || reportedPosts[postId]) {
-        return;
-      }
-      apiRequest({
-        path: '/openscene/v1/posts/' + postId + '/report',
-        method: 'POST'
-      }).then(function () {
+      if (!postId || reportedPosts[postId]) return;
+      apiRequest({ path: '/openscene/v1/posts/' + postId + '/report', method: 'POST' }).then(function () {
         setReportedPosts(function (prev) {
           const copy = Object.assign({}, prev);
           copy[postId] = true;
@@ -1289,12 +1351,8 @@
     }
 
     function deletePost(postId) {
-      if (!postId) return;
-      if (!window.confirm('Delete this post?')) return;
-      apiRequest({
-        path: '/openscene/v1/posts/' + postId,
-        method: 'DELETE'
-      }).then(function () {
+      if (!postId || !window.confirm('Delete this post?')) return;
+      apiRequest({ path: '/openscene/v1/posts/' + postId, method: 'DELETE' }).then(function () {
         setDeletedPosts(function (prev) {
           const copy = Object.assign({}, prev);
           copy[postId] = true;
@@ -1303,146 +1361,154 @@
       }).catch(function () {});
     }
 
-    function parseRules(rawRules) {
-      if (!rawRules) {
-        return [
-          'Underground focus only.',
-          'No spam or low-effort promotion.',
-          'Keep feedback constructive.',
-        ];
-      }
+    function loginRedirect() {
+      const redirectTo = encodeURIComponent(window.location.href || '/openscene/');
+      window.location.href = '/wp-login.php?redirect_to=' + redirectTo;
+    }
 
+    function votePost(postId, clickedValue, currentVote) {
+      if (!isFeatureEnabled('voting')) return;
+      if (Number(cfg.userId || 0) <= 0) {
+        loginRedirect();
+        return;
+      }
+      const effective = (currentVote === clickedValue) ? 0 : clickedValue;
+      const delta = effective - currentVote;
+      setOptimisticVotes(function (prev) {
+        return Object.assign({}, prev, { [postId]: { user_vote: effective, delta: delta, pending: true } });
+      });
+      apiRequest({
+        path: '/openscene/v1/posts/' + postId + '/vote',
+        method: 'POST',
+        data: { value: clickedValue }
+      }).then(function (res) {
+        const payload = res && res.data ? res.data : {};
+        setOptimisticVotes(function (prev) {
+          return Object.assign({}, prev, {
+            [postId]: { user_vote: Number(payload.user_vote || 0), absoluteScore: Number(payload.score || 0), pending: false }
+          });
+        });
+      }).catch(function () {
+        setOptimisticVotes(function (prev) {
+          const copy = Object.assign({}, prev);
+          delete copy[postId];
+          return copy;
+        });
+      });
+    }
+
+    function parseRules(rawRules) {
+      if (!rawRules) return ['Underground focus only.', 'No spam or low-effort promotion.', 'Keep feedback constructive.'];
       try {
         const decoded = JSON.parse(rawRules);
-        if (Array.isArray(decoded)) {
-          return decoded.filter(Boolean).slice(0, 5);
-        }
-      } catch (e) {
-        // fall through
-      }
-
-      return String(rawRules)
-        .split(/\r?\n+/)
-        .map(function (line) { return line.trim(); })
-        .filter(Boolean)
-        .slice(0, 5);
+        if (Array.isArray(decoded)) return decoded.filter(Boolean).slice(0, 5);
+      } catch (e) {}
+      return String(rawRules).split(/\r?\n+/).map(function (line) { return line.trim(); }).filter(Boolean).slice(0, 5);
     }
 
     const rules = parseRules(community ? community.rules : '');
     const communityName = community && community.slug ? ('c/' + community.slug) : 'c/' + slug;
+    const communityLabel = (community && community.name) ? community.name : (community && community.slug ? community.slug : 'community');
+    const shellCommunities = Array.isArray(communitiesRes.data)
+      ? communitiesRes.data.map(function (c) { return { id: c.id, name: c.name, slug: c.slug, count: '' }; })
+      : [];
 
-    return h('div', { className: 'ose-community-page' },
-      h(TopHeader),
-      h('main', { className: 'ose-community-main' },
-        h('div', { className: 'ose-community-grid' },
-          h('section', { className: 'ose-community-left' },
-            h('header', { className: 'ose-community-header' },
-              h('div', { className: 'ose-community-kicker' }, 'Community'),
-              h('h1', null, communityName),
-              h('p', null, (community && community.description) ? community.description : 'Community feed for local scene discussions.'),
-              h('div', { className: 'ose-community-actions' },
-                h('button', { type: 'button' }, 'Follow'),
-                h('button', { type: 'button', className: 'ose-community-notify', 'aria-label': 'Notifications' }, Icon('bell'))
-              )
+    return h(CommunityHubShell, {
+      communities: shellCommunities,
+      rightRail: h('aside', { className: 'ose-right ose-community-shell-right' },
+        h('div', { className: 'ose-community-right' },
+          h('section', { className: 'ose-community-panel' },
+            h('h3', null, 'About'),
+            h('div', { className: 'ose-community-stats' },
+              h('div', null, h('strong', null, String(items.length)), h('span', null, 'Threads Loaded')),
+              h('div', null, h('strong', null, slug.toUpperCase()), h('span', null, 'Active Hub'))
             ),
-            h('div', { className: 'ose-community-feed-controls' },
-              h('div', { className: 'ose-community-sort' },
-                h('button', {
-                  type: 'button',
-                  className: sortMode === 'new' ? 'is-active' : '',
-                  onClick: function () { setSortMode('new'); }
-                }, 'New'),
-                h('button', {
-                  type: 'button',
-                  className: sortMode === 'hot' ? 'is-active' : '',
-                  onClick: function () { setSortMode('hot'); }
-                }, 'Hot'),
-                h('button', {
-                  type: 'button',
-                  className: sortMode === 'top' ? 'is-active' : '',
-                  onClick: function () { setSortMode('top'); }
-                }, 'Top')
-              ),
-              h('a', { className: 'ose-community-new-thread', href: '/openscene/?view=create' }, Icon('plus'), 'New Thread')
-            ),
-            communityRes.loading ? h('p', { className: 'ose-events-note' }, 'Loading community...') : null,
-            communityRes.error ? h('p', { className: 'ose-events-note ose-events-error' }, communityRes.error) : null,
-            loadingPosts && items.length === 0 ? h('p', { className: 'ose-events-note' }, 'Loading threads...') : null,
-            postsError ? h('p', { className: 'ose-events-note ose-events-error' }, postsError) : null,
-            h('div', { className: 'ose-community-posts' },
-              items.map(function (post) {
-                const merged = Object.assign({}, post);
-                if (reportedPosts[post.id]) {
-                  merged.user_reported = true;
-                  merged.reports_count = Number(merged.reports_count || 0) + 1;
-                }
-                if (deletedPosts[post.id]) {
-                  merged.status = 'removed';
-                  merged.title = '[removed]';
-                  merged.body = '';
-                  merged.user_vote = 0;
-                }
-                return h(CommunityPostItem, { key: post.id, post: merged, onReport: reportPost, onDelete: deletePost });
-              })
-            ),
-            nextCursor ? h('div', { className: 'ose-community-load-more-wrap' },
-              h('button', {
-                type: 'button',
-                className: 'ose-community-load-more',
-                disabled: loadingPosts,
-                onClick: function () { setCursor(nextCursor); }
-              }, loadingPosts ? 'Loading...' : 'Load More Archives')
-            ) : null
+            h('p', null, (community && community.description) ? community.description : 'Community details will appear here.')
           ),
-          h('aside', { className: 'ose-community-right' },
-            h('section', { className: 'ose-community-panel' },
-              h('h3', null, 'About'),
-              h('div', { className: 'ose-community-stats' },
-                h('div', null,
-                  h('strong', null, String(items.length)),
-                  h('span', null, 'Threads Loaded')
-                ),
-                h('div', null,
-                  h('strong', null, slug.toUpperCase()),
-                  h('span', null, 'Active Hub')
-                )
-              ),
-              h('p', null, (community && community.description) ? community.description : 'Community details will appear here.')
-            ),
-            h('section', { className: 'ose-community-panel' },
-              h('h3', null, 'Guidelines'),
-              h('ol', { className: 'ose-community-guidelines' },
-                rules.map(function (rule, idx) {
-                  return h('li', { key: idx },
-                    h('span', null, String(idx + 1).padStart(2, '0')),
-                    h('p', null, rule)
-                  );
-                })
-              )
-            ),
-            h('section', { className: 'ose-community-panel' },
-              h('h3', null, 'Curators'),
-              h('div', { className: 'ose-community-curators' },
-                h('div', null, h('span', null, 'u/void_runner'), h('small', null, 'Admin')),
-                h('div', null, h('span', null, 'u/dark_matter'), h('small', null, 'Mod')),
-                h('div', null, h('span', null, 'u/analog_soul'), h('small', null, 'Mod'))
-              ),
-              h('button', { type: 'button', className: 'ose-community-curators-btn' }, 'View All')
-            ),
-            h('footer', { className: 'ose-community-side-footer' },
-              h('nav', null,
-                h('a', { href: '#' }, 'Privacy'),
-                h('a', { href: '#' }, 'Content Policy'),
-                h('a', { href: '#' }, 'Contact')
-              ),
-              h('p', null, '© 2026 scene.wtf hub / bangalore')
+          h('section', { className: 'ose-community-panel' },
+            h('h3', null, 'Guidelines'),
+            h('ol', { className: 'ose-community-guidelines' },
+              rules.map(function (rule, idx) {
+                return h('li', { key: idx },
+                  h('span', null, String(idx + 1).padStart(2, '0')),
+                  h('p', null, rule)
+                );
+              })
             )
+          ),
+          h('section', { className: 'ose-community-panel' },
+            h('h3', null, 'Curators'),
+            h('div', { className: 'ose-community-curators' },
+              h('div', null, h('span', null, 'u/void_runner'), h('small', null, 'Admin')),
+              h('div', null, h('span', null, 'u/dark_matter'), h('small', null, 'Mod')),
+              h('div', null, h('span', null, 'u/analog_soul'), h('small', null, 'Mod'))
+            ),
+            h('button', { type: 'button', className: 'ose-community-curators-btn' }, 'View All')
           )
-        )
+        ),
+        h(SidebarRail)
       )
-    );
+    },
+    h('main', { className: 'ose-center ose-center-scroll' },
+      h('section', { className: 'ose-center-pane ose-community-shell-main ose-feed-center' },
+        h('header', { className: 'ose-community-header' },
+          h('div', { className: 'ose-community-kicker' }, 'Community'),
+          h('h1', null, communityName),
+          h('p', null, (community && community.description) ? community.description : 'Community feed for local scene discussions.'),
+          h('div', { className: 'ose-community-actions' },
+            h('button', { type: 'button' }, 'Follow'),
+            h('button', { type: 'button', className: 'ose-community-notify', 'aria-label': 'Notifications' }, Icon('bell'))
+          )
+        ),
+        h('div', { className: 'ose-feed-header ose-community-feed-controls' },
+          h(SortTabs, { mode: sortMode, onChange: setSortMode }),
+          h('a', { className: 'ose-feed-create-btn', href: '/openscene/?view=create' }, Icon('square-pen'), 'Create Thread')
+        ),
+        communityRes.loading ? h('p', { className: 'ose-events-note' }, 'Loading community...') : null,
+        communityRes.error ? h('p', { className: 'ose-events-note ose-events-error' }, communityRes.error) : null,
+        loadingPosts && items.length === 0 ? h('p', { className: 'ose-events-note' }, 'Loading threads...') : null,
+        postsError ? h('p', { className: 'ose-events-note ose-events-error' }, postsError) : null,
+        h('div', { className: 'ose-community-posts ose-feed-list' },
+          items.map(function (post) {
+            const merged = Object.assign({}, post);
+            const optimistic = optimisticVotes[post.id] || null;
+            if (optimistic) {
+              merged.user_vote = optimistic.user_vote;
+              merged.score = (typeof optimistic.absoluteScore === 'number')
+                ? optimistic.absoluteScore
+                : Number(post.score || 0) + Number(optimistic.delta || 0);
+            }
+            if (reportedPosts[post.id]) {
+              merged.user_reported = true;
+              merged.reports_count = Number(merged.reports_count || 0) + 1;
+            }
+            if (deletedPosts[post.id]) {
+              merged.status = 'removed';
+              merged.title = '[removed]';
+              merged.body = '';
+              merged.user_vote = 0;
+            }
+            return h(FeedPost, {
+              key: post.id,
+              post: merged,
+              communityName: communityLabel,
+              onVote: votePost,
+              onReport: reportPost,
+              onDelete: deletePost
+            });
+          })
+        ),
+        nextCursor ? h('div', { className: 'ose-community-load-more-wrap' },
+          h('button', {
+            type: 'button',
+            className: 'ose-community-load-more',
+            disabled: loadingPosts,
+            onClick: function () { setCursor(nextCursor); }
+          }, loadingPosts ? 'Loading...' : 'Load More Archives')
+        ) : null
+      )
+    ));
   }
-
   function PostCommentNode(props) {
     const comment = props.comment;
     const depth = Number(comment.depth || 0);
@@ -1559,6 +1625,7 @@
     const [highlightCommentId, setHighlightCommentId] = useState(0);
     const [reported, setReported] = useState(initialReported);
     const [reportCount, setReportCount] = useState(0);
+    const commentInputRef = useRef(null);
     const postReportsCount = postRes && postRes.data ? Number(postRes.data.reports_count || 0) : 0;
 
     function sortParam(mode) {
@@ -1692,6 +1759,17 @@
     }, [postReportsCount]);
 
     useEffect(function () {
+      const el = commentInputRef.current;
+      if (!el) return;
+      const minHeight = 42;
+      const maxHeight = 220;
+      el.style.height = minHeight + 'px';
+      const nextHeight = Math.min(el.scrollHeight, maxHeight);
+      el.style.height = nextHeight + 'px';
+      el.style.overflowY = el.scrollHeight > maxHeight ? 'auto' : 'hidden';
+    }, [commentBody]);
+
+    useEffect(function () {
       const metaLine = document.querySelector('.ose-pd-header .ose-pd-meta');
       if (!metaLine) return;
       const existing = metaLine.querySelector('.ose-report-badge-inline');
@@ -1783,28 +1861,19 @@
 
     return h('section', { className: 'ose-pd-comments-wrap' },
           h('div', { className: 'ose-pd-comments-head' },
-            h('h2', null, String(Math.max(initialCommentCount, topComments.length)) + ' Comments'),
             canReport ? h('button', {
               type: 'button',
               className: 'ose-pd-report-btn',
               onClick: submitReport,
               disabled: reported
-            }, reported ? 'Reported' : 'Report') : null,
-            h('div', { className: 'ose-pd-comment-sort' },
-              sortButtons.map(function (btn) {
-                return h('button', {
-                  key: btn.key,
-                  type: 'button',
-                  className: commentSort === btn.key ? 'is-active' : '',
-                  onClick: function () { setCommentSort(btn.key); }
-                }, btn.label);
-              })
-            )
+            }, reported ? 'Reported' : 'Report') : null
           ),
           canReply ? h('div', { className: 'ose-pd-comment-editor' },
             h('textarea', {
+              ref: commentInputRef,
+              rows: 1,
               value: commentBody,
-              placeholder: 'Add your thoughts...',
+              placeholder: 'Join the conversation',
               onChange: function (e) { setCommentBody(e.target.value); }
             }),
             h('div', { className: 'ose-pd-comment-editor-actions' },
@@ -1816,6 +1885,16 @@
             ),
             commentStatus ? h('p', { className: 'ose-pd-status' }, commentStatus) : null
           ) : h('p', { className: 'ose-pd-status' }, 'This post has been removed. New comments are disabled.'),
+          h('div', { className: 'ose-pd-comment-sort' },
+            sortButtons.map(function (btn) {
+              return h('button', {
+                key: btn.key,
+                type: 'button',
+                className: commentSort === btn.key ? 'is-active' : '',
+                onClick: function () { setCommentSort(btn.key); }
+              }, btn.label);
+            })
+          ),
           h('div', { className: 'ose-pd-comments-list' },
             topComments.map(function (comment) {
               return h(PostCommentNode, {
@@ -1860,7 +1939,6 @@
 
   function GlobalFeedPage() {
     const communitiesRes = useApi('/openscene/v1/communities?limit=20');
-    const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
     const communities = Array.isArray(communitiesRes.data)
       ? communitiesRes.data.map(function (c) {
           return {
@@ -1872,22 +1950,8 @@
         })
       : [];
 
-    return h('div', { className: 'ose-scene-home' },
-      h(TopHeader, {
-        showDrawerToggle: true,
-        drawerOpen: mobileDrawerOpen,
-        onToggleDrawer: function () { setMobileDrawerOpen(function (v) { return !v; }); }
-      }),
-      h('div', { className: 'ose-scene-grid' },
-        h(LeftSidebar, { communities: communities }),
-        h(CenterFeed, { communities: communities }),
-        h(RightSidebar)
-      ),
-      h(MobileUtilityDrawer, {
-        open: mobileDrawerOpen,
-        onClose: function () { setMobileDrawerOpen(false); },
-        communities: communities
-      })
+    return h(SceneRailShell, { communities: communities },
+      h(CenterFeed, { communities: communities })
     );
   }
 
@@ -1981,11 +2045,9 @@
       }).catch(function () {});
     }
 
-    return h('div', { className: 'ose-scene-home' },
-      h(TopHeader),
-      h('div', { className: 'ose-scene-grid' },
-        h(LeftSidebar, { communities: communities }),
-        h('main', { className: 'ose-center' },
+    return h(SceneRailShell, { communities: communities },
+      h('main', { className: 'ose-center ose-center-scroll' },
+        h('section', { className: 'ose-center-pane' },
           h('div', { className: 'ose-feed-header' },
             h('div', { className: 'ose-feed-tabs' },
               h('button', { className: sortMode === 'hot' ? 'is-active' : '', onClick: function () { setSortMode('hot'); } }, 'Hot'),
@@ -2035,8 +2097,7 @@
             h('span', null, 'Page ' + page),
             h('button', { type: 'button', onClick: function () { setPage(page + 1); }, disabled: !hasNext || searchRes.loading }, 'Next')
           ) : null
-        ),
-        h(RightSidebar)
+        )
       )
     );
   }
@@ -2133,144 +2194,145 @@
       });
     }
 
-    return h('div', { className: 'ose-create-page' },
-      h(TopHeader),
-      h('main', { className: 'ose-create-main' },
-        h('div', { className: 'ose-create-layout' },
-          h('section', { className: 'ose-create-left' },
-            h('header', { className: 'ose-create-header' },
-          h('h1', null, 'Create Post'),
-          h('div', { className: 'ose-create-controls' },
-            h('div', { className: 'ose-create-select-wrap' },
-              h('select', {
-                value: form.community_id,
-                onChange: function (e) { setForm(Object.assign({}, form, { community_id: e.target.value })); }
-              },
-                h('option', { value: '' }, communitiesRes.loading ? 'Loading communities...' : 'Select Community'),
-                communities.map(function (c) {
-                  return h('option', { key: c.id, value: String(c.id) }, '/' + c.slug);
-                })
+    const shellCommunities = communities.map(function (c) {
+      return { id: c.id, name: c.name, slug: c.slug, count: '' };
+    });
+
+    return h(SceneRailShell, { communities: shellCommunities },
+      h('main', { className: 'ose-center ose-center-scroll' },
+        h('section', { className: 'ose-create-main ose-center-pane' },
+          h('div', { className: 'ose-create-layout ose-create-layout-single' },
+            h('section', { className: 'ose-create-left ose-create-left-full' },
+              h('header', { className: 'ose-create-header' },
+                h('h1', null, 'Create Post'),
+                h('div', { className: 'ose-create-controls' },
+                  h('div', { className: 'ose-create-select-wrap' },
+                    h('select', {
+                      value: form.community_id,
+                      onChange: function (e) { setForm(Object.assign({}, form, { community_id: e.target.value })); }
+                    },
+                    h('option', { value: '' }, communitiesRes.loading ? 'Loading communities...' : 'Select Community'),
+                    communities.map(function (c) {
+                      return h('option', { key: c.id, value: String(c.id) }, '/' + c.slug);
+                    })),
+                    h('span', { className: 'ose-create-select-icon' }, Icon('chevron-down'))
+                  ),
+                  h('div', { className: 'ose-type-tabs' },
+                    ['text', 'link', 'event'].map(function (typeKey) {
+                      const active = form.type === typeKey;
+                      const label = typeKey.charAt(0).toUpperCase() + typeKey.slice(1);
+                      return h('button', {
+                        key: typeKey,
+                        type: 'button',
+                        className: active ? 'is-active' : '',
+                        onClick: function () { setForm(Object.assign({}, form, { type: typeKey })); }
+                      }, label);
+                    })
+                  )
+                )
               ),
-              h('span', { className: 'ose-create-select-icon' }, Icon('chevron-down'))
-            ),
-            h('div', { className: 'ose-type-tabs' },
-              ['text', 'link', 'event'].map(function (typeKey) {
-                const active = form.type === typeKey;
-                const label = typeKey.charAt(0).toUpperCase() + typeKey.slice(1);
-                return h('button', {
-                  key: typeKey,
-                  type: 'button',
-                  className: active ? 'is-active' : '',
-                  onClick: function () { setForm(Object.assign({}, form, { type: typeKey })); }
-                }, label);
-              })
+              h('form', { className: 'ose-create-form', onSubmit: submitPost },
+                h('input', {
+                  className: 'ose-create-title',
+                  type: 'text',
+                  placeholder: 'Title*',
+                  value: form.title,
+                  onChange: function (e) { setForm(Object.assign({}, form, { title: e.target.value })); },
+                  required: true,
+                  maxLength: 300
+                }),
+                h('div', { className: 'ose-editor-wrap' },
+                  h('div', { className: 'ose-editor-hint' }, 'Markdown Support Active'),
+                  h('textarea', {
+                    className: 'ose-editor',
+                    placeholder: 'Share the sound, the scene, or the vibe...',
+                    value: form.body,
+                    onChange: function (e) { setForm(Object.assign({}, form, { body: e.target.value })); }
+                  }),
+                  h('div', { className: 'ose-editor-tools' },
+                    h('button', { type: 'button', title: 'Bold' }, Icon('bold')),
+                    h('button', { type: 'button', title: 'Italic' }, Icon('italic')),
+                    h('button', { type: 'button', title: 'Link' }, Icon('link')),
+                    h('button', { type: 'button', title: 'Image' }, Icon('image')),
+                    h('span', { className: 'ose-editor-divider' }),
+                    h('span', { className: 'ose-editor-count' }, 'CHARS: ' + form.body.length)
+                  )
+                ),
+                form.type === 'event' ? h('div', { className: 'ose-event-fields' },
+                  h('div', { className: 'ose-event-grid' },
+                    h('label', { className: 'ose-event-field' },
+                      h('span', null, 'Event Date'),
+                      h('input', {
+                        type: 'datetime-local',
+                        value: form.event_date,
+                        onChange: function (e) { setForm(Object.assign({}, form, { event_date: e.target.value })); },
+                        required: true
+                      })
+                    ),
+                    h('label', { className: 'ose-event-field' },
+                      h('span', null, 'End Date'),
+                      h('input', {
+                        type: 'datetime-local',
+                        value: form.event_end_date,
+                        onChange: function (e) { setForm(Object.assign({}, form, { event_end_date: e.target.value })); }
+                      })
+                    )
+                  ),
+                  h('label', { className: 'ose-event-field' },
+                    h('span', null, 'Venue Name'),
+                    h('input', {
+                      type: 'text',
+                      value: form.venue_name,
+                      onChange: function (e) { setForm(Object.assign({}, form, { venue_name: e.target.value })); },
+                      required: true
+                    })
+                  ),
+                  h('label', { className: 'ose-event-field' },
+                    h('span', null, 'Venue Address'),
+                    h('textarea', {
+                      rows: 3,
+                      value: form.venue_address,
+                      onChange: function (e) { setForm(Object.assign({}, form, { venue_address: e.target.value })); }
+                    })
+                  ),
+                  h('label', { className: 'ose-event-field' },
+                    h('span', null, 'Ticket URL'),
+                    h('input', {
+                      type: 'url',
+                      value: form.ticket_url,
+                      onChange: function (e) { setForm(Object.assign({}, form, { ticket_url: e.target.value })); }
+                    })
+                  )
+                ) : null,
+                h('footer', { className: 'ose-create-footer' },
+                  h('div', { className: 'ose-create-footer-left' },
+                    h('button', { type: 'button', disabled: true }, Icon('save'), 'Save Draft'),
+                    h('button', {
+                      type: 'button',
+                      onClick: function () {
+                        setForm(Object.assign({}, form, { title: '', body: '' }));
+                        setStatus({ kind: '', message: '' });
+                      }
+                    }, 'Discard')
+                  ),
+                  h('div', { className: 'ose-create-footer-right' },
+                    h('label', { className: 'ose-anon' },
+                      h('input', {
+                        type: 'checkbox',
+                        checked: form.anonymously,
+                        onChange: function (e) { setForm(Object.assign({}, form, { anonymously: !!e.target.checked })); }
+                      }),
+                      h('span', null, 'Post Anonymously')
+                    ),
+                    h('button', { className: 'ose-publish-btn', type: 'submit', disabled: submitting }, submitting ? 'Publishing...' : 'Publish Post')
+                  )
+                ),
+                status.message ? h('p', { className: 'ose-create-status ' + (status.kind === 'error' ? 'is-error' : 'is-success') }, status.message) : null
+              )
             )
           )
-            ),
-            h('form', { className: 'ose-create-form', onSubmit: submitPost },
-          h('input', {
-            className: 'ose-create-title',
-            type: 'text',
-            placeholder: 'Title*',
-            value: form.title,
-            onChange: function (e) { setForm(Object.assign({}, form, { title: e.target.value })); },
-            required: true,
-            maxLength: 300
-          }),
-          h('div', { className: 'ose-editor-wrap' },
-            h('div', { className: 'ose-editor-hint' }, 'Markdown Support Active'),
-            h('textarea', {
-              className: 'ose-editor',
-              placeholder: 'Share the sound, the scene, or the vibe...',
-              value: form.body,
-              onChange: function (e) { setForm(Object.assign({}, form, { body: e.target.value })); }
-            }),
-            h('div', { className: 'ose-editor-tools' },
-              h('button', { type: 'button', title: 'Bold' }, Icon('bold')),
-              h('button', { type: 'button', title: 'Italic' }, Icon('italic')),
-              h('button', { type: 'button', title: 'Link' }, Icon('link')),
-              h('button', { type: 'button', title: 'Image' }, Icon('image')),
-              h('span', { className: 'ose-editor-divider' }),
-              h('span', { className: 'ose-editor-count' }, 'CHARS: ' + form.body.length)
-            )
-          ),
-          form.type === 'event' ? h('div', { className: 'ose-event-fields' },
-            h('div', { className: 'ose-event-grid' },
-              h('label', { className: 'ose-event-field' },
-                h('span', null, 'Event Date'),
-                h('input', {
-                  type: 'datetime-local',
-                  value: form.event_date,
-                  onChange: function (e) { setForm(Object.assign({}, form, { event_date: e.target.value })); },
-                  required: true
-                })
-              ),
-              h('label', { className: 'ose-event-field' },
-                h('span', null, 'End Date'),
-                h('input', {
-                  type: 'datetime-local',
-                  value: form.event_end_date,
-                  onChange: function (e) { setForm(Object.assign({}, form, { event_end_date: e.target.value })); }
-                })
-              )
-            ),
-            h('label', { className: 'ose-event-field' },
-              h('span', null, 'Venue Name'),
-              h('input', {
-                type: 'text',
-                value: form.venue_name,
-                onChange: function (e) { setForm(Object.assign({}, form, { venue_name: e.target.value })); },
-                required: true
-              })
-            ),
-            h('label', { className: 'ose-event-field' },
-              h('span', null, 'Venue Address'),
-              h('textarea', {
-                rows: 3,
-                value: form.venue_address,
-                onChange: function (e) { setForm(Object.assign({}, form, { venue_address: e.target.value })); }
-              })
-            ),
-            h('label', { className: 'ose-event-field' },
-              h('span', null, 'Ticket URL'),
-              h('input', {
-                type: 'url',
-                value: form.ticket_url,
-                onChange: function (e) { setForm(Object.assign({}, form, { ticket_url: e.target.value })); }
-              })
-            )
-          ) : null,
-          h('footer', { className: 'ose-create-footer' },
-            h('div', { className: 'ose-create-footer-left' },
-              h('button', { type: 'button', disabled: true }, Icon('save'), 'Save Draft'),
-              h('button', {
-                type: 'button',
-                onClick: function () {
-                  setForm(Object.assign({}, form, { title: '', body: '' }));
-                  setStatus({ kind: '', message: '' });
-                }
-              }, 'Discard')
-            ),
-            h('div', { className: 'ose-create-footer-right' },
-              h('label', { className: 'ose-anon' },
-                h('input', {
-                  type: 'checkbox',
-                  checked: form.anonymously,
-                  onChange: function (e) { setForm(Object.assign({}, form, { anonymously: !!e.target.checked })); }
-                }),
-                h('span', null, 'Post Anonymously')
-              ),
-              h('button', { className: 'ose-publish-btn', type: 'submit', disabled: submitting }, submitting ? 'Publishing...' : 'Publish Post')
-            )
-          ),
-              status.message ? h('p', { className: 'ose-create-status ' + (status.kind === 'error' ? 'is-error' : 'is-success') }, status.message) : null
-            )
-          ),
-          h('aside', { className: 'ose-create-right' }, h(SidebarRail))
         )
-      ),
-      h('div', { className: 'ose-create-accent ose-create-accent-top' }),
-      h('div', { className: 'ose-create-accent ose-create-accent-bottom' })
+      )
     );
   }
 

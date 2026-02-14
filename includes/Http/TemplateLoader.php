@@ -213,7 +213,7 @@ final class TemplateLoader
 
         $communityRows = [];
         $eventRows = [];
-        if ($route === 'user') {
+        if (in_array($route, ['user', 'post'], true)) {
             $communityRows = $communityRepo->listVisible(8);
             $eventRows = (new EventRepository($wpdb, $tables))->listByScope('upcoming', 3, null);
         }
