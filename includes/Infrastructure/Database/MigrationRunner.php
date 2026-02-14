@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace OpenScene\Engine\Infrastructure\Database;
 
+use OpenScene\Engine\Infrastructure\Database\Migrations\AddPerformanceIndexesV4;
+
 final class MigrationRunner
 {
-    public const DB_VERSION = '1.2.0';
+    public const DB_VERSION = '1.4.0';
 
     public function migrate(): void
     {
@@ -167,6 +169,8 @@ final class MigrationRunner
         $this->ensureReportsCountColumn($tables->posts());
 
         $this->ensurePostTypeEnumHasEvent($tables->posts());
+
+        (new AddPerformanceIndexesV4($wpdb, $tables))->migrate();
 
         update_option('openscene_db_version', self::DB_VERSION);
         add_option('openscene_cache_version', '1', '', false);
