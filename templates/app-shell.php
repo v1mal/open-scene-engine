@@ -19,10 +19,23 @@ $context = [
 ];
 
 $ssrPost = null;
+$ssrPostCommunityVisible = true;
+$ssrCommunity = null;
+global $wpdb;
+$tableNames = new TableNames();
+$communityRepo = new CommunityRepository($wpdb, $tableNames);
 if ($context['route'] === 'post' && $context['postId'] > 0) {
-    global $wpdb;
-    $repo = new PostRepository($wpdb, new TableNames());
+    $repo = new PostRepository($wpdb, $tableNames);
     $ssrPost = $repo->find($context['postId']);
+    if (is_array($ssrPost)) {
+        $postCommunity = $communityRepo->findById((int) ($ssrPost['community_id'] ?? 0));
+        $ssrPostCommunityVisible = is_array($postCommunity) && (string) ($postCommunity['visibility'] ?? '') === 'public';
+    } else {
+        $ssrPostCommunityVisible = false;
+    }
+}
+if ($context['route'] === 'community' && $context['communitySlug'] !== '') {
+    $ssrCommunity = $communityRepo->findBySlug(sanitize_title((string) $context['communitySlug']));
 }
 $ssrPostUserVote = 0;
 $ssrPostUserReported = false;
@@ -36,6 +49,9 @@ if ($context['route'] === 'user' && $routeUsername !== '') {
 
 $postStatus = is_array($ssrPost) ? (string) ($ssrPost['status'] ?? '') : '';
 $isRenderablePost = is_array($ssrPost) && in_array($postStatus, ['published', 'locked', 'removed'], true);
+$isPostInDisabledCommunity = $context['route'] === 'post' && $isRenderablePost && ! $ssrPostCommunityVisible;
+$isDisabledCommunityRoute = $context['route'] === 'community' && is_array($ssrCommunity) && (string) ($ssrCommunity['visibility'] ?? '') !== 'public';
+$isUnavailableContent = $isPostInDisabledCommunity || $isDisabledCommunityRoute;
 $isRemovedPost = $isRenderablePost && $postStatus === 'removed';
 $isPost404 = $context['route'] === 'post' && ! $isRenderablePost;
 $isValidUser = $ssrUser instanceof \WP_User && (int) ($ssrUser->user_status ?? 0) === 0;
@@ -57,9 +73,16 @@ $isLoggedIn = $currentUsername !== '';
 $avatarInitials = $currentUsername !== '' ? strtoupper(substr($currentUsername, 0, 2)) : 'GU';
 $profileHref = $currentUsername !== '' ? home_url(user_trailingslashit('u/' . rawurlencode($currentUsername))) : wp_login_url();
 $joinUrl = (string) get_option('openscene_join_url', '');
-if ($isRenderablePost && ! $isRemovedPost && $currentUser instanceof \WP_User && $currentUser->ID > 0) {
-    global $wpdb;
-    $votesTable = (new TableNames())->votes();
+$adminSettings = get_option('openscene_admin_settings', []);
+$logoAttachmentId = is_array($adminSettings) ? (int) ($adminSettings['logo_attachment_id'] ?? 0) : 0;
+$logoUrl = $logoAttachmentId > 0 ? (string) wp_get_attachment_image_url($logoAttachmentId, 'full') : '';
+$brandTextRaw = is_array($adminSettings) ? trim((string) ($adminSettings['brand_text'] ?? '')) : '';
+$brandText = $brandTextRaw !== '' ? $brandTextRaw : 'scene.wtf';
+$brandDotPos = strpos($brandText, '.');
+$brandPrimary = $brandDotPos === false ? $brandText : substr($brandText, 0, $brandDotPos);
+$brandSuffix = $brandDotPos === false ? '' : substr($brandText, $brandDotPos);
+if ($isRenderablePost && ! $isRemovedPost && $ssrPostCommunityVisible && $currentUser instanceof \WP_User && $currentUser->ID > 0) {
+    $votesTable = $tableNames->votes();
     $ssrPostUserVote = (int) $wpdb->get_var($wpdb->prepare(
         "SELECT value FROM {$votesTable} WHERE user_id = %d AND target_type = 'post' AND target_id = %d LIMIT 1",
         (int) $currentUser->ID,
@@ -68,7 +91,7 @@ if ($isRenderablePost && ! $isRemovedPost && $currentUser instanceof \WP_User &&
     if (! in_array($ssrPostUserVote, [-1, 1], true)) {
         $ssrPostUserVote = 0;
     }
-    $reportsTable = (new TableNames())->postReports();
+    $reportsTable = $tableNames->postReports();
     $ssrPostUserReported = (bool) $wpdb->get_var($wpdb->prepare(
         "SELECT id FROM {$reportsTable} WHERE post_id = %d AND user_id = %d LIMIT 1",
         (int) $context['postId'],
@@ -87,12 +110,34 @@ if ($isRenderablePost && ! $isRemovedPost && $currentUser instanceof \WP_User &&
 </head>
 <body <?php body_class('openscene-app-shell'); ?>>
 <?php wp_body_open(); ?>
-<?php if ($isRenderablePost) : ?>
+<?php if ($isUnavailableContent) : ?>
+<div style="height:100vh;overflow:hidden;background:#000;color:#f1f5f9;display:flex;flex-direction:column;">
+    <header style="position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid #1f2937;background:rgba(0,0,0,0.92);backdrop-filter:blur(8px);">
+        <a href="/openscene/" style="font-size:34px;line-height:1;font-weight:800;letter-spacing:-0.04em;color:#f8fafc;text-decoration:none;">
+            <?php if ($logoUrl !== '') : ?>
+                <img src="<?php echo esc_url($logoUrl); ?>" alt="<?php esc_attr_e('OpenScene Logo', 'open-scene-engine'); ?>" style="height:34px;width:auto;display:block;" />
+            <?php else : ?>
+                <?php echo esc_html($brandPrimary); ?><?php if ($brandSuffix !== '') : ?><span style="color:#14f1e0;"><?php echo esc_html($brandSuffix); ?></span><?php endif; ?>
+            <?php endif; ?>
+        </a>
+    </header>
+    <main class="ose-post-detail-main" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:48px 24px;text-align:center;overflow:hidden;">
+        <p style="margin:0 0 16px 0;font-size:20px;line-height:1.5;font-weight:600;"><?php esc_html_e('This content is currently unavailable.', 'open-scene-engine'); ?></p>
+        <a href="/openscene/" style="display:inline-flex;align-items:center;justify-content:center;padding:10px 16px;border:1px solid #334155;border-radius:10px;color:#f8fafc;text-decoration:none;font-size:14px;font-weight:600;"><?php esc_html_e('Go Back', 'open-scene-engine'); ?></a>
+    </main>
+</div>
+<?php elseif ($isRenderablePost) : ?>
 <div id="openscene-root" data-openscene-context="<?php echo esc_attr((string) wp_json_encode($context)); ?>">
 <div class="ose-post-detail-page">
     <header class="ose-topbar">
         <div class="ose-topbar-left">
-            <a class="ose-brand" href="/openscene/">scene<span>.wtf</span></a>
+            <a class="ose-brand" href="/openscene/">
+                <?php if ($logoUrl !== '') : ?>
+                    <img src="<?php echo esc_url($logoUrl); ?>" alt="<?php esc_attr_e('OpenScene Logo', 'open-scene-engine'); ?>" style="height:34px;width:auto;display:block;" />
+                <?php else : ?>
+                    <?php echo esc_html($brandPrimary); ?><?php if ($brandSuffix !== '') : ?><span><?php echo esc_html($brandSuffix); ?></span><?php endif; ?>
+                <?php endif; ?>
+            </a>
         </div>
         <div class="ose-topbar-right">
             <?php if ($isLoggedIn) : ?>
@@ -197,7 +242,13 @@ $rules = [
 <div class="ose-scene-home">
     <header class="ose-topbar">
         <div class="ose-topbar-left">
-            <a class="ose-brand" href="/openscene/">scene<span>.wtf</span></a>
+            <a class="ose-brand" href="/openscene/">
+                <?php if ($logoUrl !== '') : ?>
+                    <img src="<?php echo esc_url($logoUrl); ?>" alt="<?php esc_attr_e('OpenScene Logo', 'open-scene-engine'); ?>" style="height:34px;width:auto;display:block;" />
+                <?php else : ?>
+                    <?php echo esc_html($brandPrimary); ?><?php if ($brandSuffix !== '') : ?><span><?php echo esc_html($brandSuffix); ?></span><?php endif; ?>
+                <?php endif; ?>
+            </a>
             <div class="ose-search">
                 <i data-lucide="search" class="ose-lucide ose-search-icon"></i>
                 <input type="search" placeholder="<?php esc_attr_e('Search conversations...', 'open-scene-engine'); ?>" aria-label="<?php esc_attr_e('Search conversations', 'open-scene-engine'); ?>" />

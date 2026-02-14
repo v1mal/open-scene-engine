@@ -6,7 +6,7 @@ namespace OpenScene\Engine\Infrastructure\Database;
 
 final class MigrationRunner
 {
-    private const DB_VERSION = '1.2.0';
+    public const DB_VERSION = '1.2.0';
 
     public function migrate(): void
     {

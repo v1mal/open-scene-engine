@@ -21,6 +21,7 @@
   }
 
   const cfg = window.OpenSceneConfig || {};
+  const featureFlags = Object.assign({ reporting: true, voting: true, delete: true }, (cfg && cfg.features) || {});
   let bootContext = {};
   try {
     bootContext = JSON.parse(bootRoot.getAttribute('data-openscene-context') || '{}');
@@ -133,6 +134,10 @@
     return h('i', { 'data-lucide': name, className: 'ose-lucide' + (className ? ' ' + className : '') });
   }
 
+  function isFeatureEnabled(name) {
+    return !!featureFlags[name];
+  }
+
   function initPostHeaderVote() {
     const root = document.getElementById('openscene-post-vote');
     if (!root || root.getAttribute('data-bound') === '1') {
@@ -146,6 +151,14 @@
     const downBtn = root.querySelector('.ose-pd-post-vote-down');
     const scoreEl = root.querySelector('.ose-pd-post-vote-score');
     if (!postId || !upBtn || !downBtn || !scoreEl) {
+      return;
+    }
+
+    if (!isFeatureEnabled('voting')) {
+      upBtn.disabled = true;
+      downBtn.disabled = true;
+      root.classList.add('is-disabled');
+      root.setAttribute('data-bound', '1');
       return;
     }
 
@@ -203,9 +216,20 @@
   }
 
   function brandLogo() {
+    const logoUrl = cfg && cfg.branding && cfg.branding.logoUrl ? String(cfg.branding.logoUrl) : '';
+    if (logoUrl) {
+      return h('a', { className: 'ose-brand', href: '/openscene/' },
+        h('img', { src: logoUrl, alt: 'OpenScene Logo', style: { height: '34px', width: 'auto', display: 'block' } })
+      );
+    }
+    const rawBrandText = cfg && cfg.branding && cfg.branding.brandText ? String(cfg.branding.brandText).trim() : '';
+    const brandText = rawBrandText || 'scene.wtf';
+    const dotPos = brandText.indexOf('.');
+    const primary = dotPos === -1 ? brandText : brandText.slice(0, dotPos);
+    const suffix = dotPos === -1 ? '' : brandText.slice(dotPos);
     return h('a', { className: 'ose-brand', href: '/openscene/' }, [
-      'scene',
-      h('span', { key: 'dot' }, '.wtf')
+      primary,
+      suffix ? h('span', { key: 'dot' }, suffix) : null
     ]);
   }
 
@@ -307,25 +331,30 @@
     const isRemoved = String(post.status || '') === 'removed';
     const isPublished = String(post.status || '') === 'published';
     const canDeleteAnyPost = !!(cfg && cfg.permissions && cfg.permissions.canDeleteAnyPost);
+    const canManageOptions = !!(cfg && cfg.permissions && cfg.permissions.canManageOptions);
     const isLoggedIn = Number(cfg.userId || 0) > 0;
     const userId = Number(cfg.userId || 0);
     const isOwner = userId > 0 && userId === Number(post.user_id || 0);
     const isReported = !!post.user_reported;
     const reportsCount = Number(post.reports_count || 0);
+    const reportingEnabled = isFeatureEnabled('reporting');
+    const votingEnabled = isFeatureEnabled('voting');
+    const deleteEnabled = isFeatureEnabled('delete');
+    const canDeletePost = canDeleteAnyPost && !isRemoved && (deleteEnabled || canManageOptions);
 
     return h('article', { className: 'ose-feed-post' },
       h('div', { className: 'ose-vote-rail' },
         h('button', {
           className: 'ose-vote-btn' + (userVote === 1 ? ' is-active-up' : ''),
           'aria-label': 'Upvote',
-          disabled: isRemoved,
+          disabled: isRemoved || !votingEnabled,
           onClick: function () { props.onVote(post.id, 1, userVote); }
         }, Icon('chevron-up')),
         h('strong', null, post.score >= 1000 ? (Math.round((post.score / 100)) / 10) + 'k' : String(post.score || 0)),
         h('button', {
           className: 'ose-vote-btn' + (userVote === -1 ? ' is-active-down' : ''),
           'aria-label': 'Downvote',
-          disabled: isRemoved,
+          disabled: isRemoved || !votingEnabled,
           onClick: function () { props.onVote(post.id, -1, userVote); }
         }, Icon('chevron-down'))
       ),
@@ -348,12 +377,12 @@
           reportsCount > 0 ? h('span', { className: 'ose-report-badge', 'aria-label': String(reportsCount) + ' reports' }, Icon('flag', 'ose-report-badge-icon'), String(reportsCount) + ' Reports') : null,
           h('button', { type: 'button' }, Icon('share-2'), 'Share'),
           h('button', { type: 'button' }, Icon('bookmark'), 'Save'),
-          isLoggedIn && !isOwner && isPublished ? h('button', {
+          reportingEnabled && isLoggedIn && !isOwner && isPublished ? h('button', {
             type: 'button',
             onClick: function () { props.onReport(post.id); },
             disabled: isReported
           }, Icon('flag'), isReported ? 'Reported' : 'Report') : null,
-          canDeleteAnyPost && !isRemoved ? h('button', { type: 'button', onClick: function () { props.onDelete(post.id); } }, Icon('trash-2'), 'Delete') : null
+          canDeletePost ? h('button', { type: 'button', onClick: function () { props.onDelete(post.id); } }, Icon('trash-2'), 'Delete') : null
         )
       )
     );
@@ -382,6 +411,9 @@
     }
 
     function handleVote(postId, clickedValue, currentVote) {
+      if (!isFeatureEnabled('voting')) {
+        return;
+      }
       if (Number(cfg.userId || 0) <= 0) {
         loginRedirect();
         return;
@@ -436,6 +468,7 @@
     }
 
     function handleReport(postId) {
+      if (!isFeatureEnabled('reporting')) return;
       if (!postId || reportedPosts[postId]) return;
       apiRequest({
         path: '/openscene/v1/posts/' + postId + '/report',
@@ -713,18 +746,22 @@
     const isPublished = String(post.status || '') === 'published';
     const isLoggedIn = Number(cfg.userId || 0) > 0;
     const canDeleteAnyPost = !!(cfg && cfg.permissions && cfg.permissions.canDeleteAnyPost);
+    const canManageOptions = !!(cfg && cfg.permissions && cfg.permissions.canManageOptions);
     const canModerate = !!(cfg && cfg.permissions && cfg.permissions.canModerate);
     const isOwner = Number(cfg.userId || 0) > 0 && Number(cfg.userId || 0) === Number(post.user_id || 0);
     const isReported = !!post.user_reported;
     const reportsCount = Number(post.reports_count || 0);
-    const canReport = isLoggedIn && !isRemoved;
-    const canDelete = (canDeleteAnyPost || canModerate) && !isRemoved;
+    const reportingEnabled = isFeatureEnabled('reporting');
+    const votingEnabled = isFeatureEnabled('voting');
+    const deleteEnabled = isFeatureEnabled('delete');
+    const canReport = reportingEnabled && isLoggedIn && !isOwner && !isRemoved && isPublished;
+    const canDelete = (canDeleteAnyPost || canModerate) && !isRemoved && (deleteEnabled || canManageOptions);
 
     return h('article', { className: 'ose-community-post-item' },
       h('div', { className: 'ose-community-vote' },
-        h('button', { className: 'ose-vote-btn', type: 'button', 'aria-label': 'Upvote' }, Icon('chevron-up')),
+        h('button', { className: 'ose-vote-btn', type: 'button', 'aria-label': 'Upvote', disabled: !votingEnabled || isRemoved }, Icon('chevron-up')),
         h('strong', null, post.score >= 1000 ? (Math.round((post.score / 100)) / 10) + 'k' : String(post.score || 0)),
-        h('button', { className: 'ose-vote-btn', type: 'button', 'aria-label': 'Downvote' }, Icon('chevron-down'))
+        h('button', { className: 'ose-vote-btn', type: 'button', 'aria-label': 'Downvote', disabled: !votingEnabled || isRemoved }, Icon('chevron-down'))
       ),
       h('div', { className: 'ose-community-post-body' },
         h('div', { className: 'ose-community-post-meta' },
@@ -802,6 +839,7 @@
     }, [communityId, sortMode, cursor]);
 
     function reportPost(postId) {
+      if (!isFeatureEnabled('reporting')) return;
       if (!postId || reportedPosts[postId]) {
         return;
       }
@@ -1066,7 +1104,7 @@
     const postUserId = commentsRoot ? Number(commentsRoot.getAttribute('data-post-user-id') || 0) : 0;
     const initialReported = commentsRoot ? String(commentsRoot.getAttribute('data-user-reported') || '0') === '1' : false;
     const canReply = postStatus !== 'removed';
-    const canReport = Number(cfg.userId || 0) > 0 && Number(cfg.userId || 0) !== postUserId && postStatus === 'published';
+    const canReport = isFeatureEnabled('reporting') && Number(cfg.userId || 0) > 0 && Number(cfg.userId || 0) !== postUserId && postStatus === 'published';
     const childInFlightRef = useRef({});
 
     const [commentSort, setCommentSort] = useState('top');
@@ -1445,6 +1483,9 @@
     }
 
     function handleVote(postId, clickedValue, currentVote) {
+      if (!isFeatureEnabled('voting')) {
+        return;
+      }
       if (Number(cfg.userId || 0) <= 0) {
         loginRedirect();
         return;
@@ -1486,6 +1527,7 @@
     }
 
     function handleReport(postId) {
+      if (!isFeatureEnabled('reporting')) return;
       if (!postId || reportedPosts[postId]) return;
       apiRequest({ path: '/openscene/v1/posts/' + postId + '/report', method: 'POST' }).then(function () {
         setReportedPosts(function (prev) {

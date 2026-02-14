@@ -30,13 +30,18 @@ final class VoteController extends BaseController
             return $this->errorResponse($nonce);
         }
 
-        $limit = $this->requireRateLimit('vote', 120, MINUTE_IN_SECONDS);
-        if ($limit !== true) {
-            return new WP_REST_Response(['errors' => [['code' => 'openscene_rate_limited', 'message' => 'Vote rate limited']]], 429);
+        $feature = $this->requireFeatureEnabled('voting', 'Voting is disabled');
+        if ($feature !== true) {
+            return $this->errorResponse($feature);
         }
 
         if (! $this->can('openscene_vote')) {
             return new WP_REST_Response(['errors' => [['code' => 'openscene_forbidden', 'message' => 'Not allowed']]], 403);
+        }
+
+        $limit = $this->requireRateLimit('vote', 120, MINUTE_IN_SECONDS);
+        if ($limit !== true) {
+            return new WP_REST_Response(['errors' => [['code' => 'openscene_rate_limited', 'message' => 'Vote rate limited']]], 429);
         }
 
         $targetType = sanitize_key((string) $request->get_param('target_type'));

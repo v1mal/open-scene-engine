@@ -37,6 +37,18 @@ final class Assets
             $username = ($currentUser instanceof \WP_User && $currentUser->ID > 0) ? strtolower(sanitize_user((string) $currentUser->user_login, true)) : '';
             $displayName = ($currentUser instanceof \WP_User && $currentUser->ID > 0) ? (string) $currentUser->display_name : '';
             $joinUrl = (string) get_option('openscene_join_url', '');
+            $settings = get_option('openscene_admin_settings', []);
+            $rawFlags = is_array($settings) && isset($settings['feature_flags']) && is_array($settings['feature_flags'])
+                ? $settings['feature_flags']
+                : [];
+            $featureFlags = [
+                'reporting' => (bool) ($rawFlags['reporting'] ?? true),
+                'voting' => (bool) ($rawFlags['voting'] ?? true),
+                'delete' => (bool) ($rawFlags['delete'] ?? true),
+            ];
+            $logoAttachmentId = is_array($settings) ? (int) ($settings['logo_attachment_id'] ?? 0) : 0;
+            $logoUrl = $logoAttachmentId > 0 ? (string) wp_get_attachment_image_url($logoAttachmentId, 'full') : '';
+            $brandText = is_array($settings) ? trim((string) ($settings['brand_text'] ?? '')) : '';
             wp_enqueue_script('openscene-app', OPENSCENE_ENGINE_URL . 'build/assets/app.js', ['wp-element', 'wp-api-fetch'], (string) filemtime($jsPath), true);
             wp_localize_script('openscene-app', 'OpenSceneConfig', [
                 'restBase' => esc_url_raw(rest_url('openscene/v1')),
@@ -50,6 +62,12 @@ final class Assets
                 'permissions' => [
                     'canDeleteAnyPost' => current_user_can('openscene_delete_any_post'),
                     'canModerate' => current_user_can('openscene_moderate'),
+                    'canManageOptions' => current_user_can('manage_options'),
+                ],
+                'features' => $featureFlags,
+                'branding' => [
+                    'logoUrl' => esc_url_raw($logoUrl),
+                    'brandText' => $brandText !== '' ? $brandText : null,
                 ],
                 'routeContext' => $this->templateLoader->routeContext(),
                 'limits' => [

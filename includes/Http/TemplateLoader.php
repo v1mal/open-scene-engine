@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace OpenScene\Engine\Http;
 
 use OpenScene\Engine\Infrastructure\Database\TableNames;
+use OpenScene\Engine\Infrastructure\Repository\CommunityRepository;
 use OpenScene\Engine\Infrastructure\Repository\PostRepository;
 
 final class TemplateLoader
@@ -33,7 +34,17 @@ final class TemplateLoader
                 $postId = (int) get_query_var('openscene_post_id', 0);
                 $post = $this->loadPostForRoute($postId);
                 $status = is_array($post) ? (string) ($post['status'] ?? '') : '';
-                if (! is_array($post) || ! in_array($status, ['published', 'locked', 'removed'], true)) {
+                $communityVisible = is_array($post) ? $this->isCommunityVisibleById((int) ($post['community_id'] ?? 0)) : false;
+                if (! is_array($post) || ! in_array($status, ['published', 'locked', 'removed'], true) || ! $communityVisible) {
+                    status_header(404);
+                    nocache_headers();
+                    return $customTemplate;
+                }
+            }
+
+            if ($route === 'community') {
+                $slug = sanitize_title((string) get_query_var('openscene_community_slug', ''));
+                if ($slug === '' || ! $this->isCommunityVisibleBySlug($slug)) {
                     status_header(404);
                     nocache_headers();
                     return $customTemplate;
@@ -119,5 +130,29 @@ final class TemplateLoader
         }
 
         return $user;
+    }
+
+    private function isCommunityVisibleBySlug(string $slug): bool
+    {
+        if ($slug === '') {
+            return false;
+        }
+
+        global $wpdb;
+        $repo = new CommunityRepository($wpdb, new TableNames());
+        $community = $repo->findBySlug($slug);
+        return is_array($community) && (string) ($community['visibility'] ?? '') === 'public';
+    }
+
+    private function isCommunityVisibleById(int $communityId): bool
+    {
+        if ($communityId <= 0) {
+            return false;
+        }
+
+        global $wpdb;
+        $repo = new CommunityRepository($wpdb, new TableNames());
+        $community = $repo->findById($communityId);
+        return is_array($community) && (string) ($community['visibility'] ?? '') === 'public';
     }
 }

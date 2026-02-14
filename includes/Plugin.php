@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace OpenScene\Engine;
 
+use OpenScene\Engine\Admin\AdminController;
 use OpenScene\Engine\Application\CommunityBootstrap;
 use OpenScene\Engine\Application\PostService;
 use OpenScene\Engine\Application\Scheduler;
 use OpenScene\Engine\Auth\Roles;
-use OpenScene\Engine\Http\AdminPage;
 use OpenScene\Engine\Http\AdminAssets;
 use OpenScene\Engine\Http\Assets;
 use OpenScene\Engine\Http\RegistrationGuard;
@@ -83,8 +83,8 @@ final class Plugin
         $scheduler = $container->get(Scheduler::class);
         $scheduler->hooks();
 
-        /** @var AdminPage $admin */
-        $admin = $container->get(AdminPage::class);
+        /** @var AdminController $admin */
+        $admin = $container->get(AdminController::class);
         $admin->hooks();
 
         /** @var AdminAssets $adminAssets */
@@ -164,7 +164,12 @@ final class Plugin
         $container->set(Assets::class, fn(Container $c): Assets => new Assets($c->get(TemplateLoader::class)));
         $container->set(Scheduler::class, fn(): Scheduler => new Scheduler());
         $container->set(PostService::class, fn(Container $c): PostService => new PostService($wpdb, $c->get(PostRepository::class), $c->get(EventRepository::class)));
-        $container->set(AdminPage::class, fn(): AdminPage => new AdminPage());
+        $container->set(AdminController::class, fn(Container $c): AdminController => new AdminController(
+            $c->get(CommunityRepository::class),
+            $c->get(TableNames::class),
+            $c->get(CacheManager::class),
+            $wpdb
+        ));
         $container->set(AdminAssets::class, fn(): AdminAssets => new AdminAssets());
         $container->set(RegistrationGuard::class, fn(): RegistrationGuard => new RegistrationGuard());
         $container->set(CommunityBootstrap::class, fn(Container $c): CommunityBootstrap => new CommunityBootstrap(

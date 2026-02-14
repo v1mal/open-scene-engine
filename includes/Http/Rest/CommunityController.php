@@ -46,6 +46,9 @@ final class CommunityController extends BaseController
         if (! $community) {
             return new WP_REST_Response(['errors' => [['code' => 'openscene_not_found', 'message' => 'Community not found']]], 404);
         }
+        if ((string) ($community['visibility'] ?? '') !== 'public') {
+            return new WP_REST_Response(['errors' => [['code' => 'openscene_not_found', 'message' => 'Community not found']]], 404);
+        }
 
         return new WP_REST_Response(['data' => $community], 200);
     }
@@ -53,6 +56,10 @@ final class CommunityController extends BaseController
     public function posts(WP_REST_Request $request): WP_REST_Response
     {
         $communityId = (int) $request['id'];
+        $community = $this->communities->findById($communityId);
+        if (! is_array($community) || (string) ($community['visibility'] ?? '') !== 'public') {
+            return new WP_REST_Response(['errors' => [['code' => 'openscene_not_found', 'message' => 'Community not found']]], 404);
+        }
         $sortParam = sanitize_key((string) $request->get_param('sort'));
         $sort = in_array($sortParam, ['hot', 'new', 'top'], true)
             ? $sortParam

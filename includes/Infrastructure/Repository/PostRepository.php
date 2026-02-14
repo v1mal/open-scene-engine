@@ -18,11 +18,12 @@ final class PostRepository
     public function feedByCursor(string $sort, int $limit, ?array $cursor = null, ?int $communityId = null): array
     {
         $table = $this->tables->posts();
+        $communities = $this->tables->communities();
         $events = $this->tables->events();
         $sortMode = in_array($sort, ['hot', 'new', 'top'], true)
             ? $sort
             : ($sort === 'score' ? 'top' : ($sort === 'created_at' ? 'new' : 'hot'));
-        $whereParts = ["p.status IN ('published','removed')"];
+        $whereParts = ["p.status IN ('published','removed')", "c.visibility = 'public'"];
         $params = [];
         $isFirstPage = ! is_array($cursor);
         $pinnedPageOne = $isFirstPage && ($sortMode === 'hot' || $sortMode === 'new');
@@ -105,6 +106,7 @@ final class PostRepository
         $where = implode(' AND ', $whereParts);
         $sql = "SELECT p.*, e.event_date AS openscene_event_date, e.venue_name AS openscene_event_venue_name, {$hotExpr} AS openscene_hot_score
                 FROM {$table} p
+                INNER JOIN {$communities} c ON c.id = p.community_id
                 LEFT JOIN {$events} e ON e.post_id = p.id
                 WHERE {$where} {$order} LIMIT %d";
         $params[] = $limit;
@@ -125,6 +127,7 @@ final class PostRepository
     public function feedByPage(string $sort, int $page, int $perPage): array
     {
         $table = $this->tables->posts();
+        $communities = $this->tables->communities();
         $events = $this->tables->events();
         $page = max(1, $page);
         $perPage = min(50, max(1, $perPage));
@@ -158,8 +161,10 @@ final class PostRepository
         $sql = $this->wpdb->prepare(
             "SELECT p.*, e.event_date AS openscene_event_date, e.venue_name AS openscene_event_venue_name
              FROM {$table} p
+             INNER JOIN {$communities} c ON c.id = p.community_id
              LEFT JOIN {$events} e ON e.post_id = p.id
              WHERE p.status IN ('published','removed')
+               AND c.visibility = 'public'
              {$order}
              LIMIT %d OFFSET %d",
             $perPage,
