@@ -118,7 +118,7 @@ final class CommentRepository
         $table = $this->tables->comments();
         $sql = $this->wpdb->prepare("UPDATE {$table} SET score = score + %d WHERE id = %d", $delta, $commentId);
 
-        return $this->wpdb->query($sql) !== false;
+        return (int) $this->wpdb->query($sql) > 0;
     }
 
     public function moderateDelete(int $commentId): bool

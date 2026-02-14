@@ -29,10 +29,10 @@ final class PostController extends BaseController
 
     public function show(WP_REST_Request $request): WP_REST_Response
     {
-        $post = $this->posts->find((int) $request['id']);
+        $post = $this->posts->findPublicById((int) $request['id']);
 
         if (! $post) {
-            return new WP_REST_Response(['errors' => [['code' => 'openscene_not_found', 'message' => 'Post not found']]], 404);
+            return new WP_REST_Response(['errors' => [['code' => 'rest_not_found', 'message' => 'Not found']]], 404);
         }
 
         $eventDate = (string) ($post['openscene_event_date'] ?? '');
@@ -202,6 +202,11 @@ final class PostController extends BaseController
             return $this->errorResponse($ban);
         }
 
+        $nonce = $this->verifyNonce();
+        if ($nonce !== true) {
+            return $this->errorResponse($nonce);
+        }
+
         if (! $this->can(Roles::CAP_LOCK_THREAD)) {
             return new WP_REST_Response(['errors' => [['code' => 'openscene_forbidden', 'message' => 'Not allowed']]], 403);
         }
@@ -233,6 +238,11 @@ final class PostController extends BaseController
         $ban = $this->requireNotBanned();
         if ($ban !== true) {
             return $this->errorResponse($ban);
+        }
+
+        $nonce = $this->verifyNonce();
+        if ($nonce !== true) {
+            return $this->errorResponse($nonce);
         }
 
         if (! $this->can(Roles::CAP_PIN_THREAD)) {

@@ -54,6 +54,11 @@ final class ModerationController extends BaseController
             return $this->errorResponse($ban);
         }
 
+        $nonce = $this->verifyNonce();
+        if ($nonce !== true) {
+            return $this->errorResponse($nonce);
+        }
+
         if (! $this->can(Roles::CAP_MODERATE) || ! $this->can(Roles::CAP_BAN_USER)) {
             return new WP_REST_Response(['errors' => [['code' => 'openscene_forbidden', 'message' => 'Not allowed']]], 403);
         }
@@ -82,6 +87,11 @@ final class ModerationController extends BaseController
         $ban = $this->requireNotBanned();
         if ($ban !== true) {
             return $this->errorResponse($ban);
+        }
+
+        $nonce = $this->verifyNonce();
+        if ($nonce !== true) {
+            return $this->errorResponse($nonce);
         }
 
         if (! $this->can(Roles::CAP_MODERATE) || ! $this->can(Roles::CAP_BAN_USER)) {

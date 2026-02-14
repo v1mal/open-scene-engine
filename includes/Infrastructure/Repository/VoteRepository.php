@@ -37,18 +37,24 @@ final class VoteRepository
             $delta = 0;
             if ($newValue === null) {
                 if ($existing) {
-                    $this->wpdb->delete($votesTable, ['id' => (int) $existing['id']], ['%d']);
+                    $deleted = $this->wpdb->delete($votesTable, ['id' => (int) $existing['id']], ['%d']);
+                    if ($deleted !== 1) {
+                        throw new \RuntimeException('Unable to remove existing vote');
+                    }
                     $delta = -$oldValue;
                 }
             } elseif (! in_array($newValue, [-1, 1], true)) {
                 throw new \RuntimeException('Invalid vote value');
             } elseif ($existing) {
                 if ($oldValue !== $newValue) {
-                    $this->wpdb->update($votesTable, ['value' => $newValue, 'updated_at' => $now], ['id' => (int) $existing['id']], ['%d', '%s'], ['%d']);
+                    $updated = $this->wpdb->update($votesTable, ['value' => $newValue, 'updated_at' => $now], ['id' => (int) $existing['id']], ['%d', '%s'], ['%d']);
+                    if ($updated !== 1) {
+                        throw new \RuntimeException('Unable to update existing vote');
+                    }
                     $delta = $newValue - $oldValue;
                 }
             } else {
-                $this->wpdb->insert($votesTable, [
+                $inserted = $this->wpdb->insert($votesTable, [
                     'user_id' => $userId,
                     'target_type' => $targetType,
                     'target_id' => $targetId,
@@ -56,18 +62,26 @@ final class VoteRepository
                     'created_at' => $now,
                     'updated_at' => $now,
                 ], ['%d', '%s', '%d', '%d', '%s', '%s']);
+                if ($inserted !== 1) {
+                    throw new \RuntimeException('Unable to create vote');
+                }
                 $delta = (int) $newValue;
             }
 
             if ($delta !== 0) {
+                $scoreUpdated = false;
                 if ($targetType === 'post') {
-                    $this->posts->adjustScore($targetId, $delta);
+                    $scoreUpdated = $this->posts->adjustScore($targetId, $delta);
                 } else {
-                    $this->comments->adjustScore($targetId, $delta);
+                    $scoreUpdated = $this->comments->adjustScore($targetId, $delta);
+                }
+
+                if (! $scoreUpdated) {
+                    throw new \RuntimeException('Unable to update target score');
                 }
             }
 
-            $this->wpdb->insert($eventsTable, [
+            $eventInserted = $this->wpdb->insert($eventsTable, [
                 'user_id' => $userId,
                 'target_type' => $targetType,
                 'target_id' => $targetId,
@@ -75,6 +89,9 @@ final class VoteRepository
                 'new_value' => $newValue,
                 'created_at' => $now,
             ], ['%d', '%s', '%d', '%d', '%d', '%s']);
+            if ($eventInserted !== 1) {
+                throw new \RuntimeException('Unable to record vote event');
+            }
 
             $this->wpdb->query('COMMIT'); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
 

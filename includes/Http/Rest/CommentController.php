@@ -45,7 +45,11 @@ final class CommentController extends BaseController
 
         $post = $this->posts->find($postId);
         if (! $post) {
-            return new WP_REST_Response(['errors' => [['code' => 'openscene_not_found', 'message' => 'Post not found']]], 404);
+            return new WP_REST_Response(['errors' => [['code' => 'rest_not_found', 'message' => 'Not found']]], 404);
+        }
+
+        if (! $this->posts->findPublicById($postId)) {
+            return new WP_REST_Response(['errors' => [['code' => 'rest_not_found', 'message' => 'Not found']]], 404);
         }
 
         $rows = $this->comments->topLevelForPost($postId, $limit, $offset, $sort);
@@ -78,6 +82,10 @@ final class CommentController extends BaseController
                 ]],
                 'meta' => ['max_comments' => self::MAX_COMMENTS_PER_POST_VIEW, 'has_more' => true],
             ], 422);
+        }
+
+        if (! $this->posts->findPublicById($postId)) {
+            return new WP_REST_Response(['errors' => [['code' => 'rest_not_found', 'message' => 'Not found']]], 404);
         }
 
         $parent = $this->comments->find($parentId);

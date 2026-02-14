@@ -106,7 +106,7 @@ abstract class BaseController
     {
         $nonce = isset($_SERVER['HTTP_X_WP_NONCE']) ? sanitize_text_field(wp_unslash((string) $_SERVER['HTTP_X_WP_NONCE'])) : '';
         if (! wp_verify_nonce($nonce, 'wp_rest')) {
-            return new WP_Error('openscene_invalid_nonce', 'Invalid nonce', ['status' => 403]);
+            return new WP_Error('rest_forbidden', 'Invalid nonce.', ['status' => 403]);
         }
 
         return true;

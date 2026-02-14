@@ -177,6 +177,7 @@ final class PostRepository
     public function searchByPage(string $query, string $sort, int $page, int $perPage): array
     {
         $table = $this->tables->posts();
+        $communities = $this->tables->communities();
         $events = $this->tables->events();
         $page = max(1, $page);
         $perPage = min(50, max(1, $perPage));
@@ -211,8 +212,10 @@ final class PostRepository
         $sql = $this->wpdb->prepare(
             "SELECT p.*, e.event_date AS openscene_event_date, e.venue_name AS openscene_event_venue_name
              FROM {$table} p
+             INNER JOIN {$communities} c ON c.id = p.community_id
              LEFT JOIN {$events} e ON e.post_id = p.id
              WHERE p.status IN ('published','removed')
+               AND c.visibility = 'public'
                AND (p.title LIKE %s OR p.body LIKE %s)
              {$order}
              LIMIT %d OFFSET %d",
@@ -234,6 +237,26 @@ final class PostRepository
              FROM {$table} p
              LEFT JOIN {$events} e ON e.post_id = p.id
              WHERE p.id = %d
+             LIMIT 1",
+            $id
+        );
+        $row = $this->wpdb->get_row($sql, ARRAY_A);
+
+        return is_array($row) ? $row : null;
+    }
+
+    public function findPublicById(int $id): ?array
+    {
+        $posts = $this->tables->posts();
+        $communities = $this->tables->communities();
+        $events = $this->tables->events();
+        $sql = $this->wpdb->prepare(
+            "SELECT p.*, e.event_date AS openscene_event_date, e.venue_name AS openscene_event_venue_name
+             FROM {$posts} p
+             INNER JOIN {$communities} c ON c.id = p.community_id
+             LEFT JOIN {$events} e ON e.post_id = p.id
+             WHERE p.id = %d
+               AND c.visibility = 'public'
              LIMIT 1",
             $id
         );
@@ -294,7 +317,7 @@ final class PostRepository
     {
         $table = $this->tables->posts();
         $sql = $this->wpdb->prepare("UPDATE {$table} SET score = score + %d WHERE id = %d", $delta, $postId);
-        return $this->wpdb->query($sql) !== false;
+        return (int) $this->wpdb->query($sql) > 0;
     }
 
     /** @return array{reported:bool,reports_count:int,ok:bool} */
