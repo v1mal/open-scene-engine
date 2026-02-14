@@ -73,61 +73,6 @@
     });
   }
 
-  const SAMPLE_FEED = [
-    {
-      id: 1001,
-      community_id: 1,
-      user_id: 1,
-      title: 'Anyone going to the warehouse set tonight?',
-      body: 'Heard the sound system is upgraded to a custom KV2 rig. Entry is strictly by list. DM if you need the venue coordinates.',
-      score: 241,
-      comment_count: 15,
-      created_at: '2026-02-13 14:00:00',
-      type: 'techno'
-    },
-    {
-      id: 1002,
-      community_id: 2,
-      user_id: 1,
-      title: 'Deep dive into the Bangalore modular scene.',
-      body: 'The community has grown so much in the last two years. From small living room meetups to full-blown synth expo events. Here is a list of local builders...',
-      score: 892,
-      comment_count: 42,
-      created_at: '2026-02-13 11:00:00',
-      type: 'discussion'
-    },
-    {
-      id: 1003,
-      community_id: 3,
-      user_id: 1,
-      title: 'Essential deep house vinyl shops in the city?',
-      body: 'Looking for some hidden gems. Already checked the main spots in Indiranagar. Any leads on private collections or smaller outlets?',
-      score: 56,
-      comment_count: 8,
-      created_at: '2026-02-13 08:00:00',
-      type: 'house'
-    },
-    {
-      id: 1004,
-      community_id: 4,
-      user_id: 1,
-      title: 'Last night at The Indiranagar Social was something else.',
-      body: 'The visual mapping was incredible. Shoutout to the crew for pulling off a 4-hour immersive experience.',
-      score: 1200,
-      comment_count: 108,
-      created_at: '2026-02-13 06:00:00',
-      type: 'event recap'
-    }
-  ];
-
-  const SAMPLE_COMMUNITIES = [
-    { id: 1, name: 'Techno', slug: 'techno', count: '1.2k' },
-    { id: 2, name: 'House', slug: 'house', count: '840' },
-    { id: 3, name: 'Ambient', slug: 'ambient', count: '520' },
-    { id: 4, name: 'Leftfield', slug: 'leftfield', count: '' },
-    { id: 5, name: 'Garage', slug: 'garage', count: '' }
-  ];
-
   function timeAgo(utc) {
     const input = utc ? utc.replace(' ', 'T') + 'Z' : '';
     const date = new Date(input);
@@ -324,7 +269,7 @@
   }
 
   function LeftSidebar(props) {
-    const communities = props.communities || SAMPLE_COMMUNITIES;
+    const communities = Array.isArray(props.communities) ? props.communities : [];
 
     return h('aside', { className: 'ose-left' },
       h('h3', { className: 'ose-side-title' }, 'Communities'),
@@ -429,8 +374,6 @@
     let posts = [];
     if (Array.isArray(feed.data)) {
       posts = feed.data;
-    } else if (feed.error) {
-      posts = SAMPLE_FEED;
     }
 
     function loginRedirect() {
@@ -517,7 +460,7 @@
       ),
       h('div', { className: 'ose-feed-list' },
         feed.loading ? h('div', { className: 'ose-loading' }, 'Loading feed...') : null,
-        feed.error ? h('div', { className: 'ose-loading' }, 'Showing fallback data (API unavailable).') : null,
+        feed.error ? h('div', { className: 'ose-loading' }, feed.error) : null,
         (!feed.loading && !feed.error && posts.length === 0) ? h('div', { className: 'ose-loading' }, 'No conversations yet.') : null,
         posts.map(function (post) {
           const optimistic = optimisticVotes[post.id] || null;
@@ -556,7 +499,7 @@
   function SidebarRail() {
     const eventsRes = useApi('/openscene/v1/events?scope=upcoming&limit=3');
     const liveEvents = Array.isArray(eventsRes.data) ? eventsRes.data : [];
-    const events = liveEvents.length ? liveEvents.map(function (ev) {
+    const events = liveEvents.map(function (ev) {
       const date = new Date((ev.event_date || '').replace(' ', 'T') + 'Z');
       const month = Number.isNaN(date.getTime()) ? 'NA' : date.toLocaleString('en-US', { month: 'short' }).toUpperCase();
       const day = Number.isNaN(date.getTime()) ? '--' : String(date.getUTCDate()).padStart(2, '0');
@@ -567,11 +510,7 @@
         title: ev.title || 'Untitled event',
         info: (ev.venue_name || ev.venue_address || 'Venue TBA') + ' · ' + formatUtcForDisplay(ev.event_date)
       };
-    }) : [
-      { id: 0, month: 'OCT', day: '24', title: 'Dark Disco Night', info: 'Pebble · 9 PM' },
-      { id: 0, month: 'OCT', day: '26', title: 'Modular Synth Expo', info: 'The Raft · 4 PM' },
-      { id: 0, month: 'NOV', day: '02', title: 'Basement Session #04', info: 'Secret Venue · 11 PM' }
-    ];
+    });
 
     const rules = [
       'No gatekeeping. Everyone was new once.',
@@ -598,7 +537,8 @@
                 h('p', null, ev.info)
               )
             );
-          })
+          }),
+          !eventsRes.loading && !eventsRes.error && events.length === 0 ? h('p', { className: 'ose-events-note' }, 'No upcoming events.') : null
         ),
         h('a', { className: 'ose-widget-btn', href: '/openscene/?view=events' }, 'View Calendar')
       ),
@@ -691,16 +631,14 @@
   function CommunitiesListPage() {
     const communitiesRes = useApi('/openscene/v1/communities?limit=100');
     const communities = Array.isArray(communitiesRes.data) ? communitiesRes.data : [];
-    const sidebarCommunities = communities.length
-      ? communities.map(function (c) {
-          return {
-            id: c.id,
-            name: c.name,
-            slug: c.slug,
-            count: ''
-          };
-        })
-      : SAMPLE_COMMUNITIES;
+    const sidebarCommunities = communities.map(function (c) {
+      return {
+        id: c.id,
+        name: c.name,
+        slug: c.slug,
+        count: ''
+      };
+    });
 
     return h('div', { className: 'ose-scene-home' },
       h(TopHeader),
@@ -1451,7 +1389,7 @@
 
   function GlobalFeedPage() {
     const communitiesRes = useApi('/openscene/v1/communities?limit=20');
-    const communities = Array.isArray(communitiesRes.data) && communitiesRes.data.length
+    const communities = Array.isArray(communitiesRes.data)
       ? communitiesRes.data.map(function (c) {
           return {
             id: c.id,
@@ -1460,7 +1398,7 @@
             count: ''
           };
         })
-      : SAMPLE_COMMUNITIES;
+      : [];
 
     return h('div', { className: 'ose-scene-home' },
       h(TopHeader),
@@ -1480,7 +1418,7 @@
       ? communitiesRes.data.map(function (c) {
           return { id: c.id, name: c.name, slug: c.slug, count: '' };
         })
-      : SAMPLE_COMMUNITIES;
+      : [];
     const [sortMode, setSortMode] = useState('hot');
     const [page, setPage] = useState(1);
     const searchPath = query.length >= 2

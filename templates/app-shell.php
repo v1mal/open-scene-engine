@@ -186,11 +186,6 @@ try {
     $communityRows = [];
     $eventRows = [];
 }
-$fallbackEvents = [
-    ['month' => 'OCT', 'day' => '24', 'title' => 'Dark Disco Night', 'info' => 'Pebble · 9 PM'],
-    ['month' => 'OCT', 'day' => '26', 'title' => 'Modular Synth Expo', 'info' => 'The Raft · 4 PM'],
-    ['month' => 'NOV', 'day' => '02', 'title' => 'Basement Session #04', 'info' => 'Secret Venue · 11 PM'],
-];
 $rules = [
     'No gatekeeping. Everyone was new once.',
     'Respect the artists and venue staff.',
@@ -280,20 +275,7 @@ $rules = [
                         <span class="ose-widget-icon ose-widget-icon-events"><i data-lucide="calendar-days" class="ose-lucide"></i></span>
                     </div>
                     <div class="ose-events">
-                        <?php if (empty($eventRows)) : ?>
-                            <?php foreach ($fallbackEvents as $fallbackEvent) : ?>
-                            <article class="ose-event">
-                                <div class="ose-event-date">
-                                    <span class="ose-event-month"><?php echo esc_html($fallbackEvent['month']); ?></span>
-                                    <span class="ose-event-day"><?php echo esc_html($fallbackEvent['day']); ?></span>
-                                </div>
-                                <div>
-                                    <h4><a href="#"><?php echo esc_html($fallbackEvent['title']); ?></a></h4>
-                                    <p><?php echo esc_html($fallbackEvent['info']); ?></p>
-                                </div>
-                            </article>
-                            <?php endforeach; ?>
-                        <?php else : ?>
+                        <?php if (! empty($eventRows)) : ?>
                             <?php foreach ($eventRows as $eventRow) : ?>
                                 <?php
                                 $eventDateRaw = (string) ($eventRow['event_date'] ?? '');
@@ -315,6 +297,8 @@ $rules = [
                                 </div>
                             </article>
                             <?php endforeach; ?>
+                        <?php else : ?>
+                            <p class="ose-events-note"><?php esc_html_e('No upcoming events.', 'open-scene-engine'); ?></p>
                         <?php endif; ?>
                     </div>
                     <a class="ose-widget-btn" href="/openscene/?view=events"><?php esc_html_e('View Calendar', 'open-scene-engine'); ?></a>
