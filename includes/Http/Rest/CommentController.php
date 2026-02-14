@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace OpenScene\Engine\Http\Rest;
 
 use OpenScene\Engine\Auth\Roles;
+use OpenScene\Engine\Infrastructure\Cache\CacheManager;
 use OpenScene\Engine\Infrastructure\Repository\CommentRepository;
 use OpenScene\Engine\Infrastructure\Repository\PostRepository;
 use OpenScene\Engine\Infrastructure\Repository\ModerationRepository;
@@ -20,7 +21,8 @@ final class CommentController extends BaseController
         RateLimiter $rateLimiter,
         private readonly CommentRepository $comments,
         private readonly PostRepository $posts,
-        private readonly ModerationRepository $moderation
+        private readonly ModerationRepository $moderation,
+        private readonly CacheManager $cache
     ) {
         parent::__construct($rateLimiter);
     }
@@ -151,6 +153,7 @@ final class CommentController extends BaseController
             return new WP_REST_Response(['errors' => [['code' => 'openscene_conflict', 'message' => 'Unable to create comment']]], 500);
         }
 
+        $this->cache->bumpVersion();
         return new WP_REST_Response(['data' => ['id' => $commentId]], 201);
     }
 
@@ -180,15 +183,18 @@ final class CommentController extends BaseController
             return new WP_REST_Response(['data' => ['deleted' => true, 'already_deleted' => true]], 200);
         }
 
-        $ok = $this->comments->moderateDelete($commentId);
-        if (! $ok) {
+        $result = $this->comments->moderateDelete($commentId);
+        if (! (bool) ($result['ok'] ?? false)) {
             return new WP_REST_Response(['errors' => [['code' => 'openscene_conflict', 'message' => 'Unable to delete comment']]], 500);
         }
 
-        $this->moderation->log(get_current_user_id(), 'comment', $commentId, 'delete', null, [
-            'post_id' => (int) ($comment['post_id'] ?? 0),
-        ]);
+        if ((bool) ($result['changed'] ?? false)) {
+            $this->moderation->log(get_current_user_id(), 'comment', $commentId, 'delete', null, [
+                'post_id' => (int) ($comment['post_id'] ?? 0),
+            ]);
+            $this->cache->bumpVersion();
+        }
 
-        return new WP_REST_Response(['data' => ['deleted' => true]], 200);
+        return new WP_REST_Response(['data' => ['deleted' => true, 'already_deleted' => ! (bool) ($result['changed'] ?? false)]], 200);
     }
 }

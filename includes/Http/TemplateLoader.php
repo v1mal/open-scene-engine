@@ -5,8 +5,11 @@ declare(strict_types=1);
 namespace OpenScene\Engine\Http;
 
 use OpenScene\Engine\Infrastructure\Database\TableNames;
+use OpenScene\Engine\Infrastructure\Repository\CommentRepository;
 use OpenScene\Engine\Infrastructure\Repository\CommunityRepository;
+use OpenScene\Engine\Infrastructure\Repository\EventRepository;
 use OpenScene\Engine\Infrastructure\Repository\PostRepository;
+use OpenScene\Engine\Infrastructure\Repository\VoteRepository;
 
 final class TemplateLoader
 {
@@ -17,9 +20,11 @@ final class TemplateLoader
 
     public function intercept(string $template): string
     {
-        $route = (string) get_query_var('openscene_route', '');
+        $context = $this->routeContext();
+        $route = (string) ($context['route'] ?? '');
         if ($route === '') {
             $route = $this->fallbackRouteFromPath();
+            $context['route'] = $route;
         }
         $openscenePageId = (int) get_option('openscene_page_id', 0);
         $isOpenScenePage = $openscenePageId > 0 && is_page($openscenePageId);
@@ -30,11 +35,13 @@ final class TemplateLoader
 
         $customTemplate = OPENSCENE_ENGINE_PATH . 'templates/app-shell.php';
         if (is_readable($customTemplate)) {
+            $ssrData = $this->buildSsrData($context);
+            set_query_var('openscene_ssr_data', $ssrData);
+
             if ($route === 'post') {
-                $postId = (int) get_query_var('openscene_post_id', 0);
-                $post = $this->loadPostForRoute($postId);
+                $post = is_array($ssrData['post'] ?? null) ? $ssrData['post'] : null;
                 $status = is_array($post) ? (string) ($post['status'] ?? '') : '';
-                $communityVisible = is_array($post) ? $this->isCommunityVisibleById((int) ($post['community_id'] ?? 0)) : false;
+                $communityVisible = (bool) ($ssrData['post_community_visible'] ?? false);
                 if (! is_array($post) || ! in_array($status, ['published', 'locked', 'removed'], true) || ! $communityVisible) {
                     status_header(404);
                     nocache_headers();
@@ -43,8 +50,8 @@ final class TemplateLoader
             }
 
             if ($route === 'community') {
-                $slug = sanitize_title((string) get_query_var('openscene_community_slug', ''));
-                if ($slug === '' || ! $this->isCommunityVisibleBySlug($slug)) {
+                $community = is_array($ssrData['community'] ?? null) ? $ssrData['community'] : null;
+                if (! is_array($community) || (string) ($community['visibility'] ?? '') !== 'public') {
                     status_header(404);
                     nocache_headers();
                     return $customTemplate;
@@ -52,8 +59,7 @@ final class TemplateLoader
             }
 
             if ($route === 'user') {
-                $username = strtolower(sanitize_user((string) get_query_var('openscene_username', ''), true));
-                $user = $this->loadUserForRoute($username);
+                $user = $ssrData['user'] ?? null;
                 if (! ($user instanceof \WP_User)) {
                     status_header(404);
                     nocache_headers();
@@ -154,5 +160,103 @@ final class TemplateLoader
         $repo = new CommunityRepository($wpdb, new TableNames());
         $community = $repo->findById($communityId);
         return is_array($community) && (string) ($community['visibility'] ?? '') === 'public';
+    }
+
+    private function buildSsrData(array $context): array
+    {
+        global $wpdb;
+        $tables = new TableNames();
+        $communityRepo = new CommunityRepository($wpdb, $tables);
+        $postRepo = new PostRepository($wpdb, $tables);
+
+        $route = (string) ($context['route'] ?? 'page');
+        $postId = (int) ($context['postId'] ?? 0);
+        $communitySlug = sanitize_title((string) ($context['communitySlug'] ?? ''));
+        $username = strtolower(sanitize_user((string) ($context['username'] ?? ''), true));
+
+        $post = null;
+        $postCommunityVisible = true;
+        if ($route === 'post' && $postId > 0) {
+            $post = $postRepo->find($postId);
+            if (is_array($post)) {
+                $postCommunity = $communityRepo->findById((int) ($post['community_id'] ?? 0));
+                $postCommunityVisible = is_array($postCommunity) && (string) ($postCommunity['visibility'] ?? '') === 'public';
+            } else {
+                $postCommunityVisible = false;
+            }
+        }
+
+        $community = null;
+        if ($route === 'community' && $communitySlug !== '') {
+            $community = $communityRepo->findBySlug($communitySlug);
+        }
+
+        $user = null;
+        if ($route === 'user' && $username !== '') {
+            $user = $this->loadUserForRoute($username);
+        }
+
+        $postUserVote = 0;
+        $postUserReported = false;
+        $postStatus = is_array($post) ? (string) ($post['status'] ?? '') : '';
+        if (
+            $route === 'post'
+            && is_array($post)
+            && in_array($postStatus, ['published', 'locked'], true)
+            && $postCommunityVisible
+            && is_user_logged_in()
+        ) {
+            $voteRepo = new VoteRepository($wpdb, $tables, $postRepo, new CommentRepository($wpdb, $tables));
+            $postUserVote = $voteRepo->findUserVoteValue(get_current_user_id(), 'post', $postId);
+            $postUserReported = $postRepo->hasUserReported($postId, get_current_user_id());
+        }
+
+        $communityRows = [];
+        $eventRows = [];
+        if ($route === 'user') {
+            $communityRows = $communityRepo->listVisible(8);
+            $eventRows = (new EventRepository($wpdb, $tables))->listByScope('upcoming', 3, null);
+        }
+
+        $rules = $this->communityRules();
+
+        return [
+            'context' => $context,
+            'post' => $post,
+            'post_community_visible' => $postCommunityVisible,
+            'community' => $community,
+            'user' => $user,
+            'post_user_vote' => $postUserVote,
+            'post_user_reported' => $postUserReported,
+            'community_rows' => $communityRows,
+            'event_rows' => $eventRows,
+            'rules' => $rules,
+        ];
+    }
+
+    /** @return list<string> */
+    private function communityRules(): array
+    {
+        $raw = trim((string) get_option('openscene_community_rules', ''));
+        if ($raw !== '') {
+            $lines = preg_split('/\R+/', $raw) ?: [];
+            $rules = [];
+            foreach ($lines as $line) {
+                $line = trim((string) $line);
+                if ($line !== '') {
+                    $rules[] = $line;
+                }
+            }
+            if ($rules !== []) {
+                return array_values($rules);
+            }
+        }
+
+        return [
+            'No gatekeeping. Everyone was new once.',
+            'Respect the artists and venue staff.',
+            'No promotion of commercial mainstream events.',
+            'High signal, low noise content only.',
+        ];
     }
 }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace OpenScene\Engine\Http\Rest;
 
+use OpenScene\Engine\Infrastructure\Cache\CacheManager;
 use OpenScene\Engine\Infrastructure\Repository\VoteRepository;
 use OpenScene\Engine\Infrastructure\RateLimit\RateLimiter;
 use WP_REST_Request;
@@ -13,7 +14,8 @@ final class VoteController extends BaseController
 {
     public function __construct(
         RateLimiter $rateLimiter,
-        private readonly VoteRepository $votes
+        private readonly VoteRepository $votes,
+        private readonly CacheManager $cache
     ) {
         parent::__construct($rateLimiter);
     }
@@ -58,6 +60,7 @@ final class VoteController extends BaseController
             return new WP_REST_Response(['errors' => [['code' => 'openscene_conflict', 'message' => 'Vote transaction failed']]], 500);
         }
 
+        $this->cache->bumpVersion();
         return new WP_REST_Response(['data' => ['delta' => $result['delta']]], 200);
     }
 }

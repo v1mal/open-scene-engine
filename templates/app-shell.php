@@ -6,46 +6,29 @@ if (! defined('ABSPATH')) {
     exit;
 }
 
-use OpenScene\Engine\Infrastructure\Database\TableNames;
-use OpenScene\Engine\Infrastructure\Repository\CommunityRepository;
-use OpenScene\Engine\Infrastructure\Repository\EventRepository;
-use OpenScene\Engine\Infrastructure\Repository\PostRepository;
-
-$context = [
-    'route' => (string) get_query_var('openscene_route', 'page'),
-    'communitySlug' => (string) get_query_var('openscene_community_slug', ''),
-    'postId' => (int) get_query_var('openscene_post_id', 0),
-    'username' => strtolower(sanitize_user((string) get_query_var('openscene_username', ''), true)),
-];
-
-$ssrPost = null;
-$ssrPostCommunityVisible = true;
-$ssrCommunity = null;
-global $wpdb;
-$tableNames = new TableNames();
-$communityRepo = new CommunityRepository($wpdb, $tableNames);
-if ($context['route'] === 'post' && $context['postId'] > 0) {
-    $repo = new PostRepository($wpdb, $tableNames);
-    $ssrPost = $repo->find($context['postId']);
-    if (is_array($ssrPost)) {
-        $postCommunity = $communityRepo->findById((int) ($ssrPost['community_id'] ?? 0));
-        $ssrPostCommunityVisible = is_array($postCommunity) && (string) ($postCommunity['visibility'] ?? '') === 'public';
-    } else {
-        $ssrPostCommunityVisible = false;
-    }
+$ssrData = get_query_var('openscene_ssr_data', []);
+if (! is_array($ssrData)) {
+    $ssrData = [];
 }
-if ($context['route'] === 'community' && $context['communitySlug'] !== '') {
-    $ssrCommunity = $communityRepo->findBySlug(sanitize_title((string) $context['communitySlug']));
-}
-$ssrPostUserVote = 0;
-$ssrPostUserReported = false;
+$context = is_array($ssrData['context'] ?? null)
+    ? $ssrData['context']
+    : [
+        'route' => (string) get_query_var('openscene_route', 'page'),
+        'communitySlug' => (string) get_query_var('openscene_community_slug', ''),
+        'postId' => (int) get_query_var('openscene_post_id', 0),
+        'username' => strtolower(sanitize_user((string) get_query_var('openscene_username', ''), true)),
+    ];
+$ssrPost = is_array($ssrData['post'] ?? null) ? $ssrData['post'] : null;
+$ssrPostCommunityVisible = (bool) ($ssrData['post_community_visible'] ?? true);
+$ssrCommunity = is_array($ssrData['community'] ?? null) ? $ssrData['community'] : null;
+$ssrPostUserVote = (int) ($ssrData['post_user_vote'] ?? 0);
+$ssrPostUserReported = (bool) ($ssrData['post_user_reported'] ?? false);
+$communityRows = is_array($ssrData['community_rows'] ?? null) ? $ssrData['community_rows'] : [];
+$eventRows = is_array($ssrData['event_rows'] ?? null) ? $ssrData['event_rows'] : [];
+$rules = is_array($ssrData['rules'] ?? null) ? $ssrData['rules'] : [];
 
 $routeUsername = strtolower(sanitize_user((string) $context['username'], true));
-$ssrUser = null;
-if ($context['route'] === 'user' && $routeUsername !== '') {
-    $candidate = get_user_by('login', $routeUsername);
-    $ssrUser = $candidate instanceof \WP_User ? $candidate : null;
-}
+$ssrUser = ($ssrData['user'] ?? null) instanceof \WP_User ? $ssrData['user'] : null;
 
 $postStatus = is_array($ssrPost) ? (string) ($ssrPost['status'] ?? '') : '';
 $isRenderablePost = is_array($ssrPost) && in_array($postStatus, ['published', 'locked', 'removed'], true);
@@ -81,23 +64,6 @@ $brandText = $brandTextRaw !== '' ? $brandTextRaw : 'scene.wtf';
 $brandDotPos = strpos($brandText, '.');
 $brandPrimary = $brandDotPos === false ? $brandText : substr($brandText, 0, $brandDotPos);
 $brandSuffix = $brandDotPos === false ? '' : substr($brandText, $brandDotPos);
-if ($isRenderablePost && ! $isRemovedPost && $ssrPostCommunityVisible && $currentUser instanceof \WP_User && $currentUser->ID > 0) {
-    $votesTable = $tableNames->votes();
-    $ssrPostUserVote = (int) $wpdb->get_var($wpdb->prepare(
-        "SELECT value FROM {$votesTable} WHERE user_id = %d AND target_type = 'post' AND target_id = %d LIMIT 1",
-        (int) $currentUser->ID,
-        (int) $context['postId']
-    ));
-    if (! in_array($ssrPostUserVote, [-1, 1], true)) {
-        $ssrPostUserVote = 0;
-    }
-    $reportsTable = $tableNames->postReports();
-    $ssrPostUserReported = (bool) $wpdb->get_var($wpdb->prepare(
-        "SELECT id FROM {$reportsTable} WHERE post_id = %d AND user_id = %d LIMIT 1",
-        (int) $context['postId'],
-        (int) $currentUser->ID
-    ));
-}
 ?><!doctype html>
 <html <?php language_attributes(); ?>>
 <head>
@@ -218,25 +184,6 @@ $avatarUrl = get_avatar_url((int) $ssrUser->ID);
 $avatarFallback = strtoupper(substr($routeUsername, 0, 2));
 $bio = (string) get_user_meta((int) $ssrUser->ID, 'description', true);
 $profileName = trim((string) $ssrUser->display_name) !== '' ? (string) $ssrUser->display_name : (string) $ssrUser->user_login;
-$communityRows = [];
-$eventRows = [];
-try {
-    global $wpdb;
-    $tables = new TableNames();
-    $communityRepo = new CommunityRepository($wpdb, $tables);
-    $eventRepo = new EventRepository($wpdb, $tables);
-    $communityRows = $communityRepo->listVisible(8);
-    $eventRows = $eventRepo->listByScope('upcoming', 3, null);
-} catch (\Throwable $e) {
-    $communityRows = [];
-    $eventRows = [];
-}
-$rules = [
-    'No gatekeeping. Everyone was new once.',
-    'Respect the artists and venue staff.',
-    'No promotion of commercial mainstream events.',
-    'High signal, low noise content only.',
-];
 ?>
 <div id="openscene-root" data-openscene-context="<?php echo esc_attr((string) wp_json_encode($context)); ?>">
 <div class="ose-scene-home">

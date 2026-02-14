@@ -181,8 +181,8 @@ final class Plugin
         $container->set(CommunityController::class, fn(Container $c): CommunityController => new CommunityController($c->get(RateLimiter::class), $c->get(CommunityRepository::class), $c->get(PostRepository::class), $c->get(CacheManager::class)));
         $container->set(PostController::class, fn(Container $c): PostController => new PostController($c->get(RateLimiter::class), $c->get(PostService::class), $c->get(PostRepository::class), $c->get(VoteRepository::class), $c->get(ModerationRepository::class), $c->get(CacheManager::class)));
         $container->set(EventController::class, fn(Container $c): EventController => new EventController($c->get(RateLimiter::class), $c->get(EventRepository::class), $c->get(CacheManager::class)));
-        $container->set(CommentController::class, fn(Container $c): CommentController => new CommentController($c->get(RateLimiter::class), $c->get(CommentRepository::class), $c->get(PostRepository::class), $c->get(ModerationRepository::class)));
-        $container->set(VoteController::class, fn(Container $c): VoteController => new VoteController($c->get(RateLimiter::class), $c->get(VoteRepository::class)));
+        $container->set(CommentController::class, fn(Container $c): CommentController => new CommentController($c->get(RateLimiter::class), $c->get(CommentRepository::class), $c->get(PostRepository::class), $c->get(ModerationRepository::class), $c->get(CacheManager::class)));
+        $container->set(VoteController::class, fn(Container $c): VoteController => new VoteController($c->get(RateLimiter::class), $c->get(VoteRepository::class), $c->get(CacheManager::class)));
         $container->set(UserController::class, fn(Container $c): UserController => new UserController($c->get(RateLimiter::class), $c->get(UserRepository::class)));
         $container->set(ModerationController::class, fn(Container $c): ModerationController => new ModerationController($c->get(RateLimiter::class), $c->get(ModerationRepository::class), $c->get(PostRepository::class)));
 

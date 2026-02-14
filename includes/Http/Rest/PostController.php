@@ -165,12 +165,13 @@ final class PostController extends BaseController
             return new WP_REST_Response(['errors' => [['code' => 'openscene_forbidden', 'message' => 'Authentication required']]], 403);
         }
 
+        $isAdminOverride = current_user_can('manage_options');
         $feature = $this->requireFeatureEnabled('delete', 'Deletion is disabled', 'manage_options');
         if ($feature !== true) {
             return $this->errorResponse($feature);
         }
 
-        if (! $this->can(Roles::CAP_DELETE_ANY_POST)) {
+        if (! $isAdminOverride && ! $this->can(Roles::CAP_DELETE_ANY_POST)) {
             return new WP_REST_Response(['errors' => [['code' => 'openscene_forbidden', 'message' => 'Not allowed']]], 403);
         }
 
@@ -223,6 +224,10 @@ final class PostController extends BaseController
         $locked = $request->get_param('locked');
         $nextLocked = $locked === null ? true : (bool) $locked;
         $nextStatus = $nextLocked ? 'locked' : 'published';
+        if ((string) ($post['status'] ?? '') === $nextStatus) {
+            return new WP_REST_Response(['data' => ['id' => $postId, 'status' => $nextStatus, 'unchanged' => true]], 200);
+        }
+
         $ok = $this->posts->updateStatus($postId, $nextStatus);
         if ($ok) {
             $this->moderation->log(get_current_user_id(), 'post', $postId, $nextLocked ? 'lock' : 'unlock', null, []);
@@ -251,6 +256,14 @@ final class PostController extends BaseController
 
         $postId = (int) $request['id'];
         $sticky = (bool) $request->get_param('sticky');
+        $post = $this->posts->find($postId);
+        if (! is_array($post)) {
+            return new WP_REST_Response(['errors' => [['code' => 'openscene_not_found', 'message' => 'Post not found']]], 404);
+        }
+        if ((int) ($post['is_sticky'] ?? 0) === ($sticky ? 1 : 0)) {
+            return new WP_REST_Response(['data' => ['id' => $postId, 'is_sticky' => $sticky, 'unchanged' => true]], 200);
+        }
+
         $ok = $this->posts->toggleSticky($postId, $sticky);
         if ($ok) {
             $this->moderation->log(get_current_user_id(), 'post', $postId, $sticky ? 'sticky' : 'unsticky', null, []);
@@ -316,6 +329,7 @@ final class PostController extends BaseController
             return new WP_REST_Response(['errors' => [['code' => 'openscene_conflict', 'message' => 'Vote transaction failed']]], 500);
         }
 
+        $this->cache->bumpVersion();
         $fresh = $this->posts->find($postId);
         $score = (int) ($fresh['score'] ?? 0);
         return new WP_REST_Response(['data' => ['score' => $score, 'user_vote' => $effectiveValue]], 200);
@@ -352,6 +366,7 @@ final class PostController extends BaseController
             return new WP_REST_Response(['errors' => [['code' => 'openscene_conflict', 'message' => 'Unable to report post']]], 500);
         }
 
+        $this->cache->bumpVersion();
         return new WP_REST_Response([
             'data' => [
                 'reports_count' => (int) ($result['reports_count'] ?? 0),
