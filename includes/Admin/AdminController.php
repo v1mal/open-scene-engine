@@ -7,6 +7,8 @@ namespace OpenScene\Engine\Admin;
 use OpenScene\Engine\Infrastructure\Cache\CacheManager;
 use OpenScene\Engine\Infrastructure\Database\MigrationRunner;
 use OpenScene\Engine\Infrastructure\Database\TableNames;
+use OpenScene\Engine\Infrastructure\Observability\IntegrityChecker;
+use OpenScene\Engine\Infrastructure\Observability\ObservabilityLogger;
 use OpenScene\Engine\Infrastructure\Repository\CommunityRepository;
 use wpdb;
 
@@ -18,6 +20,7 @@ final class AdminController
         private readonly CommunityRepository $communities,
         private readonly TableNames $tables,
         private readonly CacheManager $cache,
+        private readonly IntegrityChecker $integrityChecker,
         private readonly wpdb $wpdb
     ) {
     }
@@ -82,6 +85,9 @@ final class AdminController
             case 'system':
                 $this->renderSystemTab();
                 break;
+            case 'observability':
+                $this->renderObservabilityTab();
+                break;
             case 'overview':
             default:
                 $this->renderOverviewTab();
@@ -121,6 +127,14 @@ final class AdminController
             case 'save_settings':
                 check_admin_referer('openscene_admin_save_settings');
                 $this->saveSettings();
+                break;
+            case 'save_observability':
+                check_admin_referer('openscene_admin_save_observability');
+                $this->saveObservabilitySettings();
+                break;
+            case 'run_integrity_check':
+                check_admin_referer('openscene_admin_run_integrity_check');
+                $this->runIntegrityCheck();
                 break;
             case 'community_add':
                 check_admin_referer('openscene_admin_community_add');
@@ -169,7 +183,7 @@ final class AdminController
 
     private function sanitizeTab(string $tab): string
     {
-        $allowed = ['overview', 'settings', 'communities', 'analytics', 'system'];
+        $allowed = ['overview', 'settings', 'communities', 'analytics', 'system', 'observability'];
         return in_array($tab, $allowed, true) ? $tab : 'overview';
     }
 
@@ -181,6 +195,7 @@ final class AdminController
             'communities' => 'Communities',
             'analytics' => 'Analytics',
             'system' => 'System Health',
+            'observability' => 'Observability',
         ];
 
         echo '<nav class="nav-tab-wrapper">';
@@ -395,12 +410,70 @@ final class AdminController
         echo '</tbody></table>';
     }
 
+    private function renderObservabilityTab(): void
+    {
+        $settings = $this->settings();
+        $mode = (string) ($settings['observability_mode'] ?? ObservabilityLogger::MODE_OFF);
+        $table = $this->tables->observabilityLogs();
+        $hasTable = (bool) $this->wpdb->get_var($this->wpdb->prepare('SHOW TABLES LIKE %s', $table));
+        $snapshot = $this->observabilitySnapshot($hasTable);
+        $lastIntegrity = get_option('openscene_observability_integrity_last', []);
+        if (! is_array($lastIntegrity)) {
+            $lastIntegrity = [];
+        }
+
+        echo '<h2>' . esc_html__('Observability', 'open-scene-engine') . '</h2>';
+
+        echo '<h3>' . esc_html__('Mode', 'open-scene-engine') . '</h3>';
+        echo '<form method="post" action="">';
+        wp_nonce_field('openscene_admin_save_observability');
+        echo '<input type="hidden" name="openscene_admin_action" value="save_observability" />';
+        echo '<fieldset><legend class="screen-reader-text">' . esc_html__('Observability mode', 'open-scene-engine') . '</legend>';
+        echo '<label style="display:block;margin-bottom:8px;">';
+        echo '<input type="radio" name="openscene_observability_mode" value="off" ' . checked($mode, ObservabilityLogger::MODE_OFF, false) . ' /> ';
+        echo esc_html__('Off', 'open-scene-engine');
+        echo '</label>';
+        echo '<label style="display:block;margin-bottom:8px;">';
+        echo '<input type="radio" name="openscene_observability_mode" value="basic" ' . checked($mode, ObservabilityLogger::MODE_BASIC, false) . ' /> ';
+        echo esc_html__('Basic', 'open-scene-engine');
+        echo '</label>';
+        echo '</fieldset>';
+        submit_button(__('Save Observability', 'open-scene-engine'));
+        echo '</form>';
+
+        if ($mode === ObservabilityLogger::MODE_BASIC) {
+            echo '<hr />';
+            echo '<h3>' . esc_html__('Snapshot (last 24h)', 'open-scene-engine') . '</h3>';
+            echo '<table class="widefat striped" style="max-width:760px"><tbody>';
+            $this->summaryRow('Slow queries', (string) $snapshot['slow_queries']);
+            $this->summaryRow('Mutation failures', (string) $snapshot['mutation_failures']);
+            $this->summaryRow('DB Version', (string) get_option('openscene_db_version', '0'));
+            $this->summaryRow('Cache Version', (string) get_option('openscene_cache_version', '1'));
+            if (isset($lastIntegrity['result']) && is_array($lastIntegrity['result'])) {
+                $result = (array) $lastIntegrity['result'];
+                $this->summaryRow('Integrity: score drift', (string) (int) ($result['score_drift'] ?? 0));
+                $this->summaryRow('Integrity: comment drift', (string) (int) ($result['comment_drift'] ?? 0));
+                $this->summaryRow('Integrity: duplicate votes', (string) (int) ($result['duplicate_votes'] ?? 0));
+                $this->summaryRow('Integrity: orphan comments', (string) (int) ($result['orphan_comments'] ?? 0));
+            }
+            echo '</tbody></table>';
+        }
+
+        echo '<h3>' . esc_html__('Integrity Check', 'open-scene-engine') . '</h3>';
+        echo '<form method="post" action="">';
+        wp_nonce_field('openscene_admin_run_integrity_check');
+        echo '<input type="hidden" name="openscene_admin_action" value="run_integrity_check" />';
+        submit_button(__('Run Integrity Check', 'open-scene-engine'), 'secondary');
+        echo '</form>';
+    }
+
     private function saveSettings(): void
     {
         $current = $this->settings();
         $settings = [
             'join_url' => esc_url_raw((string) wp_unslash($_POST['openscene_join_url'] ?? '')),
             'brand_text' => sanitize_text_field((string) wp_unslash($_POST['openscene_brand_text'] ?? '')),
+            'observability_mode' => (string) ($current['observability_mode'] ?? ObservabilityLogger::MODE_OFF),
             'feature_flags' => [
                 'reporting' => isset($_POST['openscene_feature_reporting']),
                 'voting' => isset($_POST['openscene_feature_voting']),
@@ -415,6 +488,58 @@ final class AdminController
         if (($current['join_url'] ?? '') !== $settings['join_url']) {
             $this->cache->bumpVersion();
         }
+    }
+
+    private function saveObservabilitySettings(): void
+    {
+        $current = $this->settings();
+        $mode = sanitize_key((string) wp_unslash($_POST['openscene_observability_mode'] ?? ObservabilityLogger::MODE_OFF));
+        $mode = in_array($mode, [ObservabilityLogger::MODE_OFF, ObservabilityLogger::MODE_BASIC], true)
+            ? $mode
+            : ObservabilityLogger::MODE_OFF;
+
+        $settings = [
+            'join_url' => (string) ($current['join_url'] ?? ''),
+            'brand_text' => (string) ($current['brand_text'] ?? ''),
+            'observability_mode' => $mode,
+            'feature_flags' => (array) ($current['feature_flags'] ?? []),
+            'logo_attachment_id' => max(0, (int) ($current['logo_attachment_id'] ?? 0)),
+        ];
+
+        update_option('openscene_admin_settings', $settings, false);
+    }
+
+    private function runIntegrityCheck(): void
+    {
+        $result = $this->integrityChecker->run();
+        update_option('openscene_observability_integrity_last', [
+            'ran_at' => current_time('mysql', true),
+            'result' => $result,
+        ], false);
+    }
+
+    /** @return array{slow_queries:int,mutation_failures:int} */
+    private function observabilitySnapshot(bool $hasTable): array
+    {
+        if (! $hasTable) {
+            return [
+                'slow_queries' => 0,
+                'mutation_failures' => 0,
+            ];
+        }
+
+        $table = $this->tables->observabilityLogs();
+        $slowQueries = (int) $this->wpdb->get_var(
+            "SELECT COUNT(*) FROM {$table} WHERE type = 'slow_query' AND created_at >= (UTC_TIMESTAMP() - INTERVAL 24 HOUR)"
+        );
+        $mutationFailures = (int) $this->wpdb->get_var(
+            "SELECT COUNT(*) FROM {$table} WHERE type = 'mutation_failure' AND created_at >= (UTC_TIMESTAMP() - INTERVAL 24 HOUR)"
+        );
+
+        return [
+            'slow_queries' => $slowQueries,
+            'mutation_failures' => $mutationFailures,
+        ];
     }
 
     private function createCommunity(): string
@@ -549,6 +674,7 @@ final class AdminController
         $defaults = [
             'join_url' => (string) get_option('openscene_join_url', ''),
             'brand_text' => '',
+            'observability_mode' => ObservabilityLogger::MODE_OFF,
             'feature_flags' => [
                 'reporting' => true,
                 'voting' => true,
@@ -568,6 +694,9 @@ final class AdminController
         return [
             'join_url' => isset($raw['join_url']) ? (string) $raw['join_url'] : $defaults['join_url'],
             'brand_text' => isset($raw['brand_text']) ? (string) $raw['brand_text'] : $defaults['brand_text'],
+            'observability_mode' => in_array((string) ($raw['observability_mode'] ?? $defaults['observability_mode']), [ObservabilityLogger::MODE_OFF, ObservabilityLogger::MODE_BASIC], true)
+                ? (string) ($raw['observability_mode'] ?? $defaults['observability_mode'])
+                : $defaults['observability_mode'],
             'feature_flags' => [
                 'reporting' => (bool) ($flags['reporting'] ?? $defaults['feature_flags']['reporting']),
                 'voting' => (bool) ($flags['voting'] ?? $defaults['feature_flags']['voting']),

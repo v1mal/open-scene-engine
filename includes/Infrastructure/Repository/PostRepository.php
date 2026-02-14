@@ -5,18 +5,22 @@ declare(strict_types=1);
 namespace OpenScene\Engine\Infrastructure\Repository;
 
 use OpenScene\Engine\Infrastructure\Database\TableNames;
+use OpenScene\Engine\Infrastructure\Observability\ObservabilityLogger;
 use wpdb;
 
 final class PostRepository
 {
     public function __construct(
         private readonly wpdb $wpdb,
-        private readonly TableNames $tables
+        private readonly TableNames $tables,
+        private readonly ?ObservabilityLogger $observability = null
     ) {
     }
 
     public function feedByCursor(string $sort, int $limit, ?array $cursor = null, ?int $communityId = null): array
     {
+        $observe = $this->observability?->isBasicEnabled() === true;
+        $start = $observe ? microtime(true) : 0.0;
         $table = $this->tables->posts();
         $communities = $this->tables->communities();
         $events = $this->tables->events();
@@ -112,7 +116,15 @@ final class PostRepository
         $params[] = $limit;
         $prepared = $this->wpdb->prepare($sql, ...$params);
 
-        return $this->wpdb->get_results($prepared, ARRAY_A) ?: [];
+        $rows = $this->wpdb->get_results($prepared, ARRAY_A) ?: [];
+        if ($observe) {
+            $durationMs = (int) round((microtime(true) - $start) * 1000);
+            if ($durationMs > ObservabilityLogger::SLOW_QUERY_THRESHOLD_MS) {
+                $this->observability?->logSlowQuery('feed_cursor', $durationMs);
+            }
+        }
+
+        return $rows;
     }
 
     /**
@@ -126,6 +138,8 @@ final class PostRepository
      */
     public function feedByPage(string $sort, int $page, int $perPage): array
     {
+        $observe = $this->observability?->isBasicEnabled() === true;
+        $start = $observe ? microtime(true) : 0.0;
         $table = $this->tables->posts();
         $communities = $this->tables->communities();
         $events = $this->tables->events();
@@ -171,7 +185,15 @@ final class PostRepository
             $offset
         );
 
-        return $this->wpdb->get_results($sql, ARRAY_A) ?: [];
+        $rows = $this->wpdb->get_results($sql, ARRAY_A) ?: [];
+        if ($observe) {
+            $durationMs = (int) round((microtime(true) - $start) * 1000);
+            if ($durationMs > ObservabilityLogger::SLOW_QUERY_THRESHOLD_MS) {
+                $this->observability?->logSlowQuery('feed_page', $durationMs);
+            }
+        }
+
+        return $rows;
     }
 
     public function searchByPage(string $query, string $sort, int $page, int $perPage): array
@@ -230,6 +252,8 @@ final class PostRepository
 
     public function find(int $id): ?array
     {
+        $observe = $this->observability?->isBasicEnabled() === true;
+        $start = $observe ? microtime(true) : 0.0;
         $table = $this->tables->posts();
         $events = $this->tables->events();
         $sql = $this->wpdb->prepare(
@@ -242,11 +266,20 @@ final class PostRepository
         );
         $row = $this->wpdb->get_row($sql, ARRAY_A);
 
+        if ($observe) {
+            $durationMs = (int) round((microtime(true) - $start) * 1000);
+            if ($durationMs > ObservabilityLogger::SLOW_QUERY_THRESHOLD_MS) {
+                $this->observability?->logSlowQuery('post_show', $durationMs);
+            }
+        }
+
         return is_array($row) ? $row : null;
     }
 
     public function findPublicById(int $id): ?array
     {
+        $observe = $this->observability?->isBasicEnabled() === true;
+        $start = $observe ? microtime(true) : 0.0;
         $posts = $this->tables->posts();
         $communities = $this->tables->communities();
         $events = $this->tables->events();
@@ -261,6 +294,13 @@ final class PostRepository
             $id
         );
         $row = $this->wpdb->get_row($sql, ARRAY_A);
+
+        if ($observe) {
+            $durationMs = (int) round((microtime(true) - $start) * 1000);
+            if ($durationMs > ObservabilityLogger::SLOW_QUERY_THRESHOLD_MS) {
+                $this->observability?->logSlowQuery('post_show', $durationMs);
+            }
+        }
 
         return is_array($row) ? $row : null;
     }
@@ -491,6 +531,8 @@ final class PostRepository
     /** @return array{state:string,post:?array} */
     public function softDelete(int $postId): array
     {
+        $observe = $this->observability?->isBasicEnabled() === true;
+        $start = $observe ? microtime(true) : 0.0;
         $table = $this->tables->posts();
         $reportsTable = $this->tables->postReports();
         $now = current_time('mysql', true);
@@ -534,9 +576,19 @@ final class PostRepository
             $this->wpdb->query($this->wpdb->prepare("DELETE FROM {$reportsTable} WHERE post_id = %d", $postId));
 
             $this->wpdb->query('COMMIT'); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
-            return ['state' => 'removed', 'post' => $this->find($postId)];
+            $result = ['state' => 'removed', 'post' => $this->find($postId)];
+            if ($observe) {
+                $durationMs = (int) round((microtime(true) - $start) * 1000);
+                if ($durationMs > ObservabilityLogger::SLOW_QUERY_THRESHOLD_MS) {
+                    $this->observability?->logSlowQuery('post_delete', $durationMs);
+                }
+            }
+            return $result;
         } catch (\Throwable $e) {
             $this->wpdb->query('ROLLBACK'); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+            if ($observe) {
+                $this->observability?->logMutationFailure('post_delete');
+            }
             return ['state' => 'error', 'post' => null];
         }
     }

@@ -26,6 +26,8 @@ use OpenScene\Engine\Http\TemplateLoader;
 use OpenScene\Engine\Infrastructure\Cache\CacheManager;
 use OpenScene\Engine\Infrastructure\Database\MigrationRunner;
 use OpenScene\Engine\Infrastructure\Database\TableNames;
+use OpenScene\Engine\Infrastructure\Observability\IntegrityChecker;
+use OpenScene\Engine\Infrastructure\Observability\ObservabilityLogger;
 use OpenScene\Engine\Infrastructure\RateLimit\RateLimiter;
 use OpenScene\Engine\Infrastructure\Repository\CommentRepository;
 use OpenScene\Engine\Infrastructure\Repository\CommunityRepository;
@@ -149,14 +151,16 @@ final class Plugin
         $container->set(MigrationRunner::class, fn(): MigrationRunner => new MigrationRunner());
         $container->set(CacheManager::class, fn(): CacheManager => new CacheManager());
         $container->set(RateLimiter::class, fn(): RateLimiter => new RateLimiter());
+        $container->set(ObservabilityLogger::class, fn(Container $c): ObservabilityLogger => new ObservabilityLogger($wpdb, $c->get(TableNames::class)));
+        $container->set(IntegrityChecker::class, fn(Container $c): IntegrityChecker => new IntegrityChecker($wpdb, $c->get(TableNames::class)));
 
         $container->set(CommunityRepository::class, fn(Container $c): CommunityRepository => new CommunityRepository($wpdb, $c->get(TableNames::class)));
-        $container->set(PostRepository::class, fn(Container $c): PostRepository => new PostRepository($wpdb, $c->get(TableNames::class)));
+        $container->set(PostRepository::class, fn(Container $c): PostRepository => new PostRepository($wpdb, $c->get(TableNames::class), $c->get(ObservabilityLogger::class)));
         $container->set(EventRepository::class, fn(Container $c): EventRepository => new EventRepository($wpdb, $c->get(TableNames::class)));
-        $container->set(CommentRepository::class, fn(Container $c): CommentRepository => new CommentRepository($wpdb, $c->get(TableNames::class)));
+        $container->set(CommentRepository::class, fn(Container $c): CommentRepository => new CommentRepository($wpdb, $c->get(TableNames::class), $c->get(ObservabilityLogger::class)));
         $container->set(UserRepository::class, fn(Container $c): UserRepository => new UserRepository($wpdb, $c->get(TableNames::class)));
         $container->set(ModerationRepository::class, fn(Container $c): ModerationRepository => new ModerationRepository($wpdb, $c->get(TableNames::class)));
-        $container->set(VoteRepository::class, fn(Container $c): VoteRepository => new VoteRepository($wpdb, $c->get(TableNames::class), $c->get(PostRepository::class), $c->get(CommentRepository::class)));
+        $container->set(VoteRepository::class, fn(Container $c): VoteRepository => new VoteRepository($wpdb, $c->get(TableNames::class), $c->get(PostRepository::class), $c->get(CommentRepository::class), $c->get(ObservabilityLogger::class)));
 
         $container->set(RewriteManager::class, fn(): RewriteManager => new RewriteManager());
         $container->set(Shortcode::class, fn(): Shortcode => new Shortcode());
@@ -168,6 +172,7 @@ final class Plugin
             $c->get(CommunityRepository::class),
             $c->get(TableNames::class),
             $c->get(CacheManager::class),
+            $c->get(IntegrityChecker::class),
             $wpdb
         ));
         $container->set(AdminAssets::class, fn(): AdminAssets => new AdminAssets());

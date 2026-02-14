@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace OpenScene\Engine\Infrastructure\Repository;
 
 use OpenScene\Engine\Infrastructure\Database\TableNames;
+use OpenScene\Engine\Infrastructure\Observability\ObservabilityLogger;
 use wpdb;
 
 final class CommentRepository
@@ -13,7 +14,8 @@ final class CommentRepository
 
     public function __construct(
         private readonly wpdb $wpdb,
-        private readonly TableNames $tables
+        private readonly TableNames $tables,
+        private readonly ?ObservabilityLogger $observability = null
     ) {
     }
 
@@ -71,6 +73,8 @@ final class CommentRepository
 
     public function create(int $postId, int $userId, string $body, ?int $parentId): int
     {
+        $observe = $this->observability?->isBasicEnabled() === true;
+        $start = $observe ? microtime(true) : 0.0;
         $table = $this->tables->comments();
         $posts = $this->tables->posts();
         $now = current_time('mysql', true);
@@ -87,6 +91,9 @@ final class CommentRepository
                 $parent = $this->wpdb->get_row($parentSql, ARRAY_A);
                 if (! is_array($parent) || (int) ($parent['post_id'] ?? 0) !== $postId) {
                     $this->wpdb->query('ROLLBACK'); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+                    if ($observe) {
+                        $this->observability?->logMutationFailure('comment_create');
+                    }
                     return 0;
                 }
 
@@ -134,9 +141,18 @@ final class CommentRepository
 
             $commentId = (int) $this->wpdb->insert_id;
             $this->wpdb->query('COMMIT'); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+            if ($observe) {
+                $durationMs = (int) round((microtime(true) - $start) * 1000);
+                if ($durationMs > ObservabilityLogger::SLOW_QUERY_THRESHOLD_MS) {
+                    $this->observability?->logSlowQuery('comment_create', $durationMs);
+                }
+            }
             return $commentId;
         } catch (\Throwable) {
             $this->wpdb->query('ROLLBACK'); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+            if ($observe) {
+                $this->observability?->logMutationFailure('comment_create');
+            }
             return 0;
         }
     }
