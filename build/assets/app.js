@@ -85,6 +85,55 @@
     return Math.floor(hrs / 24) + 'd ago';
   }
 
+  function normalizeFeedSort(input) {
+    const value = String(input || '').toLowerCase();
+    return (value === 'hot' || value === 'new' || value === 'top') ? value : 'hot';
+  }
+
+  function readFeedSortFromLocation() {
+    try {
+      const params = new URLSearchParams(window.location.search || '');
+      return normalizeFeedSort(params.get('sort'));
+    } catch (e) {
+      return 'hot';
+    }
+  }
+
+  function writeFeedSortToLocation(sort) {
+    try {
+      const normalized = normalizeFeedSort(sort);
+      const url = new URL(window.location.href);
+      if (normalized === 'hot') {
+        url.searchParams.delete('sort');
+      } else {
+        url.searchParams.set('sort', normalized);
+      }
+      window.history.replaceState({}, '', url.pathname + url.search + url.hash);
+    } catch (e) {}
+  }
+
+  function SortTabs(props) {
+    const active = normalizeFeedSort(props.mode);
+    const onChange = typeof props.onChange === 'function' ? props.onChange : function () {};
+    const tabs = [
+      { key: 'hot', label: 'Hot', icon: 'trending-up' },
+      { key: 'new', label: 'New', icon: 'clock-3' },
+      { key: 'top', label: 'Top', icon: 'bar-chart-3' }
+    ];
+
+    return h('div', { className: 'ose-feed-tabs', role: 'tablist', 'aria-label': 'Feed sort' },
+      tabs.map(function (tab) {
+        return h('button', {
+          key: tab.key,
+          className: active === tab.key ? 'is-active' : '',
+          role: 'tab',
+          'aria-selected': active === tab.key ? 'true' : 'false',
+          onClick: function () { onChange(tab.key); }
+        }, Icon(tab.icon, 'ose-tab-icon'), tab.label);
+      })
+    );
+  }
+
   function formatUtcForDisplay(utcString) {
     if (!utcString) return '';
     const date = new Date(utcString.replace(' ', 'T') + 'Z');
@@ -131,7 +180,145 @@
   }
 
   function Icon(name, className) {
-    return h('i', { 'data-lucide': name, className: 'ose-lucide' + (className ? ' ' + className : '') });
+    const aliases = {
+      'more-horizontal': 'ellipsis',
+      'square-pen': 'pen-square'
+    };
+    const resolved = aliases[name] || name;
+    const strokeIcons = {
+      'search': [
+        ['circle', { cx: '11', cy: '11', r: '7' }],
+        ['line', { x1: '20', y1: '20', x2: '16.65', y2: '16.65' }]
+      ],
+      'bell': [
+        ['path', { d: 'M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9' }],
+        ['path', { d: 'M10 21a2 2 0 0 0 4 0' }]
+      ],
+      'user-plus': [
+        ['path', { d: 'M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2' }],
+        ['circle', { cx: '8.5', cy: '7', r: '3.5' }],
+        ['line', { x1: '20', y1: '8', x2: '20', y2: '14' }],
+        ['line', { x1: '17', y1: '11', x2: '23', y2: '11' }]
+      ],
+      'audio-lines': [
+        ['line', { x1: '4', y1: '10', x2: '4', y2: '14' }],
+        ['line', { x1: '8', y1: '8', x2: '8', y2: '16' }],
+        ['line', { x1: '12', y1: '6', x2: '12', y2: '18' }],
+        ['line', { x1: '16', y1: '8', x2: '16', y2: '16' }],
+        ['line', { x1: '20', y1: '10', x2: '20', y2: '14' }]
+      ],
+      'music-4': [
+        ['path', { d: 'M9 18V5l10-2v13' }],
+        ['circle', { cx: '6', cy: '18', r: '3' }],
+        ['circle', { cx: '19', cy: '16', r: '3' }]
+      ],
+      'plus': [
+        ['line', { x1: '12', y1: '5', x2: '12', y2: '19' }],
+        ['line', { x1: '5', y1: '12', x2: '19', y2: '12' }]
+      ],
+      'pen-square': [
+        ['rect', { x: '3', y: '3', width: '18', height: '18', rx: '2' }],
+        ['path', { d: 'M8 16l3.5-.8L18 8.7a1.4 1.4 0 0 0 0-2l-.7-.7a1.4 1.4 0 0 0-2 0L8.8 12.5z' }]
+      ],
+      'chevron-up': [['polyline', { points: '18 15 12 9 6 15' }]],
+      'chevron-down': [['polyline', { points: '6 9 12 15 18 9' }]],
+      'calendar-days': [
+        ['rect', { x: '3', y: '4', width: '18', height: '18', rx: '2' }],
+        ['line', { x1: '16', y1: '2', x2: '16', y2: '6' }],
+        ['line', { x1: '8', y1: '2', x2: '8', y2: '6' }],
+        ['line', { x1: '3', y1: '10', x2: '21', y2: '10' }]
+      ],
+      'message-square': [
+        ['path', { d: 'M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z' }]
+      ],
+      'message-circle': [
+        ['path', { d: 'M21 11.5a8.5 8.5 0 0 1-8.5 8.5H7l-4 3v-5.5A8.5 8.5 0 1 1 21 11.5z' }]
+      ],
+      'share-2': [
+        ['circle', { cx: '18', cy: '5', r: '3' }],
+        ['circle', { cx: '6', cy: '12', r: '3' }],
+        ['circle', { cx: '18', cy: '19', r: '3' }],
+        ['line', { x1: '8.6', y1: '13.5', x2: '15.4', y2: '17.5' }],
+        ['line', { x1: '15.4', y1: '6.5', x2: '8.6', y2: '10.5' }]
+      ],
+      'bookmark': [
+        ['path', { d: 'M6 3h12a1 1 0 0 1 1 1v17l-7-4-7 4V4a1 1 0 0 1 1-1z' }]
+      ],
+      'ellipsis': [
+        ['circle', { cx: '5', cy: '12', r: '1.5' }],
+        ['circle', { cx: '12', cy: '12', r: '1.5' }],
+        ['circle', { cx: '19', cy: '12', r: '1.5' }]
+      ],
+      'flag': [
+        ['path', { d: 'M4 22V4' }],
+        ['path', { d: 'M4 4s2-1 5-1 5 2 8 2 3-1 3-1v11s-1 1-3 1-5-2-8-2-5 1-5 1' }]
+      ],
+      'trash-2': [
+        ['polyline', { points: '3 6 5 6 21 6' }],
+        ['path', { d: 'M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6' }],
+        ['path', { d: 'M10 11v6' }],
+        ['path', { d: 'M14 11v6' }],
+        ['path', { d: 'M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2' }]
+      ],
+      'trending-up': [
+        ['polyline', { points: '22 7 13.5 15.5 9 11 2 18' }],
+        ['polyline', { points: '16 7 22 7 22 13' }]
+      ],
+      'clock-3': [
+        ['circle', { cx: '12', cy: '12', r: '9' }],
+        ['polyline', { points: '12 7 12 12 16 12' }]
+      ],
+      'bar-chart-3': [
+        ['path', { d: 'M3 3v18h18' }],
+        ['rect', { x: '7', y: '12', width: '3', height: '6' }],
+        ['rect', { x: '12', y: '9', width: '3', height: '9' }],
+        ['rect', { x: '17', y: '6', width: '3', height: '12' }]
+      ],
+      'gavel': [
+        ['path', { d: 'M14 7 5 16' }],
+        ['path', { d: 'm9 2 4 4' }],
+        ['path', { d: 'm15 8 4 4' }],
+        ['path', { d: 'M2 22h7' }]
+      ],
+      'sliders-horizontal': [
+        ['line', { x1: '4', y1: '6', x2: '14', y2: '6' }],
+        ['line', { x1: '10', y1: '18', x2: '20', y2: '18' }],
+        ['line', { x1: '4', y1: '12', x2: '20', y2: '12' }],
+        ['circle', { cx: '17', cy: '6', r: '2' }],
+        ['circle', { cx: '7', cy: '18', r: '2' }],
+        ['circle', { cx: '11', cy: '12', r: '2' }]
+      ],
+      'menu': [
+        ['line', { x1: '4', y1: '7', x2: '20', y2: '7' }],
+        ['line', { x1: '4', y1: '12', x2: '20', y2: '12' }],
+        ['line', { x1: '4', y1: '17', x2: '20', y2: '17' }]
+      ],
+      'x': [
+        ['line', { x1: '18', y1: '6', x2: '6', y2: '18' }],
+        ['line', { x1: '6', y1: '6', x2: '18', y2: '18' }]
+      ]
+    };
+
+    if (strokeIcons[resolved]) {
+      return h(
+        'svg',
+        {
+          viewBox: '0 0 24 24',
+          fill: 'none',
+          stroke: 'currentColor',
+          'stroke-width': '2',
+          'stroke-linecap': 'round',
+          'stroke-linejoin': 'round',
+          className: 'ose-lucide' + (className ? ' ' + className : ''),
+          'aria-hidden': 'true'
+        },
+        strokeIcons[resolved].map(function (entry, idx) {
+          return h(entry[0], Object.assign({ key: idx }, entry[1]));
+        })
+      );
+    }
+
+    return h('i', { 'data-lucide': resolved, className: 'ose-lucide' + (className ? ' ' + className : '') });
   }
 
   function isFeatureEnabled(name) {
@@ -233,7 +420,12 @@
     ]);
   }
 
-  function TopHeader() {
+  function TopHeader(props) {
+    const showDrawerToggle = !!(props && props.showDrawerToggle);
+    const onToggleDrawer = props && typeof props.onToggleDrawer === 'function'
+      ? props.onToggleDrawer
+      : function () {};
+    const drawerOpen = !!(props && props.drawerOpen);
     const isLoggedIn = Number(cfg && cfg.userId ? cfg.userId : 0) > 0;
     const canModerate = !!(cfg && cfg.permissions && cfg.permissions.canModerate);
     const currentUsernameRaw = cfg && cfg.currentUser && cfg.currentUser.username ? String(cfg.currentUser.username) : '';
@@ -274,20 +466,30 @@
         )
       ),
       h('div', { className: 'ose-topbar-right' },
-        isLoggedIn
-          ? [
-              h('button', { key: 'notif', className: 'ose-icon-btn', 'aria-label': 'Notifications' }, Icon('bell')),
-              h('details', { key: 'menu', className: 'ose-avatar-menu' },
-                h('summary', { className: 'ose-avatar-summary', 'aria-label': 'Open profile menu' },
-                  h('span', { className: 'ose-avatar', 'aria-label': 'Open profile menu' }, avatarLabel)
-                ),
-                h('div', { className: 'ose-avatar-dropdown' },
-                  h('a', { href: profileHref }, 'Profile'),
-                  canModerate ? h('a', { href: '/moderator/' }, 'Moderator Panel') : null
+        h('div', { className: 'ose-topbar-account' },
+          isLoggedIn
+            ? [
+                h('button', { key: 'notif', className: 'ose-icon-btn', 'aria-label': 'Notifications' }, Icon('bell')),
+                h('details', { key: 'menu', className: 'ose-avatar-menu' },
+                  h('summary', { className: 'ose-avatar-summary', 'aria-label': 'Open profile menu' },
+                    h('span', { className: 'ose-avatar', 'aria-label': 'Open profile menu' }, avatarLabel)
+                  ),
+                  h('div', { className: 'ose-avatar-dropdown' },
+                    h('a', { href: profileHref }, 'Profile'),
+                    canModerate ? h('a', { href: '/moderator/' }, 'Moderator Panel') : null
+                  )
                 )
-              )
-            ]
-          : (joinUrl ? h('a', { className: 'ose-join-btn', href: joinUrl, target: '_blank', rel: 'noopener noreferrer' }, 'JOIN') : null)
+              ]
+            : (joinUrl ? h('a', { className: 'ose-join-btn', href: joinUrl, target: '_blank', rel: 'noopener noreferrer' }, Icon('user-plus', 'ose-join-icon'), 'JOIN') : null)
+        ),
+        showDrawerToggle ? h('button', {
+          key: 'mobile-drawer-toggle',
+          type: 'button',
+          className: 'ose-mobile-drawer-toggle',
+          'aria-label': drawerOpen ? 'Close menu' : 'Open menu',
+          'aria-expanded': drawerOpen ? 'true' : 'false',
+          onClick: onToggleDrawer
+        }, Icon('menu')) : null
       )
     );
   }
@@ -296,8 +498,9 @@
     const communities = Array.isArray(props.communities) ? props.communities : [];
 
     return h('aside', { className: 'ose-left' },
-      h('h3', { className: 'ose-side-title' }, 'Communities'),
-      h('nav', { className: 'ose-community-list' },
+      h('div', { className: 'ose-left-inner' },
+        h('h3', { className: 'ose-side-title' }, 'Communities'),
+        h('nav', { className: 'ose-community-list' },
         h('a', {
           key: 'all-scenes',
           className: 'ose-community-item is-active',
@@ -305,20 +508,164 @@
         },
         h('span', { className: 'ose-community-name' }, Icon('audio-lines', 'ose-community-icon'), 'All Scenes')
         ),
-        communities.map(function (c, idx) {
-          return h('a', {
-            key: c.slug || c.id,
-            className: 'ose-community-item',
-            href: '/c/' + (c.slug || ('community-' + c.id))
-          },
-          h('span', { className: 'ose-community-name' }, Icon('music-4', 'ose-community-icon'), c.name),
-          c.count ? h('span', { className: 'ose-community-count' }, c.count) : null
-          );
-        })
-      ),
-      h('div', { className: 'ose-create-card' },
-        h('p', null, 'Bangalore\'s underground scene collective. Support your local artists.'),
-        h('a', { className: 'ose-create-btn', href: '/openscene/?view=create' }, 'Create Post')
+          communities.map(function (c, idx) {
+            return h('a', {
+              key: c.slug || c.id,
+              className: 'ose-community-item',
+              href: '/c/' + (c.slug || ('community-' + c.id))
+            },
+            h('span', { className: 'ose-community-name' }, Icon('music-4', 'ose-community-icon'), c.name),
+            c.count ? h('span', { className: 'ose-community-count' }, c.count) : null
+            );
+          })
+        ),
+        h('p', { className: 'ose-left-copy' }, 'Bangalore\'s underground scene collective. Support your local artists.')
+      )
+    );
+  }
+
+  function MobileUtilityDrawer(props) {
+    const open = !!(props && props.open);
+    const onClose = props && typeof props.onClose === 'function' ? props.onClose : function () {};
+    const communities = Array.isArray(props && props.communities) ? props.communities : [];
+    const [rendered, setRendered] = useState(open);
+    const [closing, setClosing] = useState(false);
+
+    useEffect(function () {
+      let timer = null;
+      let raf = null;
+      if (open) {
+        setRendered(true);
+        setClosing(true);
+        raf = window.requestAnimationFrame(function () {
+          setClosing(false);
+        });
+      } else if (rendered) {
+        setClosing(true);
+        timer = window.setTimeout(function () {
+          setRendered(false);
+          setClosing(false);
+        }, 200);
+      }
+      return function () {
+        if (timer) {
+          window.clearTimeout(timer);
+        }
+        if (raf) {
+          window.cancelAnimationFrame(raf);
+        }
+      };
+    }, [open, rendered]);
+
+    const eventsRes = useApi(open ? '/openscene/v1/events?scope=upcoming&limit=3' : '');
+    const liveEvents = Array.isArray(eventsRes.data) ? eventsRes.data : [];
+    const events = liveEvents.map(function (ev) {
+      const date = new Date((ev.event_date || '').replace(' ', 'T') + 'Z');
+      const month = Number.isNaN(date.getTime()) ? 'NA' : date.toLocaleString('en-US', { month: 'short' }).toUpperCase();
+      const day = Number.isNaN(date.getTime()) ? '--' : String(date.getUTCDate()).padStart(2, '0');
+      return {
+        id: ev.id,
+        month: month,
+        day: day,
+        title: ev.title || 'Untitled event',
+        info: (ev.venue_name || ev.venue_address || 'Venue TBA') + ' · ' + formatUtcForDisplay(ev.event_date)
+      };
+    });
+
+    const rules = [
+      'No gatekeeping. Everyone was new once.',
+      'Respect the artists and venue staff.',
+      'No promotion of commercial mainstream events.',
+      'High signal, low noise content only.'
+    ];
+
+    useEffect(function () {
+      if (!rendered) return;
+      function onEsc(event) {
+        if (event.key === 'Escape' && open) onClose();
+      }
+      document.body.classList.add('ose-lock-scroll');
+      window.addEventListener('keydown', onEsc);
+      return function () {
+        document.body.classList.remove('ose-lock-scroll');
+        window.removeEventListener('keydown', onEsc);
+      };
+    }, [rendered, open, onClose]);
+
+    if (!rendered) return null;
+
+    const drawerClass = 'ose-mobile-drawer ' + (open && !closing ? 'is-open' : 'is-closing');
+
+    return h('div', { className: drawerClass, role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Navigation and sidebar' },
+      h('button', { type: 'button', className: 'ose-mobile-drawer-backdrop', 'aria-label': 'Close menu', onClick: onClose }),
+      h('div', { className: 'ose-mobile-drawer-panel' },
+        h('div', { className: 'ose-mobile-drawer-head' },
+          h('h2', null, 'Menu'),
+          h('button', { type: 'button', className: 'ose-mobile-drawer-close', 'aria-label': 'Close menu', onClick: onClose }, Icon('x'))
+        ),
+        h('section', { className: 'ose-mobile-block' },
+          h('h3', { className: 'ose-side-title' }, 'Communities'),
+          h('nav', { className: 'ose-community-list' },
+            h('a', { className: 'ose-community-item is-active', href: '/openscene/?view=communities', onClick: onClose },
+              h('span', { className: 'ose-community-name' }, Icon('audio-lines', 'ose-community-icon'), 'All Scenes')
+            ),
+            communities.map(function (c) {
+              return h('a', {
+                key: c.slug || c.id,
+                className: 'ose-community-item',
+                href: '/c/' + (c.slug || ('community-' + c.id)),
+                onClick: onClose
+              },
+              h('span', { className: 'ose-community-name' }, Icon('music-4', 'ose-community-icon'), c.name),
+              c.count ? h('span', { className: 'ose-community-count' }, c.count) : null
+              );
+            })
+          )
+        ),
+        h('section', { className: 'ose-mobile-block' },
+          h('div', { className: 'ose-widget-head' },
+            h('h3', null, 'Upcoming Bangalore Events'),
+            h('span', { className: 'ose-widget-icon ose-widget-icon-events' }, Icon('calendar-days'))
+          ),
+          h('div', { className: 'ose-events' },
+            events.map(function (ev, idx) {
+              return h('article', { className: 'ose-event', key: idx },
+                h('div', { className: 'ose-event-date' },
+                  h('span', { className: 'ose-event-month' }, ev.month),
+                  h('span', { className: 'ose-event-day' }, ev.day)
+                ),
+                h('div', null,
+                  h('h4', null, h('a', { href: ev.id ? ('/openscene/?view=event&id=' + ev.id) : '#', onClick: onClose }, ev.title)),
+                  h('p', null, ev.info)
+                )
+              );
+            }),
+            !eventsRes.loading && !eventsRes.error && events.length === 0 ? h('p', { className: 'ose-events-note' }, 'No upcoming events.') : null
+          ),
+          h('a', { className: 'ose-widget-btn', href: '/openscene/?view=events', onClick: onClose }, 'View Calendar')
+        ),
+        h('section', { className: 'ose-mobile-block' },
+          h('div', { className: 'ose-widget-head' },
+            h('h3', null, 'Community Rules')
+          ),
+          h('ol', { className: 'ose-rules' },
+            rules.map(function (rule, idx) {
+              return h('li', { key: idx },
+                h('span', null, String(idx + 1).padStart(2, '0')),
+                h('p', null, rule)
+              );
+            })
+          )
+        ),
+        h('footer', { className: 'ose-footer' },
+          h('nav', null,
+            h('a', { href: '#' }, 'About'),
+            h('a', { href: '#' }, 'Guidelines'),
+            h('a', { href: '#' }, 'Privacy'),
+            h('a', { href: '#' }, 'Manifesto')
+          ),
+          h('p', null, '© 2026 scene.wtf — Bangalore Underground Collective')
+        )
       )
     );
   }
@@ -335,12 +682,24 @@
     const isLoggedIn = Number(cfg.userId || 0) > 0;
     const userId = Number(cfg.userId || 0);
     const isOwner = userId > 0 && userId === Number(post.user_id || 0);
+    const canModerate = !!(cfg && cfg.permissions && cfg.permissions.canModerate);
     const isReported = !!post.user_reported;
     const reportsCount = Number(post.reports_count || 0);
     const reportingEnabled = isFeatureEnabled('reporting');
     const votingEnabled = isFeatureEnabled('voting');
     const deleteEnabled = isFeatureEnabled('delete');
     const canDeletePost = canDeleteAnyPost && !isRemoved && (deleteEnabled || canManageOptions);
+    const canReportPost = reportingEnabled && isLoggedIn && isPublished && (!isOwner || canModerate || canManageOptions);
+
+    function closeActionsMenu(event) {
+      if (!event || !event.currentTarget || typeof event.currentTarget.closest !== 'function') {
+        return;
+      }
+      const details = event.currentTarget.closest('.ose-post-more');
+      if (details && typeof details.removeAttribute === 'function') {
+        details.removeAttribute('open');
+      }
+    }
 
     return h('article', { className: 'ose-feed-post' },
       h('div', { className: 'ose-vote-rail' },
@@ -373,27 +732,36 @@
           ' ' + formatUtcForDisplay(post.event_summary.event_date) + ' · ' + (post.event_summary.venue_name || '')
         ) : null,
         h('div', { className: 'ose-post-actions' },
-          h('a', { href: '/post/' + post.id }, Icon('message-square'), (post.comment_count || 0) + ' comments'),
+          h('a', { className: 'ose-post-action', href: '/post/' + post.id }, Icon('message-circle'), (post.comment_count || 0) + ' comments'),
           reportsCount > 0 ? h('span', { className: 'ose-report-badge', 'aria-label': String(reportsCount) + ' reports' }, Icon('flag', 'ose-report-badge-icon'), String(reportsCount) + ' Reports') : null,
-          h('button', { type: 'button' }, Icon('share-2'), 'Share'),
-          h('button', { type: 'button' }, Icon('bookmark'), 'Save'),
-          reportingEnabled && isLoggedIn && !isOwner && isPublished ? h('button', {
-            type: 'button',
-            onClick: function () { props.onReport(post.id); },
-            disabled: isReported
-          }, Icon('flag'), isReported ? 'Reported' : 'Report') : null,
-          canDeletePost ? h('button', { type: 'button', onClick: function () { props.onDelete(post.id); } }, Icon('trash-2'), 'Delete') : null
+          h('button', { className: 'ose-post-action', type: 'button' }, Icon('share-2'), 'Share'),
+          h('button', { className: 'ose-post-action', type: 'button' }, Icon('bookmark'), 'Save'),
+          h('details', { className: 'ose-post-more' },
+            h('summary', { className: 'ose-post-more-toggle', 'aria-label': 'More actions' }, Icon('more-horizontal')),
+            h('div', { className: 'ose-post-more-menu' },
+              canReportPost ? h('button', {
+                type: 'button',
+                onClick: function (event) { closeActionsMenu(event); props.onReport(post.id); },
+                disabled: isReported
+              }, Icon('flag'), isReported ? 'Reported' : 'Report') : null,
+              canDeletePost ? h('button', { type: 'button', onClick: function (event) { closeActionsMenu(event); props.onDelete(post.id); } }, Icon('trash-2'), 'Delete') : null,
+              !canReportPost && !canDeletePost
+                ? h('button', { type: 'button', disabled: true }, 'No actions')
+                : null
+            )
+          )
         )
       )
     );
   }
 
   function CenterFeed(props) {
-    const [mode, setMode] = useState('hot');
+    const [mode, setMode] = useState(readFeedSortFromLocation);
     const feed = useApi('/openscene/v1/posts?sort=' + mode + '&page=1&per_page=20');
     const [optimisticVotes, setOptimisticVotes] = useState({});
     const [deletedPosts, setDeletedPosts] = useState({});
     const [reportedPosts, setReportedPosts] = useState({});
+    const [showMobileCreateFab, setShowMobileCreateFab] = useState(true);
 
     const communityMap = {};
     (props.communities || []).forEach(function (c) {
@@ -404,6 +772,57 @@
     if (Array.isArray(feed.data)) {
       posts = feed.data;
     }
+    const showEmpty = !feed.loading && !feed.error && posts.length === 0;
+    const loadingRows = [1, 2, 3, 4, 5];
+
+    useEffect(function () {
+      writeFeedSortToLocation(mode);
+    }, [mode]);
+
+    useEffect(function () {
+      if (typeof window === 'undefined' || typeof window.addEventListener !== 'function') {
+        return function () {};
+      }
+
+      let lastY = window.scrollY || 0;
+      let ticking = false;
+
+      function onScroll() {
+        if (ticking) return;
+        ticking = true;
+
+        window.requestAnimationFrame(function () {
+          const isMobile = !!(window.matchMedia && window.matchMedia('(max-width: 980px)').matches);
+          if (!isMobile) {
+            setShowMobileCreateFab(true);
+            lastY = window.scrollY || 0;
+            ticking = false;
+            return;
+          }
+
+          const nextY = window.scrollY || 0;
+          const delta = nextY - lastY;
+
+          if (nextY <= 56) {
+            setShowMobileCreateFab(true);
+          } else if (delta > 6) {
+            setShowMobileCreateFab(false);
+          } else if (delta < -6) {
+            setShowMobileCreateFab(true);
+          }
+
+          lastY = nextY;
+          ticking = false;
+        });
+      }
+
+      window.addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+
+      return function () {
+        window.removeEventListener('scroll', onScroll);
+      };
+    }, []);
 
     function loginRedirect() {
       const redirectTo = encodeURIComponent(window.location.href || '/openscene/');
@@ -484,17 +903,27 @@
 
     return h('main', { className: 'ose-center' },
       h('div', { className: 'ose-feed-header' },
-        h('div', { className: 'ose-feed-tabs' },
-          h('button', { className: mode === 'hot' ? 'is-active' : '', onClick: function () { setMode('hot'); } }, 'Hot'),
-          h('button', { className: mode === 'new' ? 'is-active' : '', onClick: function () { setMode('new'); } }, 'New'),
-          h('button', { className: mode === 'top' ? 'is-active' : '', onClick: function () { setMode('top'); } }, 'Top')
-        ),
-        h('button', { className: 'ose-filter-btn', type: 'button', 'aria-label': 'Filter' }, Icon('sliders-horizontal'))
+        h(SortTabs, { mode: mode, onChange: setMode }),
+        h('a', { className: 'ose-feed-create-btn', href: '/openscene/?view=create' }, Icon('square-pen'), 'Create Post')
       ),
       h('div', { className: 'ose-feed-list' },
-        feed.loading ? h('div', { className: 'ose-loading' }, 'Loading feed...') : null,
-        feed.error ? h('div', { className: 'ose-loading' }, feed.error) : null,
-        (!feed.loading && !feed.error && posts.length === 0) ? h('div', { className: 'ose-loading' }, 'No conversations yet.') : null,
+        feed.loading ? h('div', { className: 'ose-feed-skeletons' },
+          loadingRows.map(function (n) {
+            return h('div', { key: n, className: 'ose-feed-skeleton' },
+              h('div', { className: 'ose-sk-line ose-sk-pill' }),
+              h('div', { className: 'ose-sk-line ose-sk-meta' }),
+              h('div', { className: 'ose-sk-line ose-sk-title' }),
+              h('div', { className: 'ose-sk-line ose-sk-body' }),
+              h('div', { className: 'ose-sk-line ose-sk-body ose-sk-body-short' }),
+              h('div', { className: 'ose-sk-line ose-sk-actions' })
+            );
+          })
+        ) : null,
+        feed.error ? h('div', { className: 'ose-feed-status' }, feed.error) : null,
+        showEmpty ? h('div', { className: 'ose-feed-empty' },
+          h('p', null, 'No posts yet'),
+          h('a', { className: 'ose-feed-empty-cta', href: '/openscene/?view=create' }, 'Start a thread')
+        ) : null,
         posts.map(function (post) {
           const optimistic = optimisticVotes[post.id] || null;
           const mergedPost = Object.assign({}, post);
@@ -525,7 +954,12 @@
             onReport: handleReport
           });
         })
-      )
+      ),
+      h('a', {
+        className: 'ose-mobile-create-fab ' + (showMobileCreateFab ? 'is-visible' : 'is-hidden'),
+        href: '/openscene/?view=create',
+        'aria-label': 'Create Post'
+      }, Icon('square-pen'), 'Create Post')
     );
   }
 
@@ -577,8 +1011,7 @@
       ),
       h('section', { className: 'ose-widget' },
         h('div', { className: 'ose-widget-head' },
-          h('h3', null, 'Community Rules'),
-          h('span', { className: 'ose-widget-icon ose-widget-icon-rules' }, Icon('gavel'))
+          h('h3', null, 'Community Rules')
         ),
         h('ol', { className: 'ose-rules' },
           rules.map(function (rule, idx) {
@@ -1427,6 +1860,7 @@
 
   function GlobalFeedPage() {
     const communitiesRes = useApi('/openscene/v1/communities?limit=20');
+    const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
     const communities = Array.isArray(communitiesRes.data)
       ? communitiesRes.data.map(function (c) {
           return {
@@ -1439,12 +1873,21 @@
       : [];
 
     return h('div', { className: 'ose-scene-home' },
-      h(TopHeader),
+      h(TopHeader, {
+        showDrawerToggle: true,
+        drawerOpen: mobileDrawerOpen,
+        onToggleDrawer: function () { setMobileDrawerOpen(function (v) { return !v; }); }
+      }),
       h('div', { className: 'ose-scene-grid' },
         h(LeftSidebar, { communities: communities }),
         h(CenterFeed, { communities: communities }),
         h(RightSidebar)
-      )
+      ),
+      h(MobileUtilityDrawer, {
+        open: mobileDrawerOpen,
+        onClose: function () { setMobileDrawerOpen(false); },
+        communities: communities
+      })
     );
   }
 
