@@ -322,7 +322,8 @@
 
 #openscene-root .ose-topbar {
   height: 56px;
-  border-bottom: 1px solid var(--ose-border-2);
+  border-bottom: 1px solid transparent;
+  border-image: linear-gradient(90deg, var(--ose-purple) 0%, var(--ose-neon) 100%) 1;
   display: grid;
   grid-template-columns: var(--ose-left-rail) var(--ose-center-rail) var(--ose-right-rail);
   align-items: center;
@@ -356,11 +357,28 @@
 
 #openscene-root .ose-topbar-left {
   display: grid;
-  grid-template-columns: var(--ose-left-rail) minmax(0, 1fr);
+  grid-template-columns: var(--ose-left-rail) auto minmax(0, 1fr);
   align-items: center;
   gap: 14px;
   min-width: 0;
   grid-column: 1 / 3;
+}
+
+#openscene-root .ose-topbar-nav {
+  display: inline-flex;
+  align-items: center;
+  gap: 28px;
+}
+
+#openscene-root .ose-topbar-nav a {
+  color: #8d8d95;
+  font-size: 14px;
+  line-height: 1.25;
+  font-weight: 600;
+}
+
+#openscene-root .ose-topbar-nav a:hover {
+  color: #fff;
 }
 
 #openscene-root .ose-brand {
@@ -472,6 +490,21 @@
   text-transform: uppercase;
   background: #e8d6c3;
   color: #222;
+}
+
+#openscene-root .ose-avatar.ose-avatar-icon {
+  border: 0;
+  box-shadow: none;
+  background: transparent;
+  color: #c8cbd3;
+  width: 36px;
+  height: 36px;
+}
+
+#openscene-root .ose-avatar.ose-avatar-icon .ose-lucide {
+  width: 30px;
+  height: 30px;
+  stroke-width: 1.9;
 }
 
 #openscene-root .ose-join-btn {
@@ -704,6 +737,110 @@ body.ose-lock-scroll {
   line-height: 1.45;
   color: var(--ose-text-subtle);
   max-width: 220px;
+}
+
+#openscene-root .ose-left-activity {
+  margin: 18px 4px 0;
+  border: 1px solid var(--ose-border);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.01);
+  padding: 10px;
+}
+
+#openscene-root .ose-left-activity-title {
+  margin: 0 0 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #d3d8e1;
+  font-size: 11px;
+  line-height: 16px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+#openscene-root .ose-left-activity-icon {
+  width: 14px;
+  height: 14px;
+}
+
+#openscene-root .ose-left-activity-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 0;
+}
+
+#openscene-root .ose-left-activity-list li {
+  min-width: 0;
+  padding: 6px 2px 8px;
+}
+
+#openscene-root .ose-left-activity-list li:not(:last-child) {
+  border-bottom: 1px solid #1a1f26;
+  margin-bottom: 4px;
+}
+
+#openscene-root .ose-left-activity-list > li > a,
+#openscene-root .ose-left-activity-list > li > span {
+  display: block;
+  color: var(--ose-text-subtle);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+#openscene-root .ose-left-activity-line {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+}
+
+#openscene-root .ose-left-activity-title-text {
+  min-width: 0;
+  flex: 1;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#openscene-root .ose-left-activity-time {
+  flex: 0 0 auto;
+  white-space: nowrap;
+  color: #7e838d;
+  font-size: 11px;
+  line-height: 16px;
+  letter-spacing: 0.06em;
+  text-transform: none;
+}
+
+#openscene-root .ose-left-activity-meta {
+  margin-top: 2px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  color: #7e838d;
+  font-size: 11px;
+  line-height: 16px;
+}
+
+#openscene-root .ose-left-activity-dot {
+  opacity: 0.65;
+}
+
+#openscene-root .ose-left-activity-list a:hover {
+  color: #fff;
+}
+
+#openscene-root .ose-left-activity-empty {
+  margin: 0 0 6px;
+  color: var(--ose-text-subtle);
+  font-size: 13px;
+  line-height: 1.45;
 }
 
 #openscene-root .ose-feed-header {
@@ -1004,6 +1141,11 @@ body.ose-lock-scroll {
 
 #openscene-root .ose-dot { margin: 0 8px; }
 #openscene-root .ose-post-meta strong { color: #fff; font-weight: 600; }
+
+#openscene-root .ose-time-ago {
+  text-transform: none !important;
+  letter-spacing: normal;
+}
 
 #openscene-root .ose-post-title {
   display: block;
@@ -3733,7 +3875,7 @@ body.ose-lock-scroll {
   }
 
   #openscene-root .ose-topbar-left {
-    grid-template-columns: 236px minmax(0, 1fr);
+    grid-template-columns: 236px auto minmax(0, 1fr);
   }
 
   #openscene-root .ose-scene-grid {
@@ -3763,6 +3905,10 @@ body.ose-lock-scroll {
     width: 100%;
     display: block;
     padding-right: 128px;
+  }
+
+  #openscene-root .ose-topbar-nav {
+    display: none;
   }
 
   #openscene-root .ose-topbar-right {

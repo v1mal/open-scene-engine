@@ -200,6 +200,16 @@
         ['line', { x1: '20', y1: '8', x2: '20', y2: '14' }],
         ['line', { x1: '17', y1: '11', x2: '23', y2: '11' }]
       ],
+      'circle-user': [
+        ['circle', { cx: '12', cy: '10', r: '4' }],
+        ['path', { d: 'M18 20a6 6 0 0 0-12 0' }],
+        ['circle', { cx: '12', cy: '12', r: '10' }]
+      ],
+      'circle-user-round': [
+        ['circle', { cx: '12', cy: '10', r: '4' }],
+        ['path', { d: 'M18 20a6 6 0 0 0-12 0' }],
+        ['circle', { cx: '12', cy: '12', r: '10' }]
+      ],
       'audio-lines': [
         ['line', { x1: '4', y1: '10', x2: '4', y2: '14' }],
         ['line', { x1: '8', y1: '8', x2: '8', y2: '16' }],
@@ -211,6 +221,14 @@
         ['path', { d: 'M9 18V5l10-2v13' }],
         ['circle', { cx: '6', cy: '18', r: '3' }],
         ['circle', { cx: '19', cy: '16', r: '3' }]
+      ],
+      'monitor-speaker': [
+        ['rect', { x: '3', y: '3', width: '18', height: '14', rx: '2' }],
+        ['path', { d: 'M8 21h8' }],
+        ['path', { d: 'M12 17v4' }],
+        ['circle', { cx: '8', cy: '10', r: '1.5' }],
+        ['circle', { cx: '12', cy: '10', r: '1.5' }],
+        ['circle', { cx: '16', cy: '10', r: '1.5' }]
       ],
       'plus': [
         ['line', { x1: '12', y1: '5', x2: '12', y2: '19' }],
@@ -267,6 +285,11 @@
       'clock-3': [
         ['circle', { cx: '12', cy: '12', r: '9' }],
         ['polyline', { points: '12 7 12 12 16 12' }]
+      ],
+      'history': [
+        ['path', { d: 'M3 12a9 9 0 1 0 3-6.7' }],
+        ['polyline', { points: '3 3 3 9 9 9' }],
+        ['polyline', { points: '12 7 12 12 15 15' }]
       ],
       'bar-chart-3': [
         ['path', { d: 'M3 3v18h18' }],
@@ -430,9 +453,9 @@
     const canModerate = !!(cfg && cfg.permissions && cfg.permissions.canModerate);
     const currentUsernameRaw = cfg && cfg.currentUser && cfg.currentUser.username ? String(cfg.currentUser.username) : '';
     const currentUsername = currentUsernameRaw.toLowerCase().replace(/[^a-z0-9_\-.]/g, '');
-    const avatarLabel = currentUsername ? currentUsername.slice(0, 2).toUpperCase() : 'GU';
     const profileHref = currentUsername ? ('/u/' + encodeURIComponent(currentUsername) + '/') : '/wp-login.php';
     const joinUrl = cfg && cfg.joinUrl ? String(cfg.joinUrl) : '';
+    const logoutUrl = cfg && cfg.logoutUrl ? String(cfg.logoutUrl) : '/wp-login.php?action=logout';
     const searchParams = new URLSearchParams(window.location.search || '');
     const initialSearch = searchParams.get('q') || '';
     const [searchValue, setSearchValue] = useState(initialSearch);
@@ -448,6 +471,11 @@
     return h('header', { className: 'ose-topbar' },
       h('div', { className: 'ose-topbar-left' },
         brandLogo(),
+        h('nav', { className: 'ose-topbar-nav', 'aria-label': 'Primary' },
+          h('a', { href: '/openscene/' }, 'Feed'),
+          h('a', { href: '/openscene/?view=communities' }, 'Hubs'),
+          h('a', { href: '/openscene/?view=artists' }, 'Artists')
+        ),
         h('div', { className: 'ose-search' },
           Icon('search', 'ose-search-icon'),
           h('input', {
@@ -472,11 +500,12 @@
                 h('button', { key: 'notif', className: 'ose-icon-btn', 'aria-label': 'Notifications' }, Icon('bell')),
                 h('details', { key: 'menu', className: 'ose-avatar-menu' },
                   h('summary', { className: 'ose-avatar-summary', 'aria-label': 'Open profile menu' },
-                    h('span', { className: 'ose-avatar', 'aria-label': 'Open profile menu' }, avatarLabel)
+                    h('span', { className: 'ose-avatar ose-avatar-icon', 'aria-label': 'Open profile menu' }, Icon('circle-user-round'))
                   ),
                   h('div', { className: 'ose-avatar-dropdown' },
                     h('a', { href: profileHref }, 'Profile'),
-                    canModerate ? h('a', { href: '/moderator/' }, 'Moderator Panel') : null
+                    canModerate ? h('a', { href: '/moderator/' }, 'Moderator Panel') : null,
+                    h('a', { href: logoutUrl }, 'Log out')
                   )
                 )
               ]
@@ -496,6 +525,10 @@
 
   function LeftSidebar(props) {
     const communities = Array.isArray(props.communities) ? props.communities : [];
+    const activeCommunitySlug = String((props && props.activeCommunitySlug) || bootContext.communitySlug || '').trim().toLowerCase();
+    const allScenesActive = activeCommunitySlug === '';
+    const recentActivityRes = useApi('/openscene/v1/posts?sort=hot&limit=5');
+    const recentPosts = Array.isArray(recentActivityRes.data) ? recentActivityRes.data : [];
 
     return h('aside', { className: 'ose-left' },
       h('div', { className: 'ose-left-inner' },
@@ -503,23 +536,69 @@
         h('nav', { className: 'ose-community-list' },
         h('a', {
           key: 'all-scenes',
-          className: 'ose-community-item is-active',
+          className: allScenesActive ? 'ose-community-item is-active' : 'ose-community-item',
           href: '/openscene/?view=communities'
         },
         h('span', { className: 'ose-community-name' }, Icon('audio-lines', 'ose-community-icon'), 'All Scenes')
         ),
           communities.map(function (c, idx) {
+            const rowSlug = String(c.slug || '').toLowerCase();
+            const isActive = rowSlug !== '' && rowSlug === activeCommunitySlug;
+            const rowIcon = String(c.icon || '').trim() || 'music-4';
             return h('a', {
               key: c.slug || c.id,
-              className: 'ose-community-item',
+              className: isActive ? 'ose-community-item is-active' : 'ose-community-item',
               href: '/c/' + (c.slug || ('community-' + c.id))
             },
-            h('span', { className: 'ose-community-name' }, Icon('music-4', 'ose-community-icon'), c.name),
+            h('span', { className: 'ose-community-name' }, Icon(rowIcon, 'ose-community-icon'), c.name),
             c.count ? h('span', { className: 'ose-community-count' }, c.count) : null
             );
           })
         ),
         h('p', { className: 'ose-left-copy' }, 'Bangalore\'s underground scene collective. Support your local artists.')
+        ,
+        h('section', { className: 'ose-left-activity' },
+          h('h4', { className: 'ose-left-activity-title' }, Icon('history', 'ose-left-activity-icon'), 'Recent Activity'),
+          recentActivityRes.loading ? h('p', { className: 'ose-left-activity-empty' }, 'Loading...') : null,
+          !recentActivityRes.loading && recentPosts.length === 0 ? h('p', { className: 'ose-left-activity-empty' }, 'No recent activity.') : null,
+          h('ul', { className: 'ose-left-activity-list' },
+            recentPosts.slice(0, 5).map(function (post) {
+              const title = String(post && post.title ? post.title : '[removed]').trim() || '[removed]';
+              const postId = Number(post && post.id ? post.id : 0);
+              const createdAt = String(post && post.created_at ? post.created_at : '');
+              const relativeTime = createdAt ? timeAgo(createdAt) : '';
+              const score = Number(post && post.score ? post.score : 0);
+              const comments = Number(post && post.comment_count ? post.comment_count : 0);
+              const upvoteLabel = score + ' ' + (score === 1 ? 'upvote' : 'upvotes');
+              const commentLabel = comments + ' ' + (comments === 1 ? 'comment' : 'comments');
+              return h('li', { key: postId > 0 ? postId : title },
+                postId > 0
+                  ? h('a', { href: '/post/' + postId, title: title },
+                      h('span', { className: 'ose-left-activity-line' },
+                        h('span', { className: 'ose-left-activity-title-text' }, title),
+                        relativeTime ? h('span', { className: 'ose-left-activity-time' }, relativeTime) : null
+                      ),
+                      h('span', { className: 'ose-left-activity-meta' },
+                        h('span', null, upvoteLabel),
+                        h('span', { className: 'ose-left-activity-dot' }, '•'),
+                        h('span', null, commentLabel)
+                      )
+                    )
+                  : h('span', { title: title },
+                      h('span', { className: 'ose-left-activity-line' },
+                        h('span', { className: 'ose-left-activity-title-text' }, title),
+                        relativeTime ? h('span', { className: 'ose-left-activity-time' }, relativeTime) : null
+                      ),
+                      h('span', { className: 'ose-left-activity-meta' },
+                        h('span', null, upvoteLabel),
+                        h('span', { className: 'ose-left-activity-dot' }, '•'),
+                        h('span', null, commentLabel)
+                      )
+                    )
+              );
+            })
+          )
+        )
       )
     );
   }
@@ -528,6 +607,8 @@
     const open = !!(props && props.open);
     const onClose = props && typeof props.onClose === 'function' ? props.onClose : function () {};
     const communities = Array.isArray(props && props.communities) ? props.communities : [];
+    const activeCommunitySlug = String((props && props.activeCommunitySlug) || bootContext.communitySlug || '').trim().toLowerCase();
+    const allScenesActive = activeCommunitySlug === '';
     const [rendered, setRendered] = useState(open);
     const [closing, setClosing] = useState(false);
 
@@ -606,17 +687,20 @@
         h('section', { className: 'ose-mobile-block' },
           h('h3', { className: 'ose-side-title' }, 'Communities'),
           h('nav', { className: 'ose-community-list' },
-            h('a', { className: 'ose-community-item is-active', href: '/openscene/?view=communities', onClick: onClose },
+            h('a', { className: allScenesActive ? 'ose-community-item is-active' : 'ose-community-item', href: '/openscene/?view=communities', onClick: onClose },
               h('span', { className: 'ose-community-name' }, Icon('audio-lines', 'ose-community-icon'), 'All Scenes')
             ),
             communities.map(function (c) {
+              const rowSlug = String(c.slug || '').toLowerCase();
+              const isActive = rowSlug !== '' && rowSlug === activeCommunitySlug;
+              const rowIcon = String(c.icon || '').trim() || 'music-4';
               return h('a', {
                 key: c.slug || c.id,
-                className: 'ose-community-item',
+                className: isActive ? 'ose-community-item is-active' : 'ose-community-item',
                 href: '/c/' + (c.slug || ('community-' + c.id)),
                 onClick: onClose
               },
-              h('span', { className: 'ose-community-name' }, Icon('music-4', 'ose-community-icon'), c.name),
+              h('span', { className: 'ose-community-name' }, Icon(rowIcon, 'ose-community-icon'), c.name),
               c.count ? h('span', { className: 'ose-community-count' }, c.count) : null
               );
             })
@@ -725,7 +809,8 @@
           h('span', { className: 'ose-dot' }, '•'),
           h('span', null, 'Posted by '),
           h('strong', null, author),
-          h('span', null, ' · ' + timeAgo(post.created_at))
+          h('span', null, ' · '),
+          h('span', { className: 'ose-time-ago' }, timeAgo(post.created_at))
         ),
         h('div', { className: 'ose-post-title-row' },
           h('a', { className: 'ose-post-title', href: '/post/' + post.id }, isRemoved ? '[removed]' : post.title),
@@ -1084,7 +1169,7 @@
       ? externalCommunities
       : (Array.isArray(communitiesRes.data)
         ? communitiesRes.data.map(function (c) {
-            return { id: c.id, name: c.name, slug: c.slug, count: '' };
+            return { id: c.id, name: c.name, slug: c.slug, icon: c.icon || '', count: '' };
           })
         : []);
 
@@ -1172,6 +1257,7 @@
         id: c.id,
         name: c.name,
         slug: c.slug,
+        icon: c.icon || '',
         count: ''
       };
     });
@@ -1268,7 +1354,7 @@
         h('div', { className: 'ose-community-post-meta' },
           h('span', null, 'u/' + author),
           h('i', null, '•'),
-          h('span', null, timeAgo(post.created_at).toUpperCase())
+          h('span', { className: 'ose-time-ago' }, timeAgo(post.created_at))
         ),
         h('a', { className: 'ose-community-post-title', href: '/post/' + post.id }, isRemoved ? '[removed]' : (post.title || 'Untitled thread')),
         !isRemoved && post.body ? h('p', { className: 'ose-community-post-excerpt' }, post.body) : null,
@@ -1410,7 +1496,7 @@
     const communityName = community && community.slug ? ('c/' + community.slug) : 'c/' + slug;
     const communityLabel = (community && community.name) ? community.name : (community && community.slug ? community.slug : 'community');
     const shellCommunities = Array.isArray(communitiesRes.data)
-      ? communitiesRes.data.map(function (c) { return { id: c.id, name: c.name, slug: c.slug, count: '' }; })
+      ? communitiesRes.data.map(function (c) { return { id: c.id, name: c.name, slug: c.slug, icon: c.icon || '', count: '' }; })
       : [];
 
     return h(CommunityHubShell, {
@@ -1517,12 +1603,15 @@
     const canReply = depth < 5 && !!props.canReply;
     const isHighlighted = props.highlightCommentId === comment.id;
 
-    const meta = 'u/user_' + (comment.user_id || 0) + ' • ' + timeAgo(comment.created_at);
+    const metaUser = 'u/user_' + (comment.user_id || 0);
 
     return h('div', { id: 'comment-' + comment.id, className: 'ose-pd-comment-node depth-' + depth + (isHighlighted ? ' is-highlighted' : '') },
       h('div', { className: 'ose-pd-comment-line' }),
       h('div', { className: 'ose-pd-comment-content' },
-        h('div', { className: 'ose-pd-comment-meta' }, meta),
+        h('div', { className: 'ose-pd-comment-meta' },
+          h('span', null, metaUser + ' • '),
+          h('span', { className: 'ose-time-ago' }, timeAgo(comment.created_at))
+        ),
         renderSafeHtml('div', 'ose-pd-comment-body', comment.body || ''),
         h('div', { className: 'ose-pd-comment-actions' },
           canReply ? h('button', {
@@ -1945,6 +2034,7 @@
             id: c.id,
             name: c.name,
             slug: c.slug,
+            icon: c.icon || '',
             count: ''
           };
         })
@@ -1961,7 +2051,7 @@
     const communitiesRes = useApi('/openscene/v1/communities?limit=100');
     const communities = Array.isArray(communitiesRes.data)
       ? communitiesRes.data.map(function (c) {
-          return { id: c.id, name: c.name, slug: c.slug, count: '' };
+          return { id: c.id, name: c.name, slug: c.slug, icon: c.icon || '', count: '' };
         })
       : [];
     const [sortMode, setSortMode] = useState('hot');
@@ -2195,7 +2285,7 @@
     }
 
     const shellCommunities = communities.map(function (c) {
-      return { id: c.id, name: c.name, slug: c.slug, count: '' };
+      return { id: c.id, name: c.name, slug: c.slug, icon: c.icon || '', count: '' };
     });
 
     return h(SceneRailShell, { communities: shellCommunities },
@@ -2380,7 +2470,7 @@
               return h('article', { className: 'ose-user-item', key: 'p-' + row.id },
                 h('div', { className: 'ose-user-item-head' },
                   h('a', { href: '/post/' + row.id }, row.title || 'Untitled post'),
-                  h('time', null, timeAgo(row.created_at))
+                  h('time', { className: 'ose-time-ago' }, timeAgo(row.created_at))
                 ),
                 h('p', null, row.body || ''),
                 h('div', { className: 'ose-user-item-foot' },
@@ -2392,7 +2482,7 @@
             return h('article', { className: 'ose-user-item', key: 'c-' + row.id },
               h('div', { className: 'ose-user-item-head' },
                 h('a', { href: '/post/' + row.post_id + '#comment-' + row.id }, 'Comment on thread #' + row.post_id),
-                h('time', null, timeAgo(row.created_at))
+                h('time', { className: 'ose-time-ago' }, timeAgo(row.created_at))
               ),
               renderSafeHtml('p', 'ose-user-comment-body', row.body || ''),
               h('div', { className: 'ose-user-item-foot' },

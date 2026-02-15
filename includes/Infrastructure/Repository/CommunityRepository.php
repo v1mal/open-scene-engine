@@ -18,12 +18,89 @@ final class CommunityRepository
     public function listVisible(int $limit = 50): array
     {
         $table = $this->tables->communities();
-        $sql = $this->wpdb->prepare(
-            "SELECT id, name, slug, description, icon, visibility FROM {$table} WHERE visibility = 'public' AND slug <> 'all-scenes' ORDER BY created_at DESC LIMIT %d",
-            $limit
-        );
+        $posts = $this->tables->posts();
+        $sql = "SELECT c.id, c.name, c.slug, c.description, c.icon, c.visibility, c.created_at,
+                       MAX(p.created_at) AS latest_post_at,
+                       MAX(p.last_commented_at) AS latest_comment_at
+                FROM {$table} c
+                LEFT JOIN {$posts} p
+                  ON p.community_id = c.id
+                 AND p.status <> 'deleted'
+                WHERE c.visibility = 'public'
+                  AND c.slug <> 'all-scenes'
+                GROUP BY c.id, c.name, c.slug, c.description, c.icon, c.visibility, c.created_at";
 
-        return $this->wpdb->get_results($sql, ARRAY_A) ?: [];
+        $rows = $this->wpdb->get_results($sql, ARRAY_A) ?: [];
+        if (empty($rows)) {
+            return [];
+        }
+
+        $sortDesc = static function (array $items, string $key, string $fallbackKey = 'created_at'): array {
+            usort($items, static function (array $a, array $b) use ($key, $fallbackKey): int {
+                $av = (string) ($a[$key] ?? '');
+                $bv = (string) ($b[$key] ?? '');
+                $aNull = $av === '' || $av === '0000-00-00 00:00:00';
+                $bNull = $bv === '' || $bv === '0000-00-00 00:00:00';
+                if ($aNull !== $bNull) {
+                    return $aNull ? 1 : -1;
+                }
+                if (! $aNull && $av !== $bv) {
+                    return strcmp($bv, $av);
+                }
+                $af = (string) ($a[$fallbackKey] ?? '');
+                $bf = (string) ($b[$fallbackKey] ?? '');
+                if ($af !== $bf) {
+                    return strcmp($bf, $af);
+                }
+                return ((int) ($b['id'] ?? 0)) <=> ((int) ($a['id'] ?? 0));
+            });
+            return $items;
+        };
+
+        $postSorted = $sortDesc($rows, 'latest_post_at');
+        $topPost = array_slice($postSorted, 0, 3);
+        $picked = [];
+        foreach ($topPost as $row) {
+            $picked[(int) $row['id']] = true;
+        }
+
+        $commentPool = [];
+        foreach ($rows as $row) {
+            $id = (int) ($row['id'] ?? 0);
+            $hasCommentActivity = (string) ($row['latest_comment_at'] ?? '') !== '';
+            if (! isset($picked[$id]) && $hasCommentActivity) {
+                $commentPool[] = $row;
+            }
+        }
+
+        $commentSorted = $sortDesc($commentPool, 'latest_comment_at');
+        $topComment = array_slice($commentSorted, 0, 2);
+        foreach ($topComment as $row) {
+            $picked[(int) $row['id']] = true;
+        }
+
+        $remaining = [];
+        foreach ($postSorted as $row) {
+            if (! isset($picked[(int) ($row['id'] ?? 0)])) {
+                $remaining[] = $row;
+            }
+        }
+
+        $ordered = array_merge($topPost, $topComment, $remaining);
+        if ($limit > 0) {
+            $ordered = array_slice($ordered, 0, $limit);
+        }
+
+        return array_map(static function (array $row): array {
+            return [
+                'id' => (int) ($row['id'] ?? 0),
+                'name' => (string) ($row['name'] ?? ''),
+                'slug' => (string) ($row['slug'] ?? ''),
+                'description' => isset($row['description']) ? (string) $row['description'] : '',
+                'icon' => isset($row['icon']) ? (string) $row['icon'] : '',
+                'visibility' => (string) ($row['visibility'] ?? 'public'),
+            ];
+        }, $ordered);
     }
 
     public function findBySlug(string $slug): ?array

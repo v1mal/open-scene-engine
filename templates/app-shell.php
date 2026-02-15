@@ -55,6 +55,7 @@ $currentUsername = ($currentUser instanceof \WP_User && $currentUser->ID > 0) ? 
 $isLoggedIn = $currentUsername !== '';
 $avatarInitials = $currentUsername !== '' ? strtoupper(substr($currentUsername, 0, 2)) : 'GU';
 $profileHref = $currentUsername !== '' ? home_url(user_trailingslashit('u/' . rawurlencode($currentUsername))) : wp_login_url();
+$logoutHref = wp_logout_url(home_url('/openscene/'));
 $joinUrl = (string) get_option('openscene_join_url', '');
 $adminSettings = get_option('openscene_admin_settings', []);
 $logoAttachmentId = is_array($adminSettings) ? (int) ($adminSettings['logo_attachment_id'] ?? 0) : 0;
@@ -104,6 +105,11 @@ $brandSuffix = $brandDotPos === false ? '' : substr($brandText, $brandDotPos);
                     <?php echo esc_html($brandPrimary); ?><?php if ($brandSuffix !== '') : ?><span><?php echo esc_html($brandSuffix); ?></span><?php endif; ?>
                 <?php endif; ?>
             </a>
+            <nav class="ose-topbar-nav" aria-label="<?php esc_attr_e('Primary', 'open-scene-engine'); ?>">
+                <a href="/openscene/"><?php esc_html_e('Feed', 'open-scene-engine'); ?></a>
+                <a href="/openscene/?view=communities"><?php esc_html_e('Hubs', 'open-scene-engine'); ?></a>
+                <a href="/openscene/?view=artists"><?php esc_html_e('Artists', 'open-scene-engine'); ?></a>
+            </nav>
             <div class="ose-search">
                 <i data-lucide="search" class="ose-lucide ose-search-icon"></i>
                 <input type="search" placeholder="<?php esc_attr_e('Search conversations...', 'open-scene-engine'); ?>" aria-label="<?php esc_attr_e('Search conversations', 'open-scene-engine'); ?>" />
@@ -116,13 +122,14 @@ $brandSuffix = $brandDotPos === false ? '' : substr($brandText, $brandDotPos);
             </button>
             <details class="ose-avatar-menu">
                 <summary class="ose-avatar-summary" aria-label="<?php esc_attr_e('Open profile menu', 'open-scene-engine'); ?>">
-                    <span class="ose-avatar"><?php echo esc_html($avatarInitials); ?></span>
+                    <span class="ose-avatar ose-avatar-icon"><i data-lucide="circle-user-round" class="ose-lucide"></i></span>
                 </summary>
                 <div class="ose-avatar-dropdown">
                     <a href="<?php echo esc_url($profileHref); ?>"><?php esc_html_e('Profile', 'open-scene-engine'); ?></a>
                     <?php if ($canModerate) : ?>
                     <a href="/moderator/"><?php esc_html_e('Moderator Panel', 'open-scene-engine'); ?></a>
                     <?php endif; ?>
+                    <a href="<?php echo esc_url($logoutHref); ?>"><?php esc_html_e('Log out', 'open-scene-engine'); ?></a>
                 </div>
             </details>
             <?php elseif ($joinUrl !== '') : ?>
@@ -138,8 +145,9 @@ $brandSuffix = $brandDotPos === false ? '' : substr($brandText, $brandDotPos);
                     <span class="ose-community-name"><i data-lucide="audio-lines" class="ose-lucide ose-community-icon"></i><?php esc_html_e('All Scenes', 'open-scene-engine'); ?></span>
                 </a>
                 <?php foreach ($communityRows as $communityRow) : ?>
+                <?php $communityIcon = trim((string) ($communityRow['icon'] ?? '')); ?>
                 <a class="ose-community-item" href="<?php echo esc_url(home_url('/c/' . rawurlencode((string) ($communityRow['slug'] ?? '')))); ?>">
-                    <span class="ose-community-name"><i data-lucide="music-4" class="ose-lucide ose-community-icon"></i><?php echo esc_html((string) ($communityRow['name'] ?? '')); ?></span>
+                    <span class="ose-community-name"><i data-lucide="<?php echo esc_attr($communityIcon !== '' ? $communityIcon : 'music-4'); ?>" class="ose-lucide ose-community-icon"></i><?php echo esc_html((string) ($communityRow['name'] ?? '')); ?></span>
                 </a>
                 <?php endforeach; ?>
             </nav>
@@ -168,7 +176,7 @@ $brandSuffix = $brandDotPos === false ? '' : substr($brandText, $brandDotPos);
                     <div class="ose-pd-meta">
                         <span class="ose-pd-author"><?php echo esc_html('user_' . (int) ($ssrPost['user_id'] ?? 0)); ?></span>
                         <span class="ose-pd-dot">•</span>
-                        <time datetime="<?php echo esc_attr((string) ($ssrPost['created_at'] ?? '')); ?>">
+                        <time class="ose-time-ago" datetime="<?php echo esc_attr((string) ($ssrPost['created_at'] ?? '')); ?>">
                             <?php echo esc_html(human_time_diff(strtotime((string) ($ssrPost['created_at'] ?? 'now')), current_time('timestamp', true)) . ' ago'); ?>
                         </time>
                     </div>
@@ -278,6 +286,11 @@ $profileName = trim((string) $ssrUser->display_name) !== '' ? (string) $ssrUser-
                     <?php echo esc_html($brandPrimary); ?><?php if ($brandSuffix !== '') : ?><span><?php echo esc_html($brandSuffix); ?></span><?php endif; ?>
                 <?php endif; ?>
             </a>
+            <nav class="ose-topbar-nav" aria-label="<?php esc_attr_e('Primary', 'open-scene-engine'); ?>">
+                <a href="/openscene/"><?php esc_html_e('Feed', 'open-scene-engine'); ?></a>
+                <a href="/openscene/?view=communities"><?php esc_html_e('Hubs', 'open-scene-engine'); ?></a>
+                <a href="/openscene/?view=artists"><?php esc_html_e('Artists', 'open-scene-engine'); ?></a>
+            </nav>
             <div class="ose-search">
                 <i data-lucide="search" class="ose-lucide ose-search-icon"></i>
                 <input type="search" placeholder="<?php esc_attr_e('Search conversations...', 'open-scene-engine'); ?>" aria-label="<?php esc_attr_e('Search conversations', 'open-scene-engine'); ?>" />
@@ -290,13 +303,14 @@ $profileName = trim((string) $ssrUser->display_name) !== '' ? (string) $ssrUser-
             </button>
             <details class="ose-avatar-menu">
                 <summary class="ose-avatar-summary" aria-label="<?php esc_attr_e('Open profile menu', 'open-scene-engine'); ?>">
-                    <span class="ose-avatar"><?php echo esc_html($avatarInitials); ?></span>
+                    <span class="ose-avatar ose-avatar-icon"><i data-lucide="circle-user-round" class="ose-lucide"></i></span>
                 </summary>
                 <div class="ose-avatar-dropdown">
                     <a href="<?php echo esc_url($profileHref); ?>"><?php esc_html_e('Profile', 'open-scene-engine'); ?></a>
                     <?php if ($canModerate) : ?>
                     <a href="/moderator/"><?php esc_html_e('Moderator Panel', 'open-scene-engine'); ?></a>
                     <?php endif; ?>
+                    <a href="<?php echo esc_url($logoutHref); ?>"><?php esc_html_e('Log out', 'open-scene-engine'); ?></a>
                 </div>
             </details>
             <?php elseif ($joinUrl !== '') : ?>
@@ -312,8 +326,9 @@ $profileName = trim((string) $ssrUser->display_name) !== '' ? (string) $ssrUser-
                     <span class="ose-community-name"><i data-lucide="audio-lines" class="ose-lucide ose-community-icon"></i><?php esc_html_e('All Scenes', 'open-scene-engine'); ?></span>
                 </a>
                 <?php foreach ($communityRows as $communityRow) : ?>
+                <?php $communityIcon = trim((string) ($communityRow['icon'] ?? '')); ?>
                 <a class="ose-community-item" href="<?php echo esc_url(home_url('/c/' . rawurlencode((string) ($communityRow['slug'] ?? '')))); ?>">
-                    <span class="ose-community-name"><i data-lucide="music-4" class="ose-lucide ose-community-icon"></i><?php echo esc_html((string) ($communityRow['name'] ?? '')); ?></span>
+                    <span class="ose-community-name"><i data-lucide="<?php echo esc_attr($communityIcon !== '' ? $communityIcon : 'music-4'); ?>" class="ose-lucide ose-community-icon"></i><?php echo esc_html((string) ($communityRow['name'] ?? '')); ?></span>
                 </a>
                 <?php endforeach; ?>
             </nav>

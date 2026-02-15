@@ -55,6 +55,7 @@ final class Assets
                 'nonce' => wp_create_nonce('wp_rest'),
                 'userId' => get_current_user_id(),
                 'joinUrl' => esc_url_raw($joinUrl),
+                'logoutUrl' => esc_url_raw(wp_logout_url(home_url('/openscene/'))),
                 'currentUser' => [
                     'username' => $username,
                     'displayName' => $displayName,

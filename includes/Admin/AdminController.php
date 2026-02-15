@@ -312,6 +312,8 @@ final class AdminController
         echo '<table class="form-table" role="presentation"><tbody>';
         echo '<tr><th scope="row"><label for="community_name">' . esc_html__('Name', 'open-scene-engine') . '</label></th><td><input class="regular-text" type="text" name="community_name" id="community_name" required value="' . esc_attr((string) ($editRow['name'] ?? '')) . '" /></td></tr>';
         echo '<tr><th scope="row"><label for="community_slug">' . esc_html__('Slug', 'open-scene-engine') . '</label></th><td><input class="regular-text code" type="text" name="community_slug" id="community_slug" required value="' . esc_attr((string) ($editRow['slug'] ?? '')) . '" /></td></tr>';
+        echo '<tr><th scope="row"><label for="community_icon">' . esc_html__('Icon', 'open-scene-engine') . '</label></th><td><input class="regular-text code" type="text" name="community_icon" id="community_icon" value="' . esc_attr((string) ($editRow['icon'] ?? '')) . '" />';
+        echo '<p class="description">' . esc_html__('Use a Lucide icon name, e.g. keyboard-music.', 'open-scene-engine') . '</p></td></tr>';
         echo '<tr><th scope="row"><label for="community_description">' . esc_html__('Description', 'open-scene-engine') . '</label></th><td><textarea class="large-text" rows="3" name="community_description" id="community_description">' . esc_textarea((string) ($editRow['description'] ?? '')) . '</textarea></td></tr>';
         echo '<tr><th scope="row">' . esc_html__('Status', 'open-scene-engine') . '</th><td>';
         $enabled = ! $editRow || (string) ($editRow['visibility'] ?? 'public') === 'public';
@@ -546,6 +548,7 @@ final class AdminController
     {
         $name = sanitize_text_field((string) wp_unslash($_POST['community_name'] ?? ''));
         $slug = sanitize_title((string) wp_unslash($_POST['community_slug'] ?? ''));
+        $icon = $this->sanitizeIconName((string) wp_unslash($_POST['community_icon'] ?? ''));
         $description = sanitize_textarea_field((string) wp_unslash($_POST['community_description'] ?? ''));
         $enabled = isset($_POST['community_enabled']);
 
@@ -561,7 +564,7 @@ final class AdminController
             'name' => $name,
             'slug' => $slug,
             'description' => $description,
-            'icon' => null,
+            'icon' => $icon !== '' ? $icon : null,
             'rules' => null,
             'visibility' => $enabled ? 'public' : 'private',
             'created_by_user_id' => get_current_user_id(),
@@ -590,6 +593,7 @@ final class AdminController
 
         $name = sanitize_text_field((string) wp_unslash($_POST['community_name'] ?? ''));
         $slug = sanitize_title((string) wp_unslash($_POST['community_slug'] ?? ''));
+        $icon = $this->sanitizeIconName((string) wp_unslash($_POST['community_icon'] ?? ''));
         $description = sanitize_textarea_field((string) wp_unslash($_POST['community_description'] ?? ''));
         $enabled = isset($_POST['community_enabled']);
         if ($name === '' || $slug === '') {
@@ -606,7 +610,7 @@ final class AdminController
             'slug' => $slug,
             'description' => $description,
             'visibility' => $enabled ? 'public' : 'private',
-            'icon' => (string) ($row['icon'] ?? ''),
+            'icon' => $icon,
             'rules' => (string) ($row['rules'] ?? ''),
         ]);
         if (! $ok) {
@@ -717,5 +721,15 @@ final class AdminController
         echo '<input type="checkbox" name="' . esc_attr($name) . '" value="1" ' . checked($checked, true, false) . ' /> ';
         echo esc_html($label);
         echo '</label>';
+    }
+
+    private function sanitizeIconName(string $raw): string
+    {
+        $value = strtolower(trim(sanitize_text_field($raw)));
+        if ($value === '') {
+            return '';
+        }
+
+        return (string) preg_replace('/[^a-z0-9\-]/', '', $value);
     }
 }
