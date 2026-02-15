@@ -22,6 +22,7 @@
 
   const cfg = window.OpenSceneConfig || {};
   const featureFlags = Object.assign({ reporting: true, voting: true, delete: true }, (cfg && cfg.features) || {});
+  let communityListCache = Array.isArray(cfg.communities) ? cfg.communities.slice() : [];
   let bootContext = {};
   try {
     bootContext = JSON.parse(bootRoot.getAttribute('data-openscene-context') || '{}');
@@ -525,6 +526,8 @@
 
   function LeftSidebar(props) {
     const communities = Array.isArray(props.communities) ? props.communities : [];
+    const displayCommunities = communities.slice(0, 5);
+    const communitiesLoading = !!(props && props.communitiesLoading);
     const activeCommunitySlug = String((props && props.activeCommunitySlug) || bootContext.communitySlug || '').trim().toLowerCase();
     const allScenesActive = activeCommunitySlug === '';
     const recentActivityRes = useApi('/openscene/v1/posts?sort=hot&limit=5');
@@ -541,7 +544,17 @@
         },
         h('span', { className: 'ose-community-name' }, Icon('audio-lines', 'ose-community-icon'), 'All Scenes')
         ),
-          communities.map(function (c, idx) {
+          communitiesLoading
+            ? [0, 1, 2, 3, 4].map(function (idx) {
+                return h('span', { key: 'community-sk-' + idx, className: 'ose-community-item ose-community-item-skeleton', 'aria-hidden': 'true' },
+                  h('span', { className: 'ose-community-name' },
+                    h('span', { className: 'ose-community-icon ose-community-icon-skeleton' }),
+                    h('span', { className: 'ose-community-label-skeleton' })
+                  )
+                );
+              })
+            : null,
+          !communitiesLoading ? displayCommunities.map(function (c, idx) {
             const rowSlug = String(c.slug || '').toLowerCase();
             const isActive = rowSlug !== '' && rowSlug === activeCommunitySlug;
             const rowIcon = String(c.icon || '').trim() || 'music-4';
@@ -553,51 +566,65 @@
             h('span', { className: 'ose-community-name' }, Icon(rowIcon, 'ose-community-icon'), c.name),
             c.count ? h('span', { className: 'ose-community-count' }, c.count) : null
             );
-          })
+          }) : null
         ),
-        h('p', { className: 'ose-left-copy' }, 'Bangalore\'s underground scene collective. Support your local artists.')
-        ,
-        h('section', { className: 'ose-left-activity' },
-          h('h4', { className: 'ose-left-activity-title' }, Icon('history', 'ose-left-activity-icon'), 'Recent Activity'),
-          recentActivityRes.loading ? h('p', { className: 'ose-left-activity-empty' }, 'Loading...') : null,
-          !recentActivityRes.loading && recentPosts.length === 0 ? h('p', { className: 'ose-left-activity-empty' }, 'No recent activity.') : null,
-          h('ul', { className: 'ose-left-activity-list' },
-            recentPosts.slice(0, 5).map(function (post) {
-              const title = String(post && post.title ? post.title : '[removed]').trim() || '[removed]';
-              const postId = Number(post && post.id ? post.id : 0);
-              const createdAt = String(post && post.created_at ? post.created_at : '');
-              const relativeTime = createdAt ? timeAgo(createdAt) : '';
-              const score = Number(post && post.score ? post.score : 0);
-              const comments = Number(post && post.comment_count ? post.comment_count : 0);
-              const upvoteLabel = score + ' ' + (score === 1 ? 'upvote' : 'upvotes');
-              const commentLabel = comments + ' ' + (comments === 1 ? 'comment' : 'comments');
-              return h('li', { key: postId > 0 ? postId : title },
-                postId > 0
-                  ? h('a', { href: '/post/' + postId, title: title },
-                      h('span', { className: 'ose-left-activity-line' },
-                        h('span', { className: 'ose-left-activity-title-text' }, title),
-                        relativeTime ? h('span', { className: 'ose-left-activity-time' }, relativeTime) : null
-                      ),
-                      h('span', { className: 'ose-left-activity-meta' },
-                        h('span', null, upvoteLabel),
-                        h('span', { className: 'ose-left-activity-dot' }, '•'),
-                        h('span', null, commentLabel)
-                      )
-                    )
-                  : h('span', { title: title },
-                      h('span', { className: 'ose-left-activity-line' },
-                        h('span', { className: 'ose-left-activity-title-text' }, title),
-                        relativeTime ? h('span', { className: 'ose-left-activity-time' }, relativeTime) : null
-                      ),
-                      h('span', { className: 'ose-left-activity-meta' },
-                        h('span', null, upvoteLabel),
-                        h('span', { className: 'ose-left-activity-dot' }, '•'),
-                        h('span', null, commentLabel)
-                      )
-                    )
-              );
-            })
-          )
+        h('section', { className: communitiesLoading ? 'ose-left-activity ose-left-activity-placeholder' : 'ose-left-activity' },
+          communitiesLoading
+            ? h('div', { className: 'ose-left-activity-list' },
+                [0, 1, 2, 3, 4].map(function (idx) {
+                  return h('div', { key: 'recent-hold-' + idx, className: 'ose-left-activity-skeleton-row' },
+                    h('span', { className: 'ose-left-activity-skeleton-line ose-left-activity-skeleton-title' }),
+                    h('span', { className: 'ose-left-activity-skeleton-line ose-left-activity-skeleton-meta' })
+                  );
+                })
+              )
+            : [h('h4', { key: 'recent-title', className: 'ose-left-activity-title' }, Icon('history', 'ose-left-activity-icon'), 'Recent Activity'),
+              h('ul', { key: 'recent-list', className: 'ose-left-activity-list' },
+                recentActivityRes.loading
+                  ? [0, 1, 2, 3, 4].map(function (idx) {
+                      return h('li', { key: 'recent-skeleton-' + idx, className: 'ose-left-activity-skeleton-row' },
+                        h('span', { className: 'ose-left-activity-skeleton-line ose-left-activity-skeleton-title' }),
+                        h('span', { className: 'ose-left-activity-skeleton-line ose-left-activity-skeleton-meta' })
+                      );
+                    })
+                  : null,
+                recentPosts.slice(0, 5).map(function (post) {
+                  const title = String(post && post.title ? post.title : '[removed]').trim() || '[removed]';
+                  const postId = Number(post && post.id ? post.id : 0);
+                  const createdAt = String(post && post.created_at ? post.created_at : '');
+                  const relativeTime = createdAt ? timeAgo(createdAt) : '';
+                  const score = Number(post && post.score ? post.score : 0);
+                  const comments = Number(post && post.comment_count ? post.comment_count : 0);
+                  const upvoteLabel = score + ' ' + (score === 1 ? 'upvote' : 'upvotes');
+                  const commentLabel = comments + ' ' + (comments === 1 ? 'comment' : 'comments');
+                  return h('li', { key: postId > 0 ? postId : title },
+                    postId > 0
+                      ? h('a', { href: '/post/' + postId, title: title },
+                          h('span', { className: 'ose-left-activity-line' },
+                            h('span', { className: 'ose-left-activity-title-text' }, title),
+                            relativeTime ? h('span', { className: 'ose-left-activity-time' }, relativeTime) : null
+                          ),
+                          h('span', { className: 'ose-left-activity-meta' },
+                            h('span', null, upvoteLabel),
+                            h('span', { className: 'ose-left-activity-dot' }, '•'),
+                            h('span', null, commentLabel)
+                          )
+                        )
+                      : h('span', { title: title },
+                          h('span', { className: 'ose-left-activity-line' },
+                            h('span', { className: 'ose-left-activity-title-text' }, title),
+                            relativeTime ? h('span', { className: 'ose-left-activity-time' }, relativeTime) : null
+                          ),
+                          h('span', { className: 'ose-left-activity-meta' },
+                            h('span', null, upvoteLabel),
+                            h('span', { className: 'ose-left-activity-dot' }, '•'),
+                            h('span', null, commentLabel)
+                          )
+                        )
+                  );
+                }),
+                !recentActivityRes.loading && recentPosts.length === 0 ? h('li', { className: 'ose-left-activity-empty-row' }, h('p', { className: 'ose-left-activity-empty' }, 'No recent activity.')) : null
+              )]
         )
       )
     );
@@ -711,7 +738,21 @@
             h('h3', null, 'Upcoming Bangalore Events'),
             h('span', { className: 'ose-widget-icon ose-widget-icon-events' }, Icon('calendar-days'))
           ),
-          h('div', { className: 'ose-events' },
+          h('div', { className: eventsRes.loading ? 'ose-events is-loading' : 'ose-events' },
+            eventsRes.loading
+              ? [0, 1, 2].map(function (idx) {
+                  return h('article', { className: 'ose-event ose-event-skeleton', key: 'mobile-event-sk-' + idx },
+                    h('div', { className: 'ose-event-date' },
+                      h('span', { className: 'ose-event-month' }, '--'),
+                      h('span', { className: 'ose-event-day' }, '--')
+                    ),
+                    h('div', { className: 'ose-event-skeleton-body' },
+                      h('span', { className: 'ose-event-skeleton-line ose-event-skeleton-title' }),
+                      h('span', { className: 'ose-event-skeleton-line ose-event-skeleton-meta' })
+                    )
+                  );
+                })
+              : null,
             events.map(function (ev, idx) {
               return h('article', { className: 'ose-event', key: idx },
                 h('div', { className: 'ose-event-date' },
@@ -1078,7 +1119,21 @@
           h('h3', null, 'Upcoming Bangalore Events'),
           h('span', { className: 'ose-widget-icon ose-widget-icon-events' }, Icon('calendar-days'))
         ),
-        h('div', { className: 'ose-events' },
+        h('div', { className: eventsRes.loading ? 'ose-events is-loading' : 'ose-events' },
+          eventsRes.loading
+            ? [0, 1, 2].map(function (idx) {
+                return h('article', { className: 'ose-event ose-event-skeleton', key: 'event-sk-' + idx },
+                  h('div', { className: 'ose-event-date' },
+                    h('span', { className: 'ose-event-month' }, '--'),
+                    h('span', { className: 'ose-event-day' }, '--')
+                  ),
+                  h('div', { className: 'ose-event-skeleton-body' },
+                    h('span', { className: 'ose-event-skeleton-line ose-event-skeleton-title' }),
+                    h('span', { className: 'ose-event-skeleton-line ose-event-skeleton-meta' })
+                  )
+                );
+              })
+            : null,
           events.map(function (ev, idx) {
             return h('article', { className: 'ose-event', key: idx },
               h('div', { className: 'ose-event-date' },
@@ -1126,21 +1181,32 @@
 
   function SceneRailShell(props) {
     const externalCommunities = Array.isArray(props && props.communities) ? props.communities : null;
+    const externalCommunitiesLoading = !!(props && props.communitiesLoading);
+    const activeCommunitySlug = String((props && props.activeCommunitySlug) || bootContext.communitySlug || '').trim().toLowerCase();
     const showRightRail = !(props && props.showRightRail === false);
     const communitiesRes = useApi(externalCommunities ? '' : '/openscene/v1/communities?limit=20');
+    const liveCommunities = Array.isArray(communitiesRes.data)
+      ? communitiesRes.data.map(function (c) {
+          return {
+            id: c.id,
+            name: c.name,
+            slug: c.slug,
+            icon: c.icon || '',
+            count: ''
+          };
+        })
+      : [];
+    if (!externalCommunities && liveCommunities.length > 0) {
+      communityListCache = liveCommunities.slice();
+    }
+    const fallbackCommunities = Array.isArray(communityListCache) ? communityListCache : [];
+    const communitiesLoading = externalCommunities
+      ? externalCommunitiesLoading
+      : (!!communitiesRes.loading && fallbackCommunities.length === 0);
     const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
     const communities = externalCommunities
       ? externalCommunities
-      : (Array.isArray(communitiesRes.data)
-        ? communitiesRes.data.map(function (c) {
-            return {
-              id: c.id,
-              name: c.name,
-              slug: c.slug,
-              count: ''
-            };
-          })
-        : []);
+      : (liveCommunities.length > 0 ? liveCommunities : fallbackCommunities);
 
     return h('div', { className: 'ose-scene-home' },
       h(TopHeader, {
@@ -1149,29 +1215,40 @@
         onToggleDrawer: function () { setMobileDrawerOpen(function (v) { return !v; }); }
       }),
       h('div', { className: 'ose-scene-grid' },
-        h(LeftSidebar, { communities: communities }),
+        h(LeftSidebar, { communities: communities, communitiesLoading: communitiesLoading, activeCommunitySlug: activeCommunitySlug }),
         props.children,
         showRightRail ? h(RightSidebar) : null
       ),
       h(MobileUtilityDrawer, {
         open: mobileDrawerOpen,
         onClose: function () { setMobileDrawerOpen(false); },
-        communities: communities
+        communities: communities,
+        activeCommunitySlug: activeCommunitySlug
       })
     );
   }
 
   function CommunityHubShell(props) {
     const externalCommunities = Array.isArray(props && props.communities) ? props.communities : null;
+    const externalCommunitiesLoading = !!(props && props.communitiesLoading);
+    const activeCommunitySlug = String((props && props.activeCommunitySlug) || bootContext.communitySlug || '').trim().toLowerCase();
     const communitiesRes = useApi(externalCommunities ? '' : '/openscene/v1/communities?limit=20');
+    const liveCommunities = Array.isArray(communitiesRes.data)
+      ? communitiesRes.data.map(function (c) {
+          return { id: c.id, name: c.name, slug: c.slug, icon: c.icon || '', count: '' };
+        })
+      : [];
+    if (!externalCommunities && liveCommunities.length > 0) {
+      communityListCache = liveCommunities.slice();
+    }
+    const fallbackCommunities = Array.isArray(communityListCache) ? communityListCache : [];
+    const communitiesLoading = externalCommunities
+      ? externalCommunitiesLoading
+      : (!!communitiesRes.loading && fallbackCommunities.length === 0);
     const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
     const communities = externalCommunities
       ? externalCommunities
-      : (Array.isArray(communitiesRes.data)
-        ? communitiesRes.data.map(function (c) {
-            return { id: c.id, name: c.name, slug: c.slug, icon: c.icon || '', count: '' };
-          })
-        : []);
+      : (liveCommunities.length > 0 ? liveCommunities : fallbackCommunities);
 
     return h('div', { className: 'ose-scene-home ose-community-shell' },
       h(TopHeader, {
@@ -1180,14 +1257,15 @@
         onToggleDrawer: function () { setMobileDrawerOpen(function (v) { return !v; }); }
       }),
       h('div', { className: 'ose-scene-grid' },
-        h(LeftSidebar, { communities: communities }),
+        h(LeftSidebar, { communities: communities, communitiesLoading: communitiesLoading, activeCommunitySlug: activeCommunitySlug }),
         props.children,
         props.rightRail || h(RightSidebar)
       ),
       h(MobileUtilityDrawer, {
         open: mobileDrawerOpen,
         onClose: function () { setMobileDrawerOpen(false); },
-        communities: communities
+        communities: communities,
+        activeCommunitySlug: activeCommunitySlug
       })
     );
   }
@@ -1495,12 +1573,18 @@
     const rules = parseRules(community ? community.rules : '');
     const communityName = community && community.slug ? ('c/' + community.slug) : 'c/' + slug;
     const communityLabel = (community && community.name) ? community.name : (community && community.slug ? community.slug : 'community');
-    const shellCommunities = Array.isArray(communitiesRes.data)
+    const liveShellCommunities = Array.isArray(communitiesRes.data)
       ? communitiesRes.data.map(function (c) { return { id: c.id, name: c.name, slug: c.slug, icon: c.icon || '', count: '' }; })
       : [];
+    if (liveShellCommunities.length > 0) {
+      communityListCache = liveShellCommunities.slice();
+    }
+    const shellCommunities = liveShellCommunities.length > 0 ? liveShellCommunities : (Array.isArray(communityListCache) ? communityListCache : []);
 
     return h(CommunityHubShell, {
+      activeCommunitySlug: slug,
       communities: shellCommunities,
+      communitiesLoading: (!!communitiesRes.loading && shellCommunities.length === 0),
       rightRail: h('aside', { className: 'ose-right ose-community-shell-right' },
         h('div', { className: 'ose-community-right' },
           h('section', { className: 'ose-community-panel' },
@@ -1550,9 +1634,7 @@
           h(SortTabs, { mode: sortMode, onChange: setSortMode }),
           h('a', { className: 'ose-feed-create-btn', href: '/openscene/?view=create' }, Icon('square-pen'), 'Create Thread')
         ),
-        communityRes.loading ? h('p', { className: 'ose-events-note' }, 'Loading community...') : null,
         communityRes.error ? h('p', { className: 'ose-events-note ose-events-error' }, communityRes.error) : null,
-        loadingPosts && items.length === 0 ? h('p', { className: 'ose-events-note' }, 'Loading threads...') : null,
         postsError ? h('p', { className: 'ose-events-note ose-events-error' }, postsError) : null,
         h('div', { className: 'ose-community-posts ose-feed-list' },
           items.map(function (post) {
@@ -2028,7 +2110,7 @@
 
   function GlobalFeedPage() {
     const communitiesRes = useApi('/openscene/v1/communities?limit=20');
-    const communities = Array.isArray(communitiesRes.data)
+    const liveCommunities = Array.isArray(communitiesRes.data)
       ? communitiesRes.data.map(function (c) {
           return {
             id: c.id,
@@ -2039,8 +2121,12 @@
           };
         })
       : [];
+    if (liveCommunities.length > 0) {
+      communityListCache = liveCommunities.slice();
+    }
+    const communities = liveCommunities.length > 0 ? liveCommunities : (Array.isArray(communityListCache) ? communityListCache : []);
 
-    return h(SceneRailShell, { communities: communities },
+    return h(SceneRailShell, { communities: communities, communitiesLoading: (!!communitiesRes.loading && communities.length === 0) },
       h(CenterFeed, { communities: communities })
     );
   }
@@ -2049,11 +2135,15 @@
     const searchParams = new URLSearchParams(window.location.search || '');
     const query = String(searchParams.get('q') || '').trim();
     const communitiesRes = useApi('/openscene/v1/communities?limit=100');
-    const communities = Array.isArray(communitiesRes.data)
+    const liveCommunities = Array.isArray(communitiesRes.data)
       ? communitiesRes.data.map(function (c) {
           return { id: c.id, name: c.name, slug: c.slug, icon: c.icon || '', count: '' };
         })
       : [];
+    if (liveCommunities.length > 0) {
+      communityListCache = liveCommunities.slice();
+    }
+    const communities = liveCommunities.length > 0 ? liveCommunities : (Array.isArray(communityListCache) ? communityListCache : []);
     const [sortMode, setSortMode] = useState('hot');
     const [page, setPage] = useState(1);
     const searchPath = query.length >= 2
@@ -2135,7 +2225,7 @@
       }).catch(function () {});
     }
 
-    return h(SceneRailShell, { communities: communities },
+    return h(SceneRailShell, { communities: communities, communitiesLoading: (!!communitiesRes.loading && communities.length === 0) },
       h('main', { className: 'ose-center ose-center-scroll' },
         h('section', { className: 'ose-center-pane' },
           h('div', { className: 'ose-feed-header' },
@@ -2288,7 +2378,7 @@
       return { id: c.id, name: c.name, slug: c.slug, icon: c.icon || '', count: '' };
     });
 
-    return h(SceneRailShell, { communities: shellCommunities },
+    return h(SceneRailShell, { communities: shellCommunities, communitiesLoading: (!!communitiesRes.loading && shellCommunities.length === 0) },
       h('main', { className: 'ose-center ose-center-scroll' },
         h('section', { className: 'ose-create-main ose-center-pane' },
           h('div', { className: 'ose-create-layout ose-create-layout-single' },

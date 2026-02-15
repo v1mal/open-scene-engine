@@ -151,7 +151,6 @@ $brandSuffix = $brandDotPos === false ? '' : substr($brandText, $brandDotPos);
                 </a>
                 <?php endforeach; ?>
             </nav>
-            <p class="ose-left-copy"><?php esc_html_e("Bangalore's underground scene collective. Support your local artists.", 'open-scene-engine'); ?></p>
         </aside>
         <main class="ose-center ose-center-scroll">
             <section class="ose-center-pane ose-post-detail-main">
@@ -332,7 +331,6 @@ $profileName = trim((string) $ssrUser->display_name) !== '' ? (string) $ssrUser-
                 </a>
                 <?php endforeach; ?>
             </nav>
-            <p class="ose-left-copy"><?php esc_html_e("Bangalore's underground scene collective. Support your local artists.", 'open-scene-engine'); ?></p>
         </aside>
         <main class="ose-center ose-user-center">
             <section class="ose-user-profile-head">
