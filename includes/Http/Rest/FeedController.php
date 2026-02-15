@@ -92,6 +92,28 @@ final class FeedController extends BaseController
         return new WP_REST_Response($payload, 200);
     }
 
+    public function recentActivity(WP_REST_Request $request): WP_REST_Response
+    {
+        $limit = min(20, max(1, (int) $request->get_param('limit') ?: 5));
+        $cacheKey = sprintf('feed:recent-activity:%d', $limit);
+        $cached = $this->cache->get($cacheKey);
+        if (is_array($cached)) {
+            $cached['meta']['cached'] = true;
+            return new WP_REST_Response($cached, 200);
+        }
+
+        $payload = [
+            'data' => $this->posts->recentActivity($limit),
+            'meta' => [
+                'limit' => $limit,
+                'cached' => false,
+            ],
+        ];
+        $this->cache->set($cacheKey, $payload, 15);
+
+        return new WP_REST_Response($payload, 200);
+    }
+
     private function normalizePostList(array $rows): array
     {
         $userId = get_current_user_id();

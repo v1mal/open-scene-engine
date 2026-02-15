@@ -250,6 +250,37 @@ final class PostRepository
         return $this->wpdb->get_results($sql, ARRAY_A) ?: [];
     }
 
+    /**
+     * Recent activity list for lightweight UI surfaces (e.g. left rail).
+     * Ordered by latest activity timestamp with public-community visibility enforced.
+     */
+    public function recentActivity(int $limit): array
+    {
+        $table = $this->tables->posts();
+        $communities = $this->tables->communities();
+        $limit = min(20, max(1, $limit));
+
+        $sql = $this->wpdb->prepare(
+            "SELECT
+                p.id,
+                p.title,
+                p.score,
+                p.comment_count,
+                p.created_at,
+                p.last_commented_at,
+                COALESCE(p.last_commented_at, p.created_at) AS activity_at
+             FROM {$table} p
+             INNER JOIN {$communities} c ON c.id = p.community_id
+             WHERE p.status = 'published'
+               AND c.visibility = 'public'
+             ORDER BY COALESCE(p.last_commented_at, p.created_at) DESC, p.id DESC
+             LIMIT %d",
+            $limit
+        );
+
+        return $this->wpdb->get_results($sql, ARRAY_A) ?: [];
+    }
+
     public function find(int $id): ?array
     {
         $observe = $this->observability?->isBasicEnabled() === true;

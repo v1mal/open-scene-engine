@@ -728,6 +728,14 @@ body.ose-lock-scroll {
   font-weight: 600;
 }
 
+#openscene-root .ose-community-item.ose-community-view-all {
+  color: #9aa0aa;
+}
+
+#openscene-root .ose-community-item.ose-community-view-all:hover {
+  color: #fff;
+}
+
 #openscene-root .ose-community-name {
   display: inline-flex;
   align-items: center;

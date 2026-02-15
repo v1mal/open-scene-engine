@@ -34,6 +34,10 @@ final class RestRegistrar
             ['methods' => 'GET', 'callback' => [$this->feed, 'search'], 'permission_callback' => '__return_true'],
         ]);
 
+        register_rest_route('openscene/v1', '/activity/recent', [
+            ['methods' => 'GET', 'callback' => [$this->feed, 'recentActivity'], 'permission_callback' => '__return_true'],
+        ]);
+
         register_rest_route('openscene/v1', '/posts/(?P<id>\d+)', [
             ['methods' => 'GET', 'callback' => [$this->posts, 'show'], 'permission_callback' => '__return_true'],
             ['methods' => 'PATCH', 'callback' => [$this->posts, 'update'], 'permission_callback' => fn(): bool => is_user_logged_in()],

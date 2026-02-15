@@ -141,15 +141,15 @@ $brandSuffix = $brandDotPos === false ? '' : substr($brandText, $brandDotPos);
         <aside class="ose-left">
             <h3 class="ose-side-title"><?php esc_html_e('Communities', 'open-scene-engine'); ?></h3>
             <nav class="ose-community-list">
-                <a class="ose-community-item" href="/openscene/?view=communities">
-                    <span class="ose-community-name"><i data-lucide="audio-lines" class="ose-lucide ose-community-icon"></i><?php esc_html_e('All Scenes', 'open-scene-engine'); ?></span>
-                </a>
                 <?php foreach ($communityRows as $communityRow) : ?>
                 <?php $communityIcon = trim((string) ($communityRow['icon'] ?? '')); ?>
                 <a class="ose-community-item" href="<?php echo esc_url(home_url('/c/' . rawurlencode((string) ($communityRow['slug'] ?? '')))); ?>">
                     <span class="ose-community-name"><i data-lucide="<?php echo esc_attr($communityIcon !== '' ? $communityIcon : 'music-4'); ?>" class="ose-lucide ose-community-icon"></i><?php echo esc_html((string) ($communityRow['name'] ?? '')); ?></span>
                 </a>
                 <?php endforeach; ?>
+                <a class="ose-community-item ose-community-view-all" href="/openscene/?view=communities">
+                    <span class="ose-community-name"><i data-lucide="plus" class="ose-lucide ose-community-icon"></i><?php esc_html_e('View All', 'open-scene-engine'); ?></span>
+                </a>
             </nav>
         </aside>
         <main class="ose-center ose-center-scroll">
@@ -321,15 +321,15 @@ $profileName = trim((string) $ssrUser->display_name) !== '' ? (string) $ssrUser-
         <aside class="ose-left">
             <h3 class="ose-side-title"><?php esc_html_e('Communities', 'open-scene-engine'); ?></h3>
             <nav class="ose-community-list">
-                <a class="ose-community-item" href="/openscene/?view=communities">
-                    <span class="ose-community-name"><i data-lucide="audio-lines" class="ose-lucide ose-community-icon"></i><?php esc_html_e('All Scenes', 'open-scene-engine'); ?></span>
-                </a>
                 <?php foreach ($communityRows as $communityRow) : ?>
                 <?php $communityIcon = trim((string) ($communityRow['icon'] ?? '')); ?>
                 <a class="ose-community-item" href="<?php echo esc_url(home_url('/c/' . rawurlencode((string) ($communityRow['slug'] ?? '')))); ?>">
                     <span class="ose-community-name"><i data-lucide="<?php echo esc_attr($communityIcon !== '' ? $communityIcon : 'music-4'); ?>" class="ose-lucide ose-community-icon"></i><?php echo esc_html((string) ($communityRow['name'] ?? '')); ?></span>
                 </a>
                 <?php endforeach; ?>
+                <a class="ose-community-item ose-community-view-all" href="/openscene/?view=communities">
+                    <span class="ose-community-name"><i data-lucide="plus" class="ose-lucide ose-community-icon"></i><?php esc_html_e('View All', 'open-scene-engine'); ?></span>
+                </a>
             </nav>
         </aside>
         <main class="ose-center ose-user-center">

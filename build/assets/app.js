@@ -23,6 +23,8 @@
   const cfg = window.OpenSceneConfig || {};
   const featureFlags = Object.assign({ reporting: true, voting: true, delete: true }, (cfg && cfg.features) || {});
   let communityListCache = Array.isArray(cfg.communities) ? cfg.communities.slice() : [];
+  const COMMUNITY_PREFETCH_TTL_MS = 90 * 1000;
+  const COMMUNITY_PREFETCH_COUNT = 5;
   let bootContext = {};
   try {
     bootContext = JSON.parse(bootRoot.getAttribute('data-openscene-context') || '{}');
@@ -73,6 +75,45 @@
         return apiFetch(retriedReq);
       });
     });
+  }
+
+  function prefetchKey(communityId, sort) {
+    return 'openscene_prefetch_community_' + String(communityId) + '_' + String(sort || 'hot');
+  }
+
+  function readCommunityPrefetch(communityId, sort) {
+    try {
+      if (!window.sessionStorage) return null;
+      const raw = window.sessionStorage.getItem(prefetchKey(communityId, sort));
+      if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      const ts = Number(parsed && parsed.ts ? parsed.ts : 0);
+      if (!ts || (Date.now() - ts) > COMMUNITY_PREFETCH_TTL_MS) {
+        window.sessionStorage.removeItem(prefetchKey(communityId, sort));
+        return null;
+      }
+      if (!Array.isArray(parsed.items)) return null;
+      return {
+        items: parsed.items,
+        nextCursor: parsed.nextCursor || null
+      };
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function writeCommunityPrefetch(communityId, sort, items, nextCursor) {
+    try {
+      if (!window.sessionStorage) return;
+      if (!Array.isArray(items) || items.length === 0) return;
+      window.sessionStorage.setItem(prefetchKey(communityId, sort), JSON.stringify({
+        ts: Date.now(),
+        items: items,
+        nextCursor: nextCursor || null
+      }));
+    } catch (e) {
+      // ignore storage failures
+    }
   }
 
   function timeAgo(utc) {
@@ -529,21 +570,35 @@
     const displayCommunities = communities.slice(0, 5);
     const communitiesLoading = !!(props && props.communitiesLoading);
     const activeCommunitySlug = String((props && props.activeCommunitySlug) || bootContext.communitySlug || '').trim().toLowerCase();
-    const allScenesActive = activeCommunitySlug === '';
-    const recentActivityRes = useApi('/openscene/v1/posts?sort=hot&limit=5');
+    const isCommunitiesView = String((bootContext && bootContext.route) || '').toLowerCase() === 'communities';
+    const [recentRefreshToken, setRecentRefreshToken] = useState(0);
+    const recentActivityRes = useApi('/openscene/v1/activity/recent?limit=5&_rt=' + recentRefreshToken);
     const recentPosts = Array.isArray(recentActivityRes.data) ? recentActivityRes.data : [];
+
+    useEffect(function () {
+      function refreshRecent() {
+        setRecentRefreshToken(Date.now());
+      }
+      const intervalId = window.setInterval(refreshRecent, 60000);
+      function onVisibilityChange() {
+        if (!document.hidden) refreshRecent();
+      }
+      function onFocus() {
+        refreshRecent();
+      }
+      document.addEventListener('visibilitychange', onVisibilityChange);
+      window.addEventListener('focus', onFocus);
+      return function () {
+        window.clearInterval(intervalId);
+        document.removeEventListener('visibilitychange', onVisibilityChange);
+        window.removeEventListener('focus', onFocus);
+      };
+    }, []);
 
     return h('aside', { className: 'ose-left' },
       h('div', { className: 'ose-left-inner' },
         h('h3', { className: 'ose-side-title' }, 'Communities'),
         h('nav', { className: 'ose-community-list' },
-        h('a', {
-          key: 'all-scenes',
-          className: allScenesActive ? 'ose-community-item is-active' : 'ose-community-item',
-          href: '/openscene/?view=communities'
-        },
-        h('span', { className: 'ose-community-name' }, Icon('audio-lines', 'ose-community-icon'), 'All Scenes')
-        ),
           communitiesLoading
             ? [0, 1, 2, 3, 4].map(function (idx) {
                 return h('span', { key: 'community-sk-' + idx, className: 'ose-community-item ose-community-item-skeleton', 'aria-hidden': 'true' },
@@ -566,7 +621,14 @@
             h('span', { className: 'ose-community-name' }, Icon(rowIcon, 'ose-community-icon'), c.name),
             c.count ? h('span', { className: 'ose-community-count' }, c.count) : null
             );
-          }) : null
+          }) : null,
+          h('a', {
+            key: 'view-all',
+            className: isCommunitiesView ? 'ose-community-item ose-community-view-all is-active' : 'ose-community-item ose-community-view-all',
+            href: '/openscene/?view=communities'
+          },
+          h('span', { className: 'ose-community-name' }, Icon('plus', 'ose-community-icon'), 'View All')
+          )
         ),
         h('section', { className: communitiesLoading ? 'ose-left-activity ose-left-activity-placeholder' : 'ose-left-activity' },
           communitiesLoading
@@ -591,8 +653,8 @@
                 recentPosts.slice(0, 5).map(function (post) {
                   const title = String(post && post.title ? post.title : '[removed]').trim() || '[removed]';
                   const postId = Number(post && post.id ? post.id : 0);
-                  const createdAt = String(post && post.created_at ? post.created_at : '');
-                  const relativeTime = createdAt ? timeAgo(createdAt) : '';
+                  const activityAt = String(post && (post.activity_at || post.last_commented_at || post.created_at) ? (post.activity_at || post.last_commented_at || post.created_at) : '');
+                  const relativeTime = activityAt ? timeAgo(activityAt) : '';
                   const score = Number(post && post.score ? post.score : 0);
                   const comments = Number(post && post.comment_count ? post.comment_count : 0);
                   const upvoteLabel = score + ' ' + (score === 1 ? 'upvote' : 'upvotes');
@@ -635,7 +697,7 @@
     const onClose = props && typeof props.onClose === 'function' ? props.onClose : function () {};
     const communities = Array.isArray(props && props.communities) ? props.communities : [];
     const activeCommunitySlug = String((props && props.activeCommunitySlug) || bootContext.communitySlug || '').trim().toLowerCase();
-    const allScenesActive = activeCommunitySlug === '';
+    const isCommunitiesView = String((bootContext && bootContext.route) || '').toLowerCase() === 'communities';
     const [rendered, setRendered] = useState(open);
     const [closing, setClosing] = useState(false);
 
@@ -714,10 +776,7 @@
         h('section', { className: 'ose-mobile-block' },
           h('h3', { className: 'ose-side-title' }, 'Communities'),
           h('nav', { className: 'ose-community-list' },
-            h('a', { className: allScenesActive ? 'ose-community-item is-active' : 'ose-community-item', href: '/openscene/?view=communities', onClick: onClose },
-              h('span', { className: 'ose-community-name' }, Icon('audio-lines', 'ose-community-icon'), 'All Scenes')
-            ),
-            communities.map(function (c) {
+            communities.slice(0, 5).map(function (c) {
               const rowSlug = String(c.slug || '').toLowerCase();
               const isActive = rowSlug !== '' && rowSlug === activeCommunitySlug;
               const rowIcon = String(c.icon || '').trim() || 'music-4';
@@ -730,7 +789,12 @@
               h('span', { className: 'ose-community-name' }, Icon(rowIcon, 'ose-community-icon'), c.name),
               c.count ? h('span', { className: 'ose-community-count' }, c.count) : null
               );
-            })
+            }),
+            h('a', {
+              className: isCommunitiesView ? 'ose-community-item ose-community-view-all is-active' : 'ose-community-item ose-community-view-all',
+              href: '/openscene/?view=communities',
+              onClick: onClose
+            }, h('span', { className: 'ose-community-name' }, Icon('plus', 'ose-community-icon'), 'View All'))
           )
         ),
         h('section', { className: 'ose-mobile-block' },
@@ -1481,6 +1545,14 @@
     }, [communityId, sortMode]);
 
     useEffect(function () {
+      if (!communityId || sortMode !== 'hot' || cursor) return;
+      const cached = readCommunityPrefetch(communityId, 'hot');
+      if (!cached) return;
+      setItems(Array.isArray(cached.items) ? cached.items : []);
+      setNextCursor(cached.nextCursor || null);
+    }, [communityId, sortMode, cursor]);
+
+    useEffect(function () {
       if (!communityId) return;
       let canceled = false;
       setLoadingPosts(true);
@@ -1490,6 +1562,10 @@
       apiRequest({ path: path }).then(function (res) {
         if (canceled) return;
         const rows = Array.isArray(res.data) ? res.data : [];
+        if (!cursor && sortMode === 'hot') {
+          const nextCursor = res && res.meta && res.meta.next_cursor ? res.meta.next_cursor : null;
+          writeCommunityPrefetch(communityId, 'hot', rows, nextCursor);
+        }
         setItems(function (prev) { return cursor ? prev.concat(rows) : rows; });
         setNextCursor(res.meta && res.meta.next_cursor ? res.meta.next_cursor : null);
         setLoadingPosts(false);
@@ -2110,6 +2186,7 @@
 
   function GlobalFeedPage() {
     const communitiesRes = useApi('/openscene/v1/communities?limit=20');
+    const prefetchedRef = useRef({});
     const liveCommunities = Array.isArray(communitiesRes.data)
       ? communitiesRes.data.map(function (c) {
           return {
@@ -2125,6 +2202,40 @@
       communityListCache = liveCommunities.slice();
     }
     const communities = liveCommunities.length > 0 ? liveCommunities : (Array.isArray(communityListCache) ? communityListCache : []);
+
+    useEffect(function () {
+      if (!Array.isArray(communities) || communities.length === 0) return function () {};
+      if (typeof document !== 'undefined' && document.hidden) return function () {};
+      const conn = (typeof navigator !== 'undefined' && navigator.connection) ? navigator.connection : null;
+      if (conn && (conn.saveData || conn.effectiveType === '2g')) return function () {};
+
+      const targets = communities.slice(0, COMMUNITY_PREFETCH_COUNT).filter(function (community) {
+        const id = Number(community && community.id ? community.id : 0);
+        return id > 0 && !prefetchedRef.current[id];
+      });
+      if (targets.length === 0) return function () {};
+
+      const timers = [];
+      targets.forEach(function (community, index) {
+        const timer = window.setTimeout(function () {
+          const communityId = Number(community.id || 0);
+          if (!communityId) return;
+          apiRequest({
+            path: '/openscene/v1/communities/' + communityId + '/posts?sort=hot&limit=20'
+          }).then(function (res) {
+            const rows = Array.isArray(res && res.data ? res.data : null) ? res.data : [];
+            const nextCursor = res && res.meta && res.meta.next_cursor ? res.meta.next_cursor : null;
+            writeCommunityPrefetch(communityId, 'hot', rows, nextCursor);
+            prefetchedRef.current[communityId] = true;
+          }).catch(function () {});
+        }, index * 180);
+        timers.push(timer);
+      });
+
+      return function () {
+        timers.forEach(function (timer) { window.clearTimeout(timer); });
+      };
+    }, [communities.map(function (c) { return String(c.id || ''); }).join(',')]);
 
     return h(SceneRailShell, { communities: communities, communitiesLoading: (!!communitiesRes.loading && communities.length === 0) },
       h(CenterFeed, { communities: communities })
