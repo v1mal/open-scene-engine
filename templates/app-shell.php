@@ -107,7 +107,7 @@ $brandSuffix = $brandDotPos === false ? '' : substr($brandText, $brandDotPos);
             </a>
             <nav class="ose-topbar-nav" aria-label="<?php esc_attr_e('Primary', 'open-scene-engine'); ?>">
                 <a href="/openscene/"><?php esc_html_e('Feed', 'open-scene-engine'); ?></a>
-                <a href="/openscene/?view=communities"><?php esc_html_e('Hubs', 'open-scene-engine'); ?></a>
+                <a href="/openscene/?view=communities"><?php esc_html_e('Communities', 'open-scene-engine'); ?></a>
                 <a href="/openscene/?view=artists"><?php esc_html_e('Artists', 'open-scene-engine'); ?></a>
             </nav>
             <div class="ose-search">
@@ -287,7 +287,7 @@ $profileName = trim((string) $ssrUser->display_name) !== '' ? (string) $ssrUser-
             </a>
             <nav class="ose-topbar-nav" aria-label="<?php esc_attr_e('Primary', 'open-scene-engine'); ?>">
                 <a href="/openscene/"><?php esc_html_e('Feed', 'open-scene-engine'); ?></a>
-                <a href="/openscene/?view=communities"><?php esc_html_e('Hubs', 'open-scene-engine'); ?></a>
+                <a href="/openscene/?view=communities"><?php esc_html_e('Communities', 'open-scene-engine'); ?></a>
                 <a href="/openscene/?view=artists"><?php esc_html_e('Artists', 'open-scene-engine'); ?></a>
             </nav>
             <div class="ose-search">

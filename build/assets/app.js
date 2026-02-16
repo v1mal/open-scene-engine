@@ -23,8 +23,15 @@
   const cfg = window.OpenSceneConfig || {};
   const featureFlags = Object.assign({ reporting: true, voting: true, delete: true }, (cfg && cfg.features) || {});
   let communityListCache = Array.isArray(cfg.communities) ? cfg.communities.slice() : [];
+  let sidebarEventsCache = [];
   const COMMUNITY_PREFETCH_TTL_MS = 90 * 1000;
   const COMMUNITY_PREFETCH_COUNT = 5;
+  const COMMUNITIES_CACHE_KEY = 'openscene_communities_v1';
+  const COMMUNITIES_CACHE_TTL_MS = 10 * 60 * 1000;
+  const LEFT_RECENT_CACHE_KEY = 'openscene_left_recent_v1';
+  const LEFT_RECENT_CACHE_TTL_MS = 3 * 60 * 1000;
+  const SIDEBAR_EVENTS_CACHE_KEY = 'openscene_sidebar_events_v1';
+  const SIDEBAR_EVENTS_TTL_MS = 5 * 60 * 1000;
   let bootContext = {};
   try {
     bootContext = JSON.parse(bootRoot.getAttribute('data-openscene-context') || '{}');
@@ -110,6 +117,104 @@
         ts: Date.now(),
         items: items,
         nextCursor: nextCursor || null
+      }));
+    } catch (e) {
+      // ignore storage failures
+    }
+  }
+
+  function readCommunitiesCache() {
+    try {
+      if (!window.sessionStorage) return [];
+      const raw = window.sessionStorage.getItem(COMMUNITIES_CACHE_KEY);
+      if (!raw) return [];
+      const parsed = JSON.parse(raw);
+      const ts = Number(parsed && parsed.ts ? parsed.ts : 0);
+      if (!ts || (Date.now() - ts) > COMMUNITIES_CACHE_TTL_MS) {
+        window.sessionStorage.removeItem(COMMUNITIES_CACHE_KEY);
+        return [];
+      }
+      return Array.isArray(parsed && parsed.items) ? parsed.items : [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function writeCommunitiesCache(items) {
+    try {
+      if (!window.sessionStorage) return;
+      if (!Array.isArray(items) || items.length === 0) return;
+      window.sessionStorage.setItem(COMMUNITIES_CACHE_KEY, JSON.stringify({
+        ts: Date.now(),
+        items: items
+      }));
+    } catch (e) {
+      // ignore storage failures
+    }
+  }
+
+  function readLeftRecentCache() {
+    try {
+      if (!window.sessionStorage) return [];
+      const raw = window.sessionStorage.getItem(LEFT_RECENT_CACHE_KEY);
+      if (!raw) return [];
+      const parsed = JSON.parse(raw);
+      const ts = Number(parsed && parsed.ts ? parsed.ts : 0);
+      if (!ts || (Date.now() - ts) > LEFT_RECENT_CACHE_TTL_MS) {
+        window.sessionStorage.removeItem(LEFT_RECENT_CACHE_KEY);
+        return [];
+      }
+      return Array.isArray(parsed && parsed.items) ? parsed.items : [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function writeLeftRecentCache(items) {
+    try {
+      if (!window.sessionStorage) return;
+      if (!Array.isArray(items) || items.length === 0) return;
+      window.sessionStorage.setItem(LEFT_RECENT_CACHE_KEY, JSON.stringify({
+        ts: Date.now(),
+        items: items
+      }));
+    } catch (e) {
+      // ignore storage failures
+    }
+  }
+
+  if (communityListCache.length === 0) {
+    const bootCommunities = readCommunitiesCache();
+    if (bootCommunities.length > 0) {
+      communityListCache = bootCommunities.slice();
+    }
+  }
+
+  function readSidebarEventsCache() {
+    try {
+      if (!window.sessionStorage) return [];
+      const raw = window.sessionStorage.getItem(SIDEBAR_EVENTS_CACHE_KEY);
+      if (!raw) return [];
+      const parsed = JSON.parse(raw);
+      const ts = Number(parsed && parsed.ts ? parsed.ts : 0);
+      if (!ts || (Date.now() - ts) > SIDEBAR_EVENTS_TTL_MS) {
+        window.sessionStorage.removeItem(SIDEBAR_EVENTS_CACHE_KEY);
+        return [];
+      }
+      const items = Array.isArray(parsed && parsed.items) ? parsed.items : [];
+      return items;
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function writeSidebarEventsCache(items) {
+    try {
+      if (!window.sessionStorage) return;
+      if (!Array.isArray(items) || items.length === 0) return;
+      window.sessionStorage.setItem(SIDEBAR_EVENTS_CACHE_KEY, JSON.stringify({
+        ts: Date.now(),
+        items: items
       }));
     } catch (e) {
       // ignore storage failures
@@ -515,7 +620,7 @@
         brandLogo(),
         h('nav', { className: 'ose-topbar-nav', 'aria-label': 'Primary' },
           h('a', { href: '/openscene/' }, 'Feed'),
-          h('a', { href: '/openscene/?view=communities' }, 'Hubs'),
+          h('a', { href: '/openscene/?view=communities' }, 'Communities'),
           h('a', { href: '/openscene/?view=artists' }, 'Artists')
         ),
         h('div', { className: 'ose-search' },
@@ -572,8 +677,18 @@
     const activeCommunitySlug = String((props && props.activeCommunitySlug) || bootContext.communitySlug || '').trim().toLowerCase();
     const isCommunitiesView = String((bootContext && bootContext.route) || '').toLowerCase() === 'communities';
     const [recentRefreshToken, setRecentRefreshToken] = useState(0);
+    const [stableRecentPosts, setStableRecentPosts] = useState(function () {
+      return readLeftRecentCache();
+    });
     const recentActivityRes = useApi('/openscene/v1/activity/recent?limit=5&_rt=' + recentRefreshToken);
-    const recentPosts = Array.isArray(recentActivityRes.data) ? recentActivityRes.data : [];
+    const liveRecentPosts = Array.isArray(recentActivityRes.data) ? recentActivityRes.data : [];
+    useEffect(function () {
+      if (liveRecentPosts.length === 0) return;
+      setStableRecentPosts(liveRecentPosts);
+      writeLeftRecentCache(liveRecentPosts);
+    }, [recentActivityRes.data]);
+    const recentPosts = liveRecentPosts.length > 0 ? liveRecentPosts : stableRecentPosts;
+    const recentLoading = recentActivityRes.loading && recentPosts.length === 0;
 
     useEffect(function () {
       function refreshRecent() {
@@ -630,19 +745,10 @@
           h('span', { className: 'ose-community-name' }, Icon('plus', 'ose-community-icon'), 'View All')
           )
         ),
-        h('section', { className: communitiesLoading ? 'ose-left-activity ose-left-activity-placeholder' : 'ose-left-activity' },
-          communitiesLoading
-            ? h('div', { className: 'ose-left-activity-list' },
-                [0, 1, 2, 3, 4].map(function (idx) {
-                  return h('div', { key: 'recent-hold-' + idx, className: 'ose-left-activity-skeleton-row' },
-                    h('span', { className: 'ose-left-activity-skeleton-line ose-left-activity-skeleton-title' }),
-                    h('span', { className: 'ose-left-activity-skeleton-line ose-left-activity-skeleton-meta' })
-                  );
-                })
-              )
-            : [h('h4', { key: 'recent-title', className: 'ose-left-activity-title' }, Icon('history', 'ose-left-activity-icon'), 'Recent Activity'),
-              h('ul', { key: 'recent-list', className: 'ose-left-activity-list' },
-                recentActivityRes.loading
+        h('section', { className: recentLoading ? 'ose-left-activity ose-left-activity-placeholder' : 'ose-left-activity' },
+          [h('h4', { key: 'recent-title', className: 'ose-left-activity-title' }, Icon('history', 'ose-left-activity-icon'), 'Recent Activity'),
+            h('ul', { key: 'recent-list', className: 'ose-left-activity-list' },
+                recentLoading
                   ? [0, 1, 2, 3, 4].map(function (idx) {
                       return h('li', { key: 'recent-skeleton-' + idx, className: 'ose-left-activity-skeleton-row' },
                         h('span', { className: 'ose-left-activity-skeleton-line ose-left-activity-skeleton-title' }),
@@ -685,7 +791,7 @@
                         )
                   );
                 }),
-                !recentActivityRes.loading && recentPosts.length === 0 ? h('li', { className: 'ose-left-activity-empty-row' }, h('p', { className: 'ose-left-activity-empty' }, 'No recent activity.')) : null
+                !recentLoading && recentPosts.length === 0 ? h('li', { className: 'ose-left-activity-empty-row' }, h('p', { className: 'ose-left-activity-empty' }, 'No recent activity.')) : null
               )]
         )
       )
@@ -1156,8 +1262,16 @@
 
   function SidebarRail() {
     const eventsRes = useApi('/openscene/v1/events?scope=upcoming&limit=3');
+    const [stableEvents, setStableEvents] = useState(function () {
+      if (sidebarEventsCache.length > 0) return sidebarEventsCache.slice();
+      const cached = readSidebarEventsCache();
+      if (cached.length > 0) {
+        sidebarEventsCache = cached.slice();
+      }
+      return cached;
+    });
     const liveEvents = Array.isArray(eventsRes.data) ? eventsRes.data : [];
-    const events = liveEvents.map(function (ev) {
+    const mappedEvents = liveEvents.map(function (ev) {
       const date = new Date((ev.event_date || '').replace(' ', 'T') + 'Z');
       const month = Number.isNaN(date.getTime()) ? 'NA' : date.toLocaleString('en-US', { month: 'short' }).toUpperCase();
       const day = Number.isNaN(date.getTime()) ? '--' : String(date.getUTCDate()).padStart(2, '0');
@@ -1169,6 +1283,14 @@
         info: (ev.venue_name || ev.venue_address || 'Venue TBA') + ' · ' + formatUtcForDisplay(ev.event_date)
       };
     });
+    useEffect(function () {
+      if (mappedEvents.length === 0) return;
+      setStableEvents(mappedEvents);
+      sidebarEventsCache = mappedEvents.slice();
+      writeSidebarEventsCache(mappedEvents);
+    }, [eventsRes.data]);
+
+    const events = mappedEvents.length > 0 ? mappedEvents : stableEvents;
 
     const rules = [
       'No gatekeeping. Everyone was new once.',
@@ -1176,6 +1298,8 @@
       'No promotion of commercial mainstream events.',
       'High signal, low noise content only.'
     ];
+    const showSkeleton = eventsRes.loading && events.length === 0;
+    const showEventsNote = !eventsRes.loading && !eventsRes.error && events.length === 0;
 
     return h('div', { className: 'ose-right-rail' },
       h('section', { className: 'ose-widget' },
@@ -1183,8 +1307,8 @@
           h('h3', null, 'Upcoming Bangalore Events'),
           h('span', { className: 'ose-widget-icon ose-widget-icon-events' }, Icon('calendar-days'))
         ),
-        h('div', { className: eventsRes.loading ? 'ose-events is-loading' : 'ose-events' },
-          eventsRes.loading
+        h('div', { className: showSkeleton ? 'ose-events is-loading' : 'ose-events' },
+          showSkeleton
             ? [0, 1, 2].map(function (idx) {
                 return h('article', { className: 'ose-event ose-event-skeleton', key: 'event-sk-' + idx },
                   h('div', { className: 'ose-event-date' },
@@ -1210,7 +1334,7 @@
               )
             );
           }),
-          !eventsRes.loading && !eventsRes.error && events.length === 0 ? h('p', { className: 'ose-events-note' }, 'No upcoming events.') : null
+          showEventsNote ? h('p', { className: 'ose-events-note' }, 'No upcoming events.') : null
         ),
         h('a', { className: 'ose-widget-btn', href: '/openscene/?view=events' }, 'View Calendar')
       ),
@@ -1262,6 +1386,7 @@
       : [];
     if (!externalCommunities && liveCommunities.length > 0) {
       communityListCache = liveCommunities.slice();
+      writeCommunitiesCache(liveCommunities);
     }
     const fallbackCommunities = Array.isArray(communityListCache) ? communityListCache : [];
     const communitiesLoading = externalCommunities
@@ -1304,6 +1429,7 @@
       : [];
     if (!externalCommunities && liveCommunities.length > 0) {
       communityListCache = liveCommunities.slice();
+      writeCommunitiesCache(liveCommunities);
     }
     const fallbackCommunities = Array.isArray(communityListCache) ? communityListCache : [];
     const communitiesLoading = externalCommunities
@@ -1654,6 +1780,7 @@
       : [];
     if (liveShellCommunities.length > 0) {
       communityListCache = liveShellCommunities.slice();
+      writeCommunitiesCache(liveShellCommunities);
     }
     const shellCommunities = liveShellCommunities.length > 0 ? liveShellCommunities : (Array.isArray(communityListCache) ? communityListCache : []);
 
@@ -2200,6 +2327,7 @@
       : [];
     if (liveCommunities.length > 0) {
       communityListCache = liveCommunities.slice();
+      writeCommunitiesCache(liveCommunities);
     }
     const communities = liveCommunities.length > 0 ? liveCommunities : (Array.isArray(communityListCache) ? communityListCache : []);
 
@@ -2253,6 +2381,7 @@
       : [];
     if (liveCommunities.length > 0) {
       communityListCache = liveCommunities.slice();
+      writeCommunitiesCache(liveCommunities);
     }
     const communities = liveCommunities.length > 0 ? liveCommunities : (Array.isArray(communityListCache) ? communityListCache : []);
     const [sortMode, setSortMode] = useState('hot');

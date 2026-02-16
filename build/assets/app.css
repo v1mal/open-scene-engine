@@ -1598,6 +1598,7 @@ body.ose-lock-scroll {
   min-height: 262px;
 }
 
+
 #openscene-root .ose-event {
   display: grid;
   grid-template-columns: 56px minmax(0, 1fr);
@@ -1607,6 +1608,7 @@ body.ose-lock-scroll {
   padding: 14px;
   background: #050607;
 }
+
 
 #openscene-root .ose-event-skeleton {
   border-color: #151a20;
