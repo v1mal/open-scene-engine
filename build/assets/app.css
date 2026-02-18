@@ -322,8 +322,6 @@
 
 #openscene-root .ose-topbar {
   height: 56px;
-  border-bottom: 1px solid transparent;
-  border-image: linear-gradient(90deg, var(--ose-purple) 0%, var(--ose-neon) 100%) 1;
   display: grid;
   grid-template-columns: var(--ose-left-rail) var(--ose-center-rail) var(--ose-right-rail);
   align-items: center;
@@ -337,6 +335,18 @@
   background: rgba(10, 10, 10, 0.9);
   backdrop-filter: blur(10px);
   overflow: visible;
+}
+
+#openscene-root .ose-topbar::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 100vw;
+  height: 1px;
+  transform: translateX(-50%);
+  background: linear-gradient(90deg, var(--ose-purple) 0%, var(--ose-neon) 100%);
+  pointer-events: none;
 }
 
 #wpadminbar ~ #openscene-root .ose-topbar { top: 32px; }
