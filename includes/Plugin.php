@@ -7,6 +7,7 @@ namespace OpenScene\Engine;
 use OpenScene\Engine\Admin\AdminController;
 use OpenScene\Engine\Application\CommunityBootstrap;
 use OpenScene\Engine\Application\PostService;
+use OpenScene\Engine\Application\SavedPostService;
 use OpenScene\Engine\Application\Scheduler;
 use OpenScene\Engine\Auth\Roles;
 use OpenScene\Engine\Http\AdminAssets;
@@ -19,6 +20,7 @@ use OpenScene\Engine\Http\Rest\FeedController;
 use OpenScene\Engine\Http\Rest\ModerationController;
 use OpenScene\Engine\Http\Rest\PostController;
 use OpenScene\Engine\Http\Rest\RestRegistrar;
+use OpenScene\Engine\Http\Rest\SavedPostController;
 use OpenScene\Engine\Http\Rest\UserController;
 use OpenScene\Engine\Http\Rest\VoteController;
 use OpenScene\Engine\Http\Shortcode;
@@ -34,6 +36,7 @@ use OpenScene\Engine\Infrastructure\Repository\CommunityRepository;
 use OpenScene\Engine\Infrastructure\Repository\EventRepository;
 use OpenScene\Engine\Infrastructure\Repository\ModerationRepository;
 use OpenScene\Engine\Infrastructure\Repository\PostRepository;
+use OpenScene\Engine\Infrastructure\Repository\SavedPostRepository;
 use OpenScene\Engine\Infrastructure\Repository\UserRepository;
 use OpenScene\Engine\Infrastructure\Repository\VoteRepository;
 use OpenScene\Engine\Routing\RewriteManager;
@@ -159,6 +162,7 @@ final class Plugin
         $container->set(EventRepository::class, fn(Container $c): EventRepository => new EventRepository($wpdb, $c->get(TableNames::class)));
         $container->set(CommentRepository::class, fn(Container $c): CommentRepository => new CommentRepository($wpdb, $c->get(TableNames::class), $c->get(ObservabilityLogger::class)));
         $container->set(UserRepository::class, fn(Container $c): UserRepository => new UserRepository($wpdb, $c->get(TableNames::class)));
+        $container->set(SavedPostRepository::class, fn(Container $c): SavedPostRepository => new SavedPostRepository($wpdb, $c->get(TableNames::class)));
         $container->set(ModerationRepository::class, fn(Container $c): ModerationRepository => new ModerationRepository($wpdb, $c->get(TableNames::class)));
         $container->set(VoteRepository::class, fn(Container $c): VoteRepository => new VoteRepository($wpdb, $c->get(TableNames::class), $c->get(PostRepository::class), $c->get(CommentRepository::class), $c->get(ObservabilityLogger::class)));
 
@@ -168,6 +172,11 @@ final class Plugin
         $container->set(Assets::class, fn(Container $c): Assets => new Assets($c->get(TemplateLoader::class)));
         $container->set(Scheduler::class, fn(): Scheduler => new Scheduler());
         $container->set(PostService::class, fn(Container $c): PostService => new PostService($wpdb, $c->get(PostRepository::class), $c->get(EventRepository::class)));
+        $container->set(SavedPostService::class, fn(Container $c): SavedPostService => new SavedPostService(
+            $c->get(SavedPostRepository::class),
+            $c->get(PostRepository::class),
+            $c->get(ObservabilityLogger::class)
+        ));
         $container->set(AdminController::class, fn(Container $c): AdminController => new AdminController(
             $c->get(CommunityRepository::class),
             $c->get(TableNames::class),
@@ -190,6 +199,14 @@ final class Plugin
         $container->set(VoteController::class, fn(Container $c): VoteController => new VoteController($c->get(RateLimiter::class), $c->get(VoteRepository::class), $c->get(CacheManager::class)));
         $container->set(UserController::class, fn(Container $c): UserController => new UserController($c->get(RateLimiter::class), $c->get(UserRepository::class)));
         $container->set(ModerationController::class, fn(Container $c): ModerationController => new ModerationController($c->get(RateLimiter::class), $c->get(ModerationRepository::class), $c->get(PostRepository::class)));
+        $container->set(SavedPostController::class, fn(Container $c): SavedPostController => new SavedPostController(
+            $c->get(RateLimiter::class),
+            $c->get(SavedPostService::class),
+            $c->get(SavedPostRepository::class),
+            $c->get(UserRepository::class),
+            $c->get(VoteRepository::class),
+            $c->get(PostRepository::class)
+        ));
 
         $container->set(RestRegistrar::class, fn(Container $c): RestRegistrar => new RestRegistrar(
             $c->get(FeedController::class),
@@ -200,6 +217,7 @@ final class Plugin
             $c->get(VoteController::class),
             $c->get(UserController::class),
             $c->get(ModerationController::class),
+            $c->get(SavedPostController::class),
         ));
 
         return $container;

@@ -278,6 +278,7 @@ final class AdminController
         $this->checkbox('openscene_feature_reporting', 'Reporting', ! empty($flags['reporting']));
         $this->checkbox('openscene_feature_voting', 'Voting', ! empty($flags['voting']));
         $this->checkbox('openscene_feature_delete', 'Delete', ! empty($flags['delete']));
+        $this->checkbox('openscene_feature_saved_posts', 'Saved Posts', ! empty($flags['saved_posts']));
         echo '</td></tr>';
 
         echo '<tr><th scope="row"><label for="openscene_community_rules">' . esc_html__('Community Rules', 'open-scene-engine') . '</label></th>';
@@ -480,6 +481,7 @@ final class AdminController
                 'reporting' => isset($_POST['openscene_feature_reporting']),
                 'voting' => isset($_POST['openscene_feature_voting']),
                 'delete' => isset($_POST['openscene_feature_delete']),
+                'saved_posts' => isset($_POST['openscene_feature_saved_posts']),
             ],
             'logo_attachment_id' => max(0, (int) ($_POST['openscene_logo_attachment_id'] ?? 0)),
         ];
@@ -683,6 +685,7 @@ final class AdminController
                 'reporting' => true,
                 'voting' => true,
                 'delete' => true,
+                'saved_posts' => false,
             ],
             'logo_attachment_id' => 0,
         ];
@@ -705,6 +708,7 @@ final class AdminController
                 'reporting' => (bool) ($flags['reporting'] ?? $defaults['feature_flags']['reporting']),
                 'voting' => (bool) ($flags['voting'] ?? $defaults['feature_flags']['voting']),
                 'delete' => (bool) ($flags['delete'] ?? $defaults['feature_flags']['delete']),
+                'saved_posts' => (bool) ($flags['saved_posts'] ?? $defaults['feature_flags']['saved_posts']),
             ],
             'logo_attachment_id' => max(0, (int) ($raw['logo_attachment_id'] ?? $defaults['logo_attachment_id'])),
         ];

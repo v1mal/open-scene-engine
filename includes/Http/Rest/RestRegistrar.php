@@ -14,7 +14,8 @@ final class RestRegistrar
         private readonly CommentController $comments,
         private readonly VoteController $votes,
         private readonly UserController $users,
-        private readonly ModerationController $moderation
+        private readonly ModerationController $moderation,
+        private readonly SavedPostController $savedPosts
     ) {
     }
 
@@ -50,6 +51,11 @@ final class RestRegistrar
 
         register_rest_route('openscene/v1', '/posts/(?P<id>\d+)/report', [
             ['methods' => 'POST', 'callback' => [$this->posts, 'report'], 'permission_callback' => fn(): bool => is_user_logged_in()],
+        ]);
+
+        register_rest_route('openscene/v1', '/posts/(?P<id>\d+)/save', [
+            ['methods' => 'POST', 'callback' => [$this->savedPosts, 'save'], 'permission_callback' => fn(): bool => is_user_logged_in()],
+            ['methods' => 'DELETE', 'callback' => [$this->savedPosts, 'unsave'], 'permission_callback' => fn(): bool => is_user_logged_in()],
         ]);
 
         register_rest_route('openscene/v1', '/posts/(?P<id>\d+)/clear-reports', [
@@ -114,6 +120,10 @@ final class RestRegistrar
 
         register_rest_route('openscene/v1', '/users/(?P<username>[A-Za-z0-9_\-.]+)/comments', [
             ['methods' => 'GET', 'callback' => [$this->users, 'comments'], 'permission_callback' => '__return_true'],
+        ]);
+
+        register_rest_route('openscene/v1', '/users/(?P<username>[A-Za-z0-9_\-.]+)/saved', [
+            ['methods' => 'GET', 'callback' => [$this->savedPosts, 'list'], 'permission_callback' => fn(): bool => is_user_logged_in()],
         ]);
 
         register_rest_route('openscene/v1', '/moderation/ban', [

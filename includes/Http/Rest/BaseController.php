@@ -13,6 +13,7 @@ abstract class BaseController
         'reporting' => true,
         'voting' => true,
         'delete' => true,
+        'saved_posts' => false,
     ];
 
     public function __construct(protected readonly RateLimiter $rateLimiter)
@@ -54,6 +55,7 @@ abstract class BaseController
             'reporting' => (bool) ($flags['reporting'] ?? self::FEATURE_DEFAULTS['reporting']),
             'voting' => (bool) ($flags['voting'] ?? self::FEATURE_DEFAULTS['voting']),
             'delete' => (bool) ($flags['delete'] ?? self::FEATURE_DEFAULTS['delete']),
+            'saved_posts' => (bool) ($flags['saved_posts'] ?? self::FEATURE_DEFAULTS['saved_posts']),
         ];
     }
 

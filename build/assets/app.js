@@ -21,7 +21,7 @@
   }
 
   const cfg = window.OpenSceneConfig || {};
-  const featureFlags = Object.assign({ reporting: true, voting: true, delete: true }, (cfg && cfg.features) || {});
+  const featureFlags = Object.assign({ reporting: true, voting: true, delete: true, saved_posts: false }, (cfg && cfg.features) || {});
   let communityListCache = Array.isArray(cfg.communities) ? cfg.communities.slice() : [];
   let sidebarEventsCache = [];
   const COMMUNITY_PREFETCH_TTL_MS = 90 * 1000;
@@ -495,6 +495,20 @@
     return !!featureFlags[name];
   }
 
+  function showUiToast(message, actionLabel, actionHref) {
+    if (typeof window === 'undefined' || typeof window.dispatchEvent !== 'function') {
+      return;
+    }
+    window.dispatchEvent(new CustomEvent('ose:toast', {
+      detail: {
+        id: Date.now(),
+        message: String(message || ''),
+        actionLabel: actionLabel ? String(actionLabel) : '',
+        actionHref: actionHref ? String(actionHref) : ''
+      }
+    }));
+  }
+
   function initPostHeaderVote() {
     const root = document.getElementById('openscene-post-vote');
     if (!root || root.getAttribute('data-bound') === '1') {
@@ -603,6 +617,7 @@
     const profileHref = currentUsername ? ('/u/' + encodeURIComponent(currentUsername) + '/') : '/wp-login.php';
     const joinUrl = cfg && cfg.joinUrl ? String(cfg.joinUrl) : '';
     const logoutUrl = cfg && cfg.logoutUrl ? String(cfg.logoutUrl) : '/wp-login.php?action=logout';
+    const savedPostsEnabled = isFeatureEnabled('saved_posts');
     const searchParams = new URLSearchParams(window.location.search || '');
     const initialSearch = searchParams.get('q') || '';
     const [searchValue, setSearchValue] = useState(initialSearch);
@@ -651,6 +666,7 @@
                   ),
                   h('div', { className: 'ose-avatar-dropdown' },
                     h('a', { href: profileHref }, 'Profile'),
+                    savedPostsEnabled ? h('a', { href: '/openscene/?view=saved' }, 'Saved Posts') : null,
                     canModerate ? h('a', { href: '/moderator/' }, 'Moderator Panel') : null,
                     h('a', { href: logoutUrl }, 'Log out')
                   )
@@ -983,9 +999,12 @@
     const reportingEnabled = isFeatureEnabled('reporting');
     const votingEnabled = isFeatureEnabled('voting');
     const deleteEnabled = isFeatureEnabled('delete');
+    const savedPostsEnabled = isFeatureEnabled('saved_posts');
+    const isSaved = !!post.saved;
     const canDeletePost = canDeleteAnyPost && !isRemoved && (deleteEnabled || canManageOptions);
     const canReportPost = reportingEnabled && isLoggedIn && isPublished && (!isOwner || canModerate || canManageOptions);
     const canSeeReportCount = canModerate || canManageOptions;
+    const canSavePost = savedPostsEnabled && isLoggedIn && !isRemoved;
 
     function closeActionsMenu(event) {
       if (!event || !event.currentTarget || typeof event.currentTarget.closest !== 'function') {
@@ -1038,7 +1057,15 @@
             h('summary', { className: 'ose-post-more-toggle', 'aria-label': 'More actions' }, Icon('more-horizontal')),
             h('div', { className: 'ose-post-more-menu' },
               h('button', { type: 'button' }, Icon('share-2'), 'Share'),
-              h('button', { type: 'button' }, Icon('bookmark'), 'Save'),
+              canSavePost ? h('button', {
+                type: 'button',
+                onClick: function (event) {
+                  closeActionsMenu(event);
+                  if (props && typeof props.onSave === 'function') {
+                    props.onSave(post.id, isSaved);
+                  }
+                }
+              }, Icon('bookmark'), isSaved ? 'Saved' : 'Save') : null,
               canReportPost ? h('button', {
                 type: 'button',
                 onClick: function (event) { closeActionsMenu(event); props.onReport(post.id); },
@@ -1058,6 +1085,7 @@
     const [optimisticVotes, setOptimisticVotes] = useState({});
     const [deletedPosts, setDeletedPosts] = useState({});
     const [reportedPosts, setReportedPosts] = useState({});
+    const [savedPosts, setSavedPosts] = useState({});
     const [showMobileCreateFab, setShowMobileCreateFab] = useState(true);
 
     const communityMap = {};
@@ -1198,6 +1226,37 @@
       }).catch(function () {});
     }
 
+    function handleSave(postId, isSaved) {
+      if (!isFeatureEnabled('saved_posts')) return;
+      if (!postId) return;
+      if (Number(cfg.userId || 0) <= 0) {
+        loginRedirect();
+        return;
+      }
+      const nextSaved = !isSaved;
+      setSavedPosts(function (prev) {
+        const copy = Object.assign({}, prev);
+        copy[postId] = nextSaved;
+        return copy;
+      });
+      apiRequest({
+        path: '/openscene/v1/posts/' + postId + '/save',
+        method: nextSaved ? 'POST' : 'DELETE'
+      }).then(function () {
+        if (nextSaved) {
+          showUiToast('Post saved. Find it in Saved Posts.', 'Open Saved Posts', '/openscene/?view=saved');
+        } else {
+          showUiToast('Post removed from Saved Posts.');
+        }
+      }).catch(function () {
+        setSavedPosts(function (prev) {
+          const copy = Object.assign({}, prev);
+          copy[postId] = isSaved;
+          return copy;
+        });
+      });
+    }
+
     return h('main', { className: 'ose-center ose-feed-center' },
       h('div', { className: 'ose-feed-header' },
         h(SortTabs, { mode: mode, onChange: setMode }),
@@ -1242,13 +1301,17 @@
             mergedPost.user_reported = true;
             mergedPost.reports_count = Number(mergedPost.reports_count || 0) + 1;
           }
+          if (Object.prototype.hasOwnProperty.call(savedPosts, post.id)) {
+            mergedPost.saved = !!savedPosts[post.id];
+          }
           return h(FeedPost, {
             key: post.id,
             post: mergedPost,
             communityName: communityMap[post.community_id] || post.type || 'discussion',
             onVote: handleVote,
             onDelete: handleDelete,
-            onReport: handleReport
+            onReport: handleReport,
+            onSave: handleSave
           });
         })
       ),
@@ -1393,9 +1456,38 @@
       ? externalCommunitiesLoading
       : (!!communitiesRes.loading && fallbackCommunities.length === 0);
     const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
+    const [toast, setToast] = useState(null);
     const communities = externalCommunities
       ? externalCommunities
       : (liveCommunities.length > 0 ? liveCommunities : fallbackCommunities);
+
+    useEffect(function () {
+      let timer = null;
+      function onToast(event) {
+        const detail = event && event.detail ? event.detail : null;
+        if (!detail || !detail.message) return;
+        if (timer) {
+          window.clearTimeout(timer);
+          timer = null;
+        }
+        setToast({
+          id: Number(detail.id || Date.now()),
+          message: String(detail.message || ''),
+          actionLabel: String(detail.actionLabel || ''),
+          actionHref: String(detail.actionHref || '')
+        });
+        timer = window.setTimeout(function () {
+          setToast(null);
+          timer = null;
+        }, 3200);
+      }
+
+      window.addEventListener('ose:toast', onToast);
+      return function () {
+        window.removeEventListener('ose:toast', onToast);
+        if (timer) window.clearTimeout(timer);
+      };
+    }, []);
 
     return h('div', { className: 'ose-scene-home' },
       h(TopHeader, {
@@ -1413,7 +1505,13 @@
         onClose: function () { setMobileDrawerOpen(false); },
         communities: communities,
         activeCommunitySlug: activeCommunitySlug
-      })
+      }),
+      toast ? h('div', { className: 'ose-toast', role: 'status', 'aria-live': 'polite' },
+        h('span', null, toast.message),
+        (toast.actionLabel && toast.actionHref)
+          ? h('a', { href: toast.actionHref }, toast.actionLabel)
+          : null
+      ) : null
     );
   }
 
@@ -1436,9 +1534,38 @@
       ? externalCommunitiesLoading
       : (!!communitiesRes.loading && fallbackCommunities.length === 0);
     const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
+    const [toast, setToast] = useState(null);
     const communities = externalCommunities
       ? externalCommunities
       : (liveCommunities.length > 0 ? liveCommunities : fallbackCommunities);
+
+    useEffect(function () {
+      let timer = null;
+      function onToast(event) {
+        const detail = event && event.detail ? event.detail : null;
+        if (!detail || !detail.message) return;
+        if (timer) {
+          window.clearTimeout(timer);
+          timer = null;
+        }
+        setToast({
+          id: Number(detail.id || Date.now()),
+          message: String(detail.message || ''),
+          actionLabel: String(detail.actionLabel || ''),
+          actionHref: String(detail.actionHref || '')
+        });
+        timer = window.setTimeout(function () {
+          setToast(null);
+          timer = null;
+        }, 3200);
+      }
+
+      window.addEventListener('ose:toast', onToast);
+      return function () {
+        window.removeEventListener('ose:toast', onToast);
+        if (timer) window.clearTimeout(timer);
+      };
+    }, []);
 
     return h('div', { className: 'ose-scene-home ose-community-shell' },
       h(TopHeader, {
@@ -1456,13 +1583,20 @@
         onClose: function () { setMobileDrawerOpen(false); },
         communities: communities,
         activeCommunitySlug: activeCommunitySlug
-      })
+      }),
+      toast ? h('div', { className: 'ose-toast', role: 'status', 'aria-live': 'polite' },
+        h('span', null, toast.message),
+        (toast.actionLabel && toast.actionHref)
+          ? h('a', { href: toast.actionHref }, toast.actionLabel)
+          : null
+      ) : null
     );
   }
 
   function EventsListPage() {
     const [scope, setScope] = useState('upcoming');
     const [cursor, setCursor] = useState('');
+    const [refreshKey, setRefreshKey] = useState(0);
     const [items, setItems] = useState([]);
     const [nextCursor, setNextCursor] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -1658,6 +1792,7 @@
     const [reportedPosts, setReportedPosts] = useState({});
     const [deletedPosts, setDeletedPosts] = useState({});
     const [optimisticVotes, setOptimisticVotes] = useState({});
+    const [savedPosts, setSavedPosts] = useState({});
 
     const communityRes = useApi('/openscene/v1/communities/' + encodeURIComponent(slug));
     const community = communityRes.data || null;
@@ -1763,6 +1898,37 @@
       });
     }
 
+    function savePost(postId, isSaved) {
+      if (!isFeatureEnabled('saved_posts')) return;
+      if (!postId) return;
+      if (Number(cfg.userId || 0) <= 0) {
+        loginRedirect();
+        return;
+      }
+      const nextSaved = !isSaved;
+      setSavedPosts(function (prev) {
+        const copy = Object.assign({}, prev);
+        copy[postId] = nextSaved;
+        return copy;
+      });
+      apiRequest({
+        path: '/openscene/v1/posts/' + postId + '/save',
+        method: nextSaved ? 'POST' : 'DELETE'
+      }).then(function () {
+        if (nextSaved) {
+          showUiToast('Post saved. Find it in Saved Posts.', 'Open Saved Posts', '/openscene/?view=saved');
+        } else {
+          showUiToast('Post removed from Saved Posts.');
+        }
+      }).catch(function () {
+        setSavedPosts(function (prev) {
+          const copy = Object.assign({}, prev);
+          copy[postId] = isSaved;
+          return copy;
+        });
+      });
+    }
+
     function parseRules(rawRules) {
       if (!rawRules) return ['Underground focus only.', 'No spam or low-effort promotion.', 'Keep feedback constructive.'];
       try {
@@ -1859,13 +2025,17 @@
               merged.body = '';
               merged.user_vote = 0;
             }
+            if (Object.prototype.hasOwnProperty.call(savedPosts, post.id)) {
+              merged.saved = !!savedPosts[post.id];
+            }
             return h(FeedPost, {
               key: post.id,
               post: merged,
               communityName: communityLabel,
               onVote: votePost,
               onReport: reportPost,
-              onDelete: deletePost
+              onDelete: deletePost,
+              onSave: savePost
             });
           })
         ),
@@ -2397,6 +2567,7 @@
     const [optimisticVotes, setOptimisticVotes] = useState({});
     const [deletedPosts, setDeletedPosts] = useState({});
     const [reportedPosts, setReportedPosts] = useState({});
+    const [savedPosts, setSavedPosts] = useState({});
     const communityMap = {};
     communities.forEach(function (c) { communityMap[c.id] = c.name; });
 
@@ -2465,6 +2636,37 @@
       }).catch(function () {});
     }
 
+    function handleSave(postId, isSaved) {
+      if (!isFeatureEnabled('saved_posts')) return;
+      if (!postId) return;
+      if (Number(cfg.userId || 0) <= 0) {
+        loginRedirect();
+        return;
+      }
+      const nextSaved = !isSaved;
+      setSavedPosts(function (prev) {
+        const copy = Object.assign({}, prev);
+        copy[postId] = nextSaved;
+        return copy;
+      });
+      apiRequest({
+        path: '/openscene/v1/posts/' + postId + '/save',
+        method: nextSaved ? 'POST' : 'DELETE'
+      }).then(function () {
+        if (nextSaved) {
+          showUiToast('Post saved. Find it in Saved Posts.', 'Open Saved Posts', '/openscene/?view=saved');
+        } else {
+          showUiToast('Post removed from Saved Posts.');
+        }
+      }).catch(function () {
+        setSavedPosts(function (prev) {
+          const copy = Object.assign({}, prev);
+          copy[postId] = isSaved;
+          return copy;
+        });
+      });
+    }
+
     return h(SceneRailShell, { communities: communities, communitiesLoading: (!!communitiesRes.loading && communities.length === 0) },
       h('main', { className: 'ose-center ose-center-scroll' },
         h('section', { className: 'ose-center-pane' },
@@ -2502,13 +2704,17 @@
                 mergedPost.user_reported = true;
                 mergedPost.reports_count = Number(mergedPost.reports_count || 0) + 1;
               }
+              if (Object.prototype.hasOwnProperty.call(savedPosts, post.id)) {
+                mergedPost.saved = !!savedPosts[post.id];
+              }
               return h(FeedPost, {
                 key: post.id,
                 post: mergedPost,
                 communityName: communityMap[post.community_id] || post.type || 'discussion',
                 onVote: handleVote,
                 onDelete: handleDelete,
-                onReport: handleReport
+                onReport: handleReport,
+                onSave: handleSave
               });
             })
           ),
@@ -2516,6 +2722,199 @@
             h('button', { type: 'button', onClick: function () { setPage(Math.max(1, page - 1)); }, disabled: page <= 1 || searchRes.loading }, 'Prev'),
             h('span', null, 'Page ' + page),
             h('button', { type: 'button', onClick: function () { setPage(page + 1); }, disabled: !hasNext || searchRes.loading }, 'Next')
+          ) : null
+        )
+      )
+    );
+  }
+
+  function SavedPostsPage() {
+    const isLoggedIn = Number(cfg.userId || 0) > 0;
+    const usernameRaw = cfg && cfg.currentUser && cfg.currentUser.username ? String(cfg.currentUser.username) : '';
+    const username = usernameRaw.toLowerCase().replace(/[^a-z0-9_\-.]/g, '');
+    const [cursor, setCursor] = useState('');
+    const [refreshKey, setRefreshKey] = useState(0);
+    const [items, setItems] = useState([]);
+    const [nextCursor, setNextCursor] = useState(null);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
+    const [optimisticVotes, setOptimisticVotes] = useState({});
+    const [deletedPosts, setDeletedPosts] = useState({});
+    const [reportedPosts, setReportedPosts] = useState({});
+    const [savedPosts, setSavedPosts] = useState({});
+    const communitiesRes = useApi('/openscene/v1/communities?limit=20');
+    const communities = Array.isArray(communitiesRes.data)
+      ? communitiesRes.data.map(function (c) {
+          return { id: c.id, name: c.name, slug: c.slug, icon: c.icon || '', count: '' };
+        })
+      : [];
+    const communityMap = {};
+    communities.forEach(function (c) { communityMap[c.id] = c.name; });
+
+    useEffect(function () {
+      if (!isLoggedIn || !username || !isFeatureEnabled('saved_posts')) return;
+      let canceled = false;
+      setLoading(true);
+      setError('');
+      apiRequest({
+        path: '/openscene/v1/users/' + encodeURIComponent(username) + '/saved?limit=20' + (cursor ? ('&cursor=' + encodeURIComponent(cursor)) : '')
+      }).then(function (res) {
+        if (canceled) return;
+        const rows = Array.isArray(res && res.data ? res.data : null) ? res.data : [];
+        setItems(function (prev) { return cursor ? prev.concat(rows) : rows; });
+        setNextCursor(res && res.meta && res.meta.next_cursor ? res.meta.next_cursor : null);
+        setLoading(false);
+      }).catch(function (err) {
+        if (canceled) return;
+        setError(err && err.message ? err.message : 'Unable to load saved posts.');
+        setLoading(false);
+      });
+      return function () { canceled = true; };
+    }, [isLoggedIn, username, cursor, refreshKey]);
+
+    function loginRedirect() {
+      const redirectTo = encodeURIComponent(window.location.href || '/openscene/');
+      window.location.href = '/wp-login.php?redirect_to=' + redirectTo;
+    }
+
+    function handleVote(postId, clickedValue, currentVote) {
+      if (!isFeatureEnabled('voting')) return;
+      if (Number(cfg.userId || 0) <= 0) { loginRedirect(); return; }
+      const effective = (currentVote === clickedValue) ? 0 : clickedValue;
+      const delta = effective - currentVote;
+      setOptimisticVotes(function (prev) {
+        return Object.assign({}, prev, { [postId]: { user_vote: effective, delta: delta, pending: true } });
+      });
+      apiRequest({
+        path: '/openscene/v1/posts/' + postId + '/vote',
+        method: 'POST',
+        data: { value: clickedValue }
+      }).then(function (res) {
+        const payload = res && res.data ? res.data : {};
+        setOptimisticVotes(function (prev) {
+          return Object.assign({}, prev, {
+            [postId]: { user_vote: Number(payload.user_vote || 0), absoluteScore: Number(payload.score || 0), pending: false }
+          });
+        });
+      }).catch(function () {
+        setOptimisticVotes(function (prev) {
+          const copy = Object.assign({}, prev);
+          delete copy[postId];
+          return copy;
+        });
+      });
+    }
+
+    function handleDelete(postId) {
+      if (!postId || !window.confirm('Delete this post?')) return;
+      apiRequest({ path: '/openscene/v1/posts/' + postId, method: 'DELETE' }).then(function () {
+        setDeletedPosts(function (prev) {
+          const copy = Object.assign({}, prev);
+          copy[postId] = true;
+          return copy;
+        });
+      }).catch(function () {});
+    }
+
+    function handleReport(postId) {
+      if (!isFeatureEnabled('reporting')) return;
+      if (!postId || reportedPosts[postId]) return;
+      apiRequest({ path: '/openscene/v1/posts/' + postId + '/report', method: 'POST' }).then(function () {
+        setReportedPosts(function (prev) {
+          const copy = Object.assign({}, prev);
+          copy[postId] = true;
+          return copy;
+        });
+      }).catch(function () {});
+    }
+
+    function handleSave(postId, isSaved) {
+      if (!isFeatureEnabled('saved_posts')) return;
+      if (!postId) return;
+      if (Number(cfg.userId || 0) <= 0) { loginRedirect(); return; }
+      const nextSaved = !isSaved;
+      setSavedPosts(function (prev) {
+        const copy = Object.assign({}, prev);
+        copy[postId] = nextSaved;
+        return copy;
+      });
+      apiRequest({
+        path: '/openscene/v1/posts/' + postId + '/save',
+        method: nextSaved ? 'POST' : 'DELETE'
+      }).then(function () {
+        if (nextSaved) {
+          showUiToast('Post saved. Find it in Saved Posts.', 'Open Saved Posts', '/openscene/?view=saved');
+        } else {
+          showUiToast('Post removed from Saved Posts.');
+          setItems([]);
+          setNextCursor(null);
+          setCursor('');
+          setRefreshKey(function (prev) { return prev + 1; });
+        }
+      }).catch(function () {
+        setSavedPosts(function (prev) {
+          const copy = Object.assign({}, prev);
+          copy[postId] = isSaved;
+          return copy;
+        });
+      });
+    }
+
+    return h(SceneRailShell, { communities: communities, communitiesLoading: (!!communitiesRes.loading && communities.length === 0) },
+      h('main', { className: 'ose-center ose-feed-center' },
+        h('div', { className: 'ose-feed-header' },
+          h('h2', { className: 'ose-saved-title' }, Icon('bookmark'), 'Saved Posts')
+        ),
+        h('div', { className: 'ose-feed-list' },
+          !isLoggedIn ? h('div', { className: 'ose-feed-status' }, 'Log in to view saved posts.') : null,
+          isLoggedIn && !isFeatureEnabled('saved_posts') ? h('div', { className: 'ose-feed-status' }, 'Saved posts are currently disabled.') : null,
+          loading && items.length === 0 ? h('div', { className: 'ose-feed-status' }, 'Loading saved posts...') : null,
+          error ? h('div', { className: 'ose-feed-status' }, error) : null,
+          isLoggedIn && isFeatureEnabled('saved_posts') && !loading && !error && items.length === 0
+            ? h('div', { className: 'ose-feed-empty' },
+                h('p', null, 'No saved posts yet.'),
+                h('a', { className: 'ose-feed-empty-cta', href: '/openscene/' }, 'Explore Feed')
+              )
+            : null,
+          items.map(function (post) {
+            const optimistic = optimisticVotes[post.id] || null;
+            const mergedPost = Object.assign({}, post);
+            if (optimistic) {
+              mergedPost.user_vote = optimistic.user_vote;
+              mergedPost.score = (typeof optimistic.absoluteScore === 'number')
+                ? optimistic.absoluteScore
+                : Number(post.score || 0) + Number(optimistic.delta || 0);
+            }
+            if (deletedPosts[post.id]) {
+              mergedPost.status = 'removed';
+              mergedPost.title = '[removed]';
+              mergedPost.body = '';
+              mergedPost.user_vote = 0;
+            }
+            if (reportedPosts[post.id]) {
+              mergedPost.user_reported = true;
+              mergedPost.reports_count = Number(mergedPost.reports_count || 0) + 1;
+            }
+            if (Object.prototype.hasOwnProperty.call(savedPosts, post.id)) {
+              mergedPost.saved = !!savedPosts[post.id];
+            }
+            return h(FeedPost, {
+              key: 'saved-' + post.id + '-' + (post.saved_id || 0),
+              post: mergedPost,
+              communityName: communityMap[post.community_id] || post.type || 'discussion',
+              onVote: handleVote,
+              onDelete: handleDelete,
+              onReport: handleReport,
+              onSave: handleSave
+            });
+          }),
+          nextCursor ? h('div', { className: 'ose-community-load-more-wrap' },
+            h('button', {
+              type: 'button',
+              className: 'ose-community-load-more',
+              disabled: loading,
+              onClick: function () { setCursor(nextCursor); }
+            }, loading ? 'Loading...' : 'Load More Saved Posts')
           ) : null
         )
       )
@@ -3062,6 +3461,10 @@
 
     if (view === 'communities') {
       return h(CommunitiesListPage);
+    }
+
+    if (view === 'saved') {
+      return h(SavedPostsPage);
     }
 
     if (view === 'event') {

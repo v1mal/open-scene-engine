@@ -6,10 +6,11 @@ namespace OpenScene\Engine\Infrastructure\Database;
 
 use OpenScene\Engine\Infrastructure\Database\Migrations\AddPerformanceIndexesV4;
 use OpenScene\Engine\Infrastructure\Database\Migrations\AddObservabilityTableV1;
+use OpenScene\Engine\Infrastructure\Database\Migrations\AddSavedPostsTableV1;
 
 final class MigrationRunner
 {
-    public const DB_VERSION = '1.5.0';
+    public const DB_VERSION = '1.6.0';
 
     public function migrate(): void
     {
@@ -173,6 +174,7 @@ final class MigrationRunner
 
         (new AddPerformanceIndexesV4($wpdb, $tables))->migrate();
         (new AddObservabilityTableV1($wpdb, $tables))->migrate();
+        (new AddSavedPostsTableV1($wpdb, $tables))->migrate();
 
         update_option('openscene_db_version', self::DB_VERSION);
         add_option('openscene_cache_version', '1', '', false);

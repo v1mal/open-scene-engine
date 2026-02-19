@@ -45,6 +45,7 @@ final class Assets
                 'reporting' => (bool) ($rawFlags['reporting'] ?? true),
                 'voting' => (bool) ($rawFlags['voting'] ?? true),
                 'delete' => (bool) ($rawFlags['delete'] ?? true),
+                'saved_posts' => (bool) ($rawFlags['saved_posts'] ?? false),
             ];
             $logoAttachmentId = is_array($settings) ? (int) ($settings['logo_attachment_id'] ?? 0) : 0;
             $logoUrl = $logoAttachmentId > 0 ? (string) wp_get_attachment_image_url($logoAttachmentId, 'full') : '';

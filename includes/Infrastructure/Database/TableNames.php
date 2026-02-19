@@ -65,4 +65,10 @@ final class TableNames
         global $wpdb;
         return $wpdb->prefix . 'openscene_observability_logs';
     }
+
+    public function savedPosts(): string
+    {
+        global $wpdb;
+        return $wpdb->prefix . 'openscene_saved_posts';
+    }
 }
