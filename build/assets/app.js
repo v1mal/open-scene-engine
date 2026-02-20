@@ -1044,7 +1044,30 @@
         ),
         h('div', { className: 'ose-post-title-row' },
           h('a', { className: 'ose-post-title', href: '/post/' + post.id }, isRemoved ? '[removed]' : post.title),
-          !isRemoved ? h('a', { className: 'ose-post-comment-inline', href: '/post/' + post.id }, Icon('message-circle'), (post.comment_count || 0) + ' comments') : null
+          !isRemoved ? h('div', { className: 'ose-post-side-actions' },
+            h('a', { className: 'ose-post-comment-inline', href: '/post/' + post.id }, Icon('message-circle'), (post.comment_count || 0) + ' comments'),
+            h('details', { className: 'ose-post-more' },
+              h('summary', { className: 'ose-post-more-toggle', 'aria-label': 'More actions' }, Icon('more-horizontal')),
+              h('div', { className: 'ose-post-more-menu' },
+                h('button', { type: 'button' }, Icon('share-2'), 'Share'),
+                canSavePost ? h('button', {
+                  type: 'button',
+                  onClick: function (event) {
+                    closeActionsMenu(event);
+                    if (props && typeof props.onSave === 'function') {
+                      props.onSave(post.id, isSaved);
+                    }
+                  }
+                }, Icon('bookmark'), isSaved ? 'Saved' : 'Save') : null,
+                canReportPost ? h('button', {
+                  type: 'button',
+                  onClick: function (event) { closeActionsMenu(event); props.onReport(post.id); },
+                  disabled: isReported
+                }, Icon('flag'), isReported ? 'Reported' : 'Report') : null,
+                canDeletePost ? h('button', { type: 'button', onClick: function (event) { closeActionsMenu(event); props.onDelete(post.id); } }, Icon('trash-2'), 'Delete') : null
+              )
+            )
+          ) : null
         ),
         h('p', { className: 'ose-post-body' }, isRemoved ? '' : (post.body || '')),
         post.event_summary ? h('div', { className: 'ose-event-summary-inline' },
@@ -1052,28 +1075,7 @@
           ' ' + formatUtcForDisplay(post.event_summary.event_date) + ' · ' + (post.event_summary.venue_name || '')
         ) : null,
         !isRemoved ? h('div', { className: 'ose-post-actions' },
-          canSeeReportCount && reportsCount > 0 ? h('span', { className: 'ose-report-badge', 'aria-label': String(reportsCount) + ' reports' }, Icon('flag', 'ose-report-badge-icon'), String(reportsCount) + ' Reports') : null,
-          h('details', { className: 'ose-post-more' },
-            h('summary', { className: 'ose-post-more-toggle', 'aria-label': 'More actions' }, Icon('more-horizontal')),
-            h('div', { className: 'ose-post-more-menu' },
-              h('button', { type: 'button' }, Icon('share-2'), 'Share'),
-              canSavePost ? h('button', {
-                type: 'button',
-                onClick: function (event) {
-                  closeActionsMenu(event);
-                  if (props && typeof props.onSave === 'function') {
-                    props.onSave(post.id, isSaved);
-                  }
-                }
-              }, Icon('bookmark'), isSaved ? 'Saved' : 'Save') : null,
-              canReportPost ? h('button', {
-                type: 'button',
-                onClick: function (event) { closeActionsMenu(event); props.onReport(post.id); },
-                disabled: isReported
-              }, Icon('flag'), isReported ? 'Reported' : 'Report') : null,
-              canDeletePost ? h('button', { type: 'button', onClick: function (event) { closeActionsMenu(event); props.onDelete(post.id); } }, Icon('trash-2'), 'Delete') : null
-            )
-          )
+          canSeeReportCount && reportsCount > 0 ? h('span', { className: 'ose-report-badge', 'aria-label': String(reportsCount) + ' reports' }, Icon('flag', 'ose-report-badge-icon'), String(reportsCount) + ' Reports') : null
         ) : null
       )
     );

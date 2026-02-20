@@ -5,7 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "npm run build:css",
+    "build:css": "cp assets/app/src/styles.css build/assets/app.css",
+    "build:app-scaffold": "vite build",
     "preview": "vite preview"
   },
   "dependencies": {

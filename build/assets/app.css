@@ -1,15 +1,51 @@
 #openscene-root {
-  /* color tokens */
-  --ose-bg: #0a0a0a;
-  --ose-surface: #0a0a0a;
-  --ose-surface-2: #0f0f0f;
-  --ose-border: #1a1a1a;
-  --ose-border-2: #1e1e1e;
-  --ose-text: #ffffff;
-  --ose-text-muted: #8f9399;
-  --ose-text-subtle: #6f747c;
-  --ose-neon: #00f5d4;
-  --ose-purple: #8c25f4;
+  /* semantic color tokens */
+  --ose-color-bg: #0a0a0a;
+  --ose-color-surface: #0a0a0a;
+  --ose-color-surface-2: #0f0f0f;
+  --ose-color-surface-3: #111111;
+  --ose-color-border: #1a1a1a;
+  --ose-color-border-2: #1e1e1e;
+  --ose-color-border-3: #20242c;
+  --ose-color-text: #ffffff;
+  --ose-color-text-muted: #8f9399;
+  --ose-color-text-subtle: #6f747c;
+  --ose-color-text-weak: #8d8d95;
+  --ose-color-text-dim: #8a8a92;
+  --ose-color-text-soft: #8b8b93;
+  --ose-color-accent-neon: #00f5d4;
+  --ose-color-accent-purple: #8c25f4;
+  --ose-color-accent-purple-soft: #d680ff;
+  --ose-color-warning: #fbbf24;
+  --ose-color-skeleton: #151c27;
+  --ose-color-scrollbar: #1d1d1d;
+  --ose-color-overlay: rgba(0, 0, 0, 0.55);
+  --ose-color-topbar-bg: rgba(10, 10, 10, 0.9);
+  --ose-color-report-bg: rgba(140, 37, 244, 0.16);
+  --ose-color-report-border: rgba(140, 37, 244, 0.8);
+  --ose-color-border-soft: rgba(255, 255, 255, 0.16);
+  --ose-color-border-faint: rgba(255, 255, 255, 0.06);
+  --ose-color-border-faint-2: rgba(255, 255, 255, 0.05);
+  --ose-color-warning-soft: rgba(251, 191, 36, 0.6);
+  --ose-color-accent-neon-soft: rgba(0, 245, 212, 0.45);
+  --ose-color-accent-purple-tint: rgba(140, 37, 244, 0.2);
+  --ose-gradient-topbar-border: linear-gradient(90deg, var(--ose-color-accent-purple) 0%, var(--ose-color-accent-neon) 100%);
+  --ose-gradient-community-thumb: linear-gradient(135deg, rgba(140, 37, 244, 0.35), rgba(0, 245, 212, 0.3));
+  --ose-accent-glow-purple: rgba(188, 19, 254, 0.9);
+  --ose-accent-glow-purple-soft: rgba(188, 19, 254, 0.35);
+  --ose-accent-panel-bg: rgba(16, 34, 34, 0.26);
+  --ose-accent-panel-bg-strong: rgba(16, 34, 34, 0.6);
+  /* legacy color aliases */
+  --ose-bg: var(--ose-color-bg);
+  --ose-surface: var(--ose-color-surface);
+  --ose-surface-2: var(--ose-color-surface-2);
+  --ose-border: var(--ose-color-border);
+  --ose-border-2: var(--ose-color-border-2);
+  --ose-text: var(--ose-color-text);
+  --ose-text-muted: var(--ose-color-text-muted);
+  --ose-text-subtle: var(--ose-color-text-subtle);
+  --ose-neon: var(--ose-color-accent-neon);
+  --ose-purple: var(--ose-color-accent-purple);
   --ose-muted: #666666;
   /* typography scale */
   --ose-font-family-base: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -41,24 +77,161 @@
   --ose-fs-h1: clamp(2rem, 2.6vw, 3.25rem);
   --ose-fs-h2: clamp(1.5rem, 1.8vw, 2.25rem);
   --ose-fs-small: var(--ose-fs-md);
+  --ose-display-hero-xl: clamp(24px, 2.1vw, 40px);
+  --ose-display-hero-lg: clamp(24px, 1.95vw, 46px);
+  --ose-display-hero-md: clamp(18px, 1.1vw, 24px);
+  --ose-display-kicker-lg: clamp(11px, 0.9vw, 23px);
+  --ose-display-kicker-md: clamp(10px, 0.68vw, 17px);
+  --ose-display-action-md: clamp(11px, 0.78vw, 20px);
   /* spacing + layout tokens */
   --ose-space-1: 4px;
   --ose-space-2: 8px;
   --ose-space-3: 12px;
   --ose-space-4: 16px;
   --ose-space-5: 24px;
+  --ose-space-6: 32px;
+  --ose-space-7: 40px;
+  --ose-space-8: 48px;
+  --ose-space-xs: var(--ose-space-1);
+  --ose-space-sm: var(--ose-space-2);
+  --ose-space-md: var(--ose-space-3);
+  --ose-space-lg: var(--ose-space-4);
+  --ose-space-xl: var(--ose-space-5);
+  --ose-space-2xl: var(--ose-space-6);
   --ose-shell-width: min(1600px, calc(100% - 32px));
   --ose-left-rail: 312px;
   --ose-right-rail: 360px;
   --ose-center-rail: minmax(0, 1fr);
+  --ose-rail-gap: 0px;
   --ose-radius-sm: 6px;
   --ose-radius-md: 8px;
   --ose-radius-lg: 10px;
+  --ose-radius-card: var(--ose-radius-md);
+  --ose-shadow-none: none;
+  --ose-shadow-card: 0 0 0 1px rgba(255, 255, 255, 0.02);
+  --ose-card-bg: var(--ose-color-surface);
+  --ose-card-border: var(--ose-color-border-2);
+  --ose-icon-sm: 14px;
+  --ose-icon-md: 16px;
+  --ose-icon-lg: 22px;
+  --ose-icon-stroke: 2;
+  --ose-size-thumb-sm: 104px;
+  --ose-size-thumb-sm-h: 72px;
+  --ose-size-thumb-icon: 20px;
+  --ose-vote-col-width: 32px;
+  --ose-dot-menu-size: 32px;
+  --ose-event-date-width: 56px;
+  --ose-event-gap: var(--ose-space-md);
+  --ose-card-padding: var(--ose-space-md);
+  --ose-card-padding-compact: var(--ose-space-sm);
+  --ose-motion-fast: 160ms;
+  --ose-motion-med: 220ms;
+  --ose-ease-standard: ease;
+  --ose-mobile-toast-clearance: 86px;
+  --ose-unavailable-bg: var(--ose-color-bg);
+  --ose-unavailable-text: var(--ose-color-text);
+  --ose-unavailable-border: var(--ose-color-border-2);
+  --ose-unavailable-back-border: var(--ose-color-border-3);
   min-height: 100vh;
   width: 100%;
   background: var(--ose-bg);
   color: var(--ose-text);
   font-family: var(--ose-font-family-base);
+}
+
+body.openscene-app-shell {
+  margin: 0;
+  background: var(--ose-color-bg);
+  color: var(--ose-color-text);
+}
+
+.ose-brand-logo {
+  height: var(--ose-fs-brand);
+  width: auto;
+  display: block;
+}
+
+.ose-unavailable {
+  height: 100vh;
+  overflow: hidden;
+  background: var(--ose-unavailable-bg);
+  color: var(--ose-unavailable-text);
+  display: flex;
+  flex-direction: column;
+}
+
+.ose-unavailable-header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--ose-space-md) var(--ose-space-lg);
+  border-bottom: 1px solid var(--ose-unavailable-border);
+  background: var(--ose-color-topbar-bg);
+  backdrop-filter: blur(8px);
+}
+
+.ose-unavailable-brand {
+  font-size: var(--ose-fs-brand);
+  line-height: 1;
+  font-weight: 800;
+  letter-spacing: var(--ose-ls-brand);
+  color: var(--ose-unavailable-text);
+  text-decoration: none;
+}
+
+.ose-unavailable-brand span {
+  color: var(--ose-color-accent-neon);
+}
+
+.ose-unavailable-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--ose-space-8) var(--ose-space-5);
+  text-align: center;
+  overflow: hidden;
+}
+
+.ose-unavailable-message {
+  margin: 0 0 var(--ose-space-lg) 0;
+  font-size: var(--ose-fs-title);
+  line-height: 1.5;
+  font-weight: var(--ose-fw-semibold);
+}
+
+.ose-unavailable-back {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--ose-space-sm) var(--ose-space-lg);
+  border: 1px solid var(--ose-unavailable-back-border);
+  border-radius: var(--ose-radius-lg);
+  color: var(--ose-unavailable-text);
+  text-decoration: none;
+  font-size: var(--ose-fs-body);
+  font-weight: var(--ose-fw-semibold);
+}
+
+#openscene-root * { box-sizing: border-box; }
+#openscene-root a { color: inherit; text-decoration: none; }
+
+#openscene-root a,
+#openscene-root button,
+#openscene-root .ose-community-item,
+#openscene-root .ose-feed-post,
+#openscene-root .ose-widget,
+#openscene-root .ose-left-activity {
+  transition:
+    color var(--ose-motion-fast) var(--ose-ease-standard),
+    background-color var(--ose-motion-fast) var(--ose-ease-standard),
+    border-color var(--ose-motion-fast) var(--ose-ease-standard),
+    opacity var(--ose-motion-fast) var(--ose-ease-standard),
+    transform var(--ose-motion-med) var(--ose-ease-standard);
 }
 
 #openscene-root .ose-avatar-menu {
@@ -81,7 +254,7 @@
   top: calc(100% + 8px);
   min-width: 170px;
   border: 1px solid var(--ose-border);
-  background: #0a0a0d;
+  background: var(--ose-color-surface);
   border-radius: 10px;
   padding: 8px;
   display: grid;
@@ -90,15 +263,15 @@
 }
 
 #openscene-root .ose-avatar-dropdown a {
-  color: #d7d7de;
+  color: var(--ose-color-text-muted);
   font-size: var(--ose-fs-md);
   padding: 7px 9px;
   border-radius: 7px;
 }
 
 #openscene-root .ose-avatar-dropdown a:hover {
-  background: rgba(140, 37, 244, 0.16);
-  color: #fff;
+  background: var(--ose-color-report-bg);
+  color: var(--ose-color-text);
 }
 
 #openscene-root .ose-post-actions button:disabled {
@@ -107,9 +280,9 @@
 }
 
 #openscene-root .ose-pd-report-btn {
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  border: 1px solid var(--ose-card-border);
   background: transparent;
-  color: #c6c6cf;
+  color: var(--ose-color-text-muted);
   font-size: var(--ose-fs-meta);
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -118,7 +291,7 @@
 }
 
 #openscene-root .ose-pd-report-btn:hover {
-  border-color: rgba(140, 37, 244, 0.8);
+  border-color: var(--ose-color-report-border);
   color: var(--ose-purple);
 }
 
@@ -130,7 +303,7 @@
 #openscene-root .ose-moderator-page {
   min-height: 100vh;
   background: var(--ose-bg);
-  color: #fff;
+  color: var(--ose-color-text);
 }
 
 #openscene-root .ose-mod-main {
@@ -146,7 +319,7 @@
 #openscene-root .ose-mod-left,
 #openscene-root .ose-mod-right {
   border: 1px solid var(--ose-border);
-  background: #0b0b0f;
+  background: var(--ose-color-surface-2);
   border-radius: 12px;
   padding: 14px;
 }
@@ -157,7 +330,7 @@
   font-size: var(--ose-fs-meta);
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: #8b8b93;
+  color: var(--ose-color-text-soft);
 }
 
 #openscene-root .ose-mod-left button {
@@ -166,7 +339,7 @@
   margin-bottom: 6px;
   border: 1px solid transparent;
   background: transparent;
-  color: #b5b5be;
+  color: var(--ose-color-text-weak);
   padding: 9px 10px;
   border-radius: 8px;
   font-size: var(--ose-fs-base);
@@ -174,9 +347,9 @@
 }
 
 #openscene-root .ose-mod-left button.is-active {
-  border-color: rgba(140, 37, 244, 0.5);
-  background: rgba(140, 37, 244, 0.16);
-  color: #fff;
+  border-color: var(--ose-color-report-border);
+  background: var(--ose-color-report-bg);
+  color: var(--ose-color-text);
 }
 
 #openscene-root .ose-mod-center {
@@ -197,7 +370,7 @@
 }
 
 #openscene-root .ose-mod-head span {
-  color: #8d8d96;
+  color: var(--ose-color-text-weak);
   font-size: var(--ose-fs-body);
   line-height: var(--ose-lh-body);
 }
@@ -209,7 +382,7 @@
 
 #openscene-root .ose-mod-card {
   border: 1px solid var(--ose-border);
-  background: #0b0b0e;
+  background: var(--ose-color-surface-2);
   border-radius: 12px;
   padding: 14px 16px;
 }
@@ -235,15 +408,15 @@
   font-size: var(--ose-fs-xs);
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  color: #bdbdc6;
+  border: 1px solid var(--ose-color-border-soft);
+  color: var(--ose-color-text-muted);
   border-radius: 5px;
   padding: 3px 6px;
 }
 
 #openscene-root .ose-mod-badge.is-reported {
-  border-color: rgba(239, 68, 68, 0.5);
-  color: #fca5a5;
+  border-color: var(--ose-color-warning-soft);
+  color: var(--ose-color-warning);
 }
 
 #openscene-root .ose-mod-card h3 {
@@ -254,7 +427,7 @@
 
 #openscene-root .ose-mod-card p {
   margin: 0;
-  color: #9b9ba4;
+  color: var(--ose-color-text-muted);
   font-size: 15px;
   line-height: 1.45;
 }
@@ -263,7 +436,7 @@
   margin-top: 12px;
   display: flex;
   gap: 12px;
-  color: #7f7f89;
+  color: var(--ose-color-text-soft);
   font-size: var(--ose-fs-md);
   line-height: var(--ose-lh-md);
 }
@@ -276,9 +449,9 @@
 }
 
 #openscene-root .ose-mod-actions button {
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  border: 1px solid var(--ose-color-border-soft);
   background: transparent;
-  color: #ceced5;
+  color: var(--ose-color-text-muted);
   font-size: var(--ose-fs-meta);
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -287,7 +460,7 @@
 }
 
 #openscene-root .ose-mod-actions button:hover {
-  border-color: rgba(0, 246, 212, 0.45);
+  border-color: var(--ose-color-accent-neon-soft);
   color: var(--ose-neon);
 }
 
@@ -306,7 +479,7 @@
 #openscene-root .ose-mod-pagination button {
   border: 1px solid var(--ose-border);
   background: transparent;
-  color: #d3d3da;
+  color: var(--ose-color-text-muted);
   border-radius: 6px;
   padding: 5px 10px;
 }
@@ -325,22 +498,19 @@
   margin: 0;
   font-size: var(--ose-fs-md);
   line-height: var(--ose-lh-md);
-  color: #cbccd4;
+  color: var(--ose-color-text-muted);
 }
 
 #openscene-root .ose-mod-log-item small {
-  color: #7f7f89;
+  color: var(--ose-color-text-soft);
   font-size: var(--ose-fs-xs);
   line-height: var(--ose-lh-xs);
 }
 
-#openscene-root * { box-sizing: border-box; }
-#openscene-root a { color: inherit; text-decoration: none; }
-
 #openscene-root .ose-lucide {
-  width: 16px;
-  height: 16px;
-  stroke-width: 2;
+  width: var(--ose-icon-md);
+  height: var(--ose-icon-md);
+  stroke-width: var(--ose-icon-stroke);
   vertical-align: middle;
 }
 
@@ -358,7 +528,7 @@
   position: sticky;
   top: 0;
   z-index: 25;
-  background: rgba(10, 10, 10, 0.9);
+  background: var(--ose-color-topbar-bg);
   backdrop-filter: blur(10px);
   overflow: visible;
 }
@@ -371,7 +541,7 @@
   width: 100vw;
   height: 1px;
   transform: translateX(-50%);
-  background: linear-gradient(90deg, var(--ose-purple) 0%, var(--ose-neon) 100%);
+  background: var(--ose-gradient-topbar-border);
   pointer-events: none;
 }
 
@@ -407,14 +577,14 @@
 }
 
 #openscene-root .ose-topbar-nav a {
-  color: #8d8d95;
+  color: var(--ose-color-text-weak);
   font-size: var(--ose-fs-body);
   line-height: 1.25;
   font-weight: var(--ose-fw-semibold);
 }
 
 #openscene-root .ose-topbar-nav a:hover {
-  color: #fff;
+  color: var(--ose-color-text);
 }
 
 #openscene-root .ose-brand {
@@ -431,18 +601,18 @@
   max-width: 100%;
   height: 42px;
   border: 1px solid var(--ose-border-2);
-  border-radius: 8px;
+  border-radius: var(--ose-radius-card);
   display: flex;
   align-items: center;
   padding: 0 12px;
-  background: #0a0a0a;
+  background: var(--ose-color-surface);
   margin-left: 0;
   margin-right: 0;
   justify-self: center;
 }
 
 #openscene-root .ose-search-icon {
-  color: #6b6b73;
+  color: var(--ose-color-text-subtle);
   margin-right: 10px;
   width: 15px;
   height: 15px;
@@ -453,11 +623,11 @@
   background: transparent;
   border: 0;
   outline: 0;
-  color: #fff;
+  color: var(--ose-color-text);
   font-size: var(--ose-fs-body);
 }
 
-#openscene-root .ose-search input::placeholder { color: #666; }
+#openscene-root .ose-search input::placeholder { color: var(--ose-color-text-subtle); }
 
 #openscene-root .ose-mobile-drawer-toggle {
   display: none;
@@ -481,7 +651,7 @@
 
 #openscene-root .ose-mobile-drawer-toggle:hover {
   background: #111217;
-  color: #fff;
+  color: var(--ose-color-text);
 }
 
 #openscene-root .ose-topbar-right {
@@ -538,7 +708,7 @@
   height: 32px;
   border: 0;
   background: transparent;
-  color: #fff;
+  color: var(--ose-color-text);
   cursor: pointer;
   display: inline-flex;
   align-items: center;
@@ -586,7 +756,7 @@
   justify-content: center;
   gap: 6px;
   background: #b017f2;
-  color: #fff;
+  color: var(--ose-color-text);
   font-size: 13px;
   line-height: 19.5px;
   font-weight: 600;
@@ -608,7 +778,7 @@
   margin: 0 auto 0;
   display: grid;
   grid-template-columns: var(--ose-left-rail) var(--ose-center-rail) var(--ose-right-rail);
-  gap: 0;
+  gap: var(--ose-rail-gap);
   padding-bottom: 0;
   height: calc(100vh - 56px);
   overflow: hidden;
@@ -639,7 +809,7 @@
   position: absolute;
   inset: 0;
   border: 0;
-  background: rgba(0, 0, 0, 0.55);
+  background: var(--ose-color-overlay);
   opacity: 0;
   transition: opacity 200ms ease-in;
 }
@@ -706,7 +876,7 @@
 
 #openscene-root .ose-mobile-drawer-close:hover {
   background: #141821;
-  color: #fff;
+  color: var(--ose-color-text);
 }
 
 #openscene-root .ose-mobile-block {
@@ -752,7 +922,7 @@ body.ose-lock-scroll {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  color: #8d8d95;
+  color: var(--ose-color-text-weak);
   font-size: var(--ose-fs-base);
   line-height: var(--ose-lh-base);
   font-weight: var(--ose-fw-medium);
@@ -761,7 +931,7 @@ body.ose-lock-scroll {
 
 #openscene-root .ose-community-item:hover {
   background: #0b0b0b;
-  color: #fff;
+  color: var(--ose-color-text);
 }
 
 #openscene-root .ose-community-item-skeleton {
@@ -778,7 +948,7 @@ body.ose-lock-scroll {
   width: 14px;
   height: 14px;
   border-radius: 4px;
-  background: #151c27;
+  background: var(--ose-color-skeleton);
   animation: osePulse 1.2s ease-in-out infinite;
 }
 
@@ -787,7 +957,7 @@ body.ose-lock-scroll {
   width: 118px;
   height: 12px;
   border-radius: 6px;
-  background: #151c27;
+  background: var(--ose-color-skeleton);
   animation: osePulse 1.2s ease-in-out infinite;
 }
 
@@ -803,7 +973,7 @@ body.ose-lock-scroll {
 }
 
 #openscene-root .ose-community-item.ose-community-view-all:hover {
-  color: #fff;
+  color: var(--ose-color-text);
 }
 
 #openscene-root .ose-community-name {
@@ -849,9 +1019,10 @@ body.ose-lock-scroll {
 
 #openscene-root .ose-left-activity {
   margin: 16px 4px 0;
-  border: 1px solid var(--ose-border);
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.01);
+  border: 1px solid var(--ose-card-border);
+  border-radius: var(--ose-radius-card);
+  box-shadow: var(--ose-shadow-card);
+  background: var(--ose-card-bg);
   padding: 10px;
   flex: 0 0 auto;
 }
@@ -946,7 +1117,7 @@ body.ose-lock-scroll {
 }
 
 #openscene-root .ose-left-activity-list a:hover {
-  color: #fff;
+  color: var(--ose-color-text);
 }
 
 #openscene-root .ose-left-activity-empty {
@@ -1026,7 +1197,7 @@ body.ose-lock-scroll {
   height: calc(100vh - 56px - 64px);
   overscroll-behavior: contain;
   scrollbar-width: thin;
-  scrollbar-color: #1d1d1d var(--ose-bg);
+  scrollbar-color: var(--ose-color-scrollbar) var(--ose-bg);
 }
 
 #openscene-root .ose-feed-list::-webkit-scrollbar {
@@ -1038,20 +1209,20 @@ body.ose-lock-scroll {
 }
 
 #openscene-root .ose-feed-list::-webkit-scrollbar-thumb {
-  background: #1d1d1d;
+  background: var(--ose-color-scrollbar);
   border-radius: 8px;
 }
 
 #openscene-root .ose-feed-status {
-  border: 1px solid #1a1a1a;
+  border: 1px solid var(--ose-color-border);
   border-radius: 10px;
   padding: 16px;
-  color: #8d8d95;
+  color: var(--ose-color-text-weak);
   font-size: 14px;
 }
 
 #openscene-root .ose-feed-empty {
-  border: 1px solid #1a1a1a;
+  border: 1px solid var(--ose-color-border);
   border-radius: 10px;
   min-height: 220px;
   display: grid;
@@ -1084,7 +1255,7 @@ body.ose-lock-scroll {
 
 #openscene-root .ose-feed-empty-cta:hover {
   border-color: #bc13fe;
-  color: #d680ff;
+  color: var(--ose-color-accent-purple-soft);
 }
 
 #openscene-root .ose-feed-skeletons {
@@ -1247,7 +1418,7 @@ body.ose-lock-scroll {
   flex-direction: column;
   align-items: center;
   gap: 3px;
-  color: #8a8a92;
+  color: var(--ose-color-text-dim);
   padding-top: 26px;
   margin-right: 0;
   justify-self: start;
@@ -1285,13 +1456,17 @@ body.ose-lock-scroll {
 }
 
 #openscene-root .ose-post-meta {
-  color: #7f858e;
+  color: var(--ose-color-text-muted);
   font-size: var(--ose-fs-meta);
   line-height: var(--ose-lh-meta);
   font-weight: var(--ose-fw-regular);
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  margin-bottom: 12px;
+  margin-bottom: var(--ose-space-sm);
+  display: flex;
+  align-items: center;
+  gap: var(--ose-space-sm);
+  flex-wrap: wrap;
 }
 
 #openscene-root .ose-tag {
@@ -1303,8 +1478,8 @@ body.ose-lock-scroll {
   text-transform: uppercase;
 }
 
-#openscene-root .ose-dot { margin: 0 8px; }
-#openscene-root .ose-post-meta strong { color: #fff; font-weight: 600; }
+#openscene-root .ose-dot { margin: 0 var(--ose-space-sm); }
+#openscene-root .ose-post-meta strong { color: var(--ose-color-text); font-weight: 600; }
 
 #openscene-root .ose-time-ago {
   text-transform: none !important;
@@ -1313,17 +1488,17 @@ body.ose-lock-scroll {
 
 #openscene-root .ose-post-title {
   display: block;
-  color: #fff;
+  color: var(--ose-color-text);
   font-size: var(--ose-fs-title);
   line-height: var(--ose-lh-title);
   font-weight: var(--ose-fw-semibold);
   letter-spacing: -0.01em;
 }
 
-#openscene-root .ose-post-title:hover { color: #d680ff; }
+#openscene-root .ose-post-title:hover { color: var(--ose-color-accent-purple-soft); }
 
 #openscene-root .ose-post-body {
-  margin: 8px 0 14px;
+  margin: var(--ose-space-sm) 0 var(--ose-space-md);
   color: #a5abb4;
   font-size: var(--ose-fs-body);
   line-height: var(--ose-lh-body);
@@ -1354,7 +1529,7 @@ body.ose-lock-scroll {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: var(--ose-space-md);
   flex-wrap: nowrap;
 }
 
@@ -1369,11 +1544,11 @@ body.ose-lock-scroll {
 #openscene-root .ose-post-actions button {
   border: 0;
   background: transparent;
-  color: #85858d;
-  font-size: var(--ose-fs-md);
-  line-height: var(--ose-lh-md);
+  color: var(--ose-color-text-muted);
+  font-size: var(--ose-fs-meta);
+  line-height: var(--ose-lh-meta);
   font-weight: var(--ose-fw-medium);
-  padding: 0 4px;
+  padding: 0 var(--ose-space-xs);
   cursor: pointer;
   display: inline-flex;
   align-items: center;
@@ -1383,7 +1558,7 @@ body.ose-lock-scroll {
 
 #openscene-root .ose-post-actions a:hover,
 #openscene-root .ose-post-actions button:hover {
-  color: #d680ff;
+  color: var(--ose-color-accent-purple-soft);
 }
 
 #openscene-root .ose-post-actions .ose-lucide {
@@ -1394,6 +1569,9 @@ body.ose-lock-scroll {
 
 #openscene-root .ose-post-more {
   position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 #openscene-root .ose-post-more summary {
@@ -1407,9 +1585,12 @@ body.ose-lock-scroll {
 #openscene-root .ose-post-more-toggle {
   border: 0;
   background: transparent;
-  color: #8d8d95;
-  min-height: 36px;
-  min-width: 24px;
+  color: var(--ose-color-text-weak);
+  width: var(--ose-dot-menu-size);
+  height: var(--ose-dot-menu-size);
+  min-width: var(--ose-dot-menu-size);
+  min-height: var(--ose-dot-menu-size);
+  border-radius: 999px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1417,21 +1598,30 @@ body.ose-lock-scroll {
 }
 
 #openscene-root .ose-post-more-toggle:hover {
-  color: #d680ff;
+  background: var(--ose-color-surface-3);
+  color: var(--ose-color-accent-purple-soft);
 }
 
 #openscene-root .ose-post-more-menu {
   position: absolute;
   right: 0;
-  top: calc(100% + 6px);
+  top: calc(100% + var(--ose-space-xs));
   min-width: 132px;
-  border: 1px solid #262626;
-  background: #090909;
-  border-radius: 8px;
-  padding: 6px;
-  display: grid;
-  gap: 2px;
-  z-index: 25;
+  border: 1px solid var(--ose-card-border);
+  background: var(--ose-card-bg);
+  background-color: var(--ose-card-bg);
+  border-style: solid;
+  border-radius: var(--ose-radius-card);
+  padding: var(--ose-space-sm);
+  display: none;
+  flex-direction: column;
+  gap: var(--ose-space-xs);
+  box-shadow: var(--ose-shadow-card);
+  z-index: 999;
+}
+
+#openscene-root .ose-post-more[open] .ose-post-more-menu {
+  display: flex;
 }
 
 #openscene-root .ose-post-more-menu button {
@@ -1441,19 +1631,19 @@ body.ose-lock-scroll {
   min-height: 30px;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--ose-space-xs);
   width: 100%;
-  border-radius: 6px;
-  padding: 0 8px;
-  font-size: 12px;
-  line-height: 18px;
+  border-radius: var(--ose-radius-sm);
+  padding: 0 var(--ose-space-sm);
+  font-size: var(--ose-fs-meta);
+  line-height: var(--ose-lh-meta);
   font-weight: 500;
   cursor: pointer;
 }
 
 #openscene-root .ose-post-more-menu button:hover {
-  background: #141414;
-  color: #ffffff;
+  background: var(--ose-color-surface-3);
+  color: var(--ose-color-text);
 }
 
 #openscene-root .ose-post-more-menu button:disabled {
@@ -1465,7 +1655,7 @@ body.ose-lock-scroll {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  color: #fbbf24;
+  color: var(--ose-color-warning);
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.02em;
@@ -1492,22 +1682,32 @@ body.ose-lock-scroll {
 }
 
 #openscene-root .ose-feed-center .ose-feed-post {
-  grid-template-columns: 28px minmax(0, 1fr);
-  column-gap: 10px;
-  padding: 8px 12px;
-  border: 1px solid #171a20;
-  border-radius: 8px;
-  background: var(--ose-bg);
+  display: grid;
+  grid-template-columns: var(--ose-vote-col-width) minmax(0, 1fr);
+  align-items: flex-start;
+  column-gap: var(--ose-space-sm);
+  row-gap: 0;
+  padding: var(--ose-card-padding-compact) var(--ose-card-padding);
+  border: 1px solid var(--ose-card-border);
+  border-radius: var(--ose-radius-card);
+  box-shadow: var(--ose-shadow-card);
+  background: var(--ose-card-bg);
+}
+
+#openscene-root .ose-feed-center .ose-feed-post .ose-post-content {
+  min-width: 0;
 }
 
 #openscene-root .ose-feed-center .ose-feed-post:hover {
-  background: #111111;
-  border-color: #20242c;
+  background: var(--ose-color-surface-3);
+  border-color: var(--ose-color-border-3);
 }
 
 #openscene-root .ose-feed-center .ose-vote-rail {
-  padding-top: 2px;
-  gap: 2px;
+  flex: 0 0 var(--ose-vote-col-width);
+  width: var(--ose-vote-col-width);
+  padding-top: var(--ose-space-xs);
+  gap: var(--ose-space-xs);
 }
 
 #openscene-root .ose-feed-center .ose-vote-rail strong {
@@ -1515,43 +1715,58 @@ body.ose-lock-scroll {
   color: #e7ebf3;
 }
 
-#openscene-root .ose-feed-center .ose-post-meta {
-  margin-bottom: 6px;
-  color: #8b9099;
+#openscene-root .ose-feed-center .ose-feed-post .ose-post-meta {
+  margin-bottom: var(--ose-space-xs);
+  color: var(--ose-color-text-muted);
+  font-size: var(--ose-fs-meta);
+  line-height: var(--ose-lh-meta);
 }
 
-#openscene-root .ose-feed-center .ose-post-title-row {
+#openscene-root .ose-feed-center .ose-feed-post .ose-post-title-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 120px;
+  align-items: start;
+  gap: var(--ose-space-sm);
+}
+
+#openscene-root .ose-feed-center .ose-feed-post .ose-post-side-actions {
+  width: 120px;
+  min-width: 120px;
   display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 10px;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--ose-space-xs);
 }
 
-#openscene-root .ose-feed-center .ose-post-title {
+#openscene-root .ose-feed-center .ose-feed-post .ose-post-title {
   font-size: 22px;
   line-height: 1.22;
   font-weight: 600;
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: 100%;
 }
 
-#openscene-root .ose-feed-center .ose-post-comment-inline {
-  color: #b8bdc8;
-  font-size: 12px;
-  line-height: 18px;
+#openscene-root .ose-feed-center .ose-feed-post .ose-post-comment-inline {
+  color: var(--ose-color-text-muted);
+  font-size: var(--ose-fs-meta);
+  line-height: var(--ose-lh-meta);
   font-weight: 500;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--ose-space-xs);
   min-height: 44px;
   white-space: nowrap;
+  justify-content: flex-end;
 }
 
-#openscene-root .ose-feed-center .ose-post-comment-inline .ose-lucide {
+#openscene-root .ose-feed-center .ose-feed-post .ose-post-comment-inline .ose-lucide {
   width: 14px;
   height: 14px;
 }
 
-#openscene-root .ose-feed-center .ose-post-body {
-  margin: 4px 0 8px;
+#openscene-root .ose-feed-center .ose-feed-post .ose-post-body {
+  margin: var(--ose-space-xs) 0 var(--ose-space-sm);
 }
 
 #openscene-root .ose-feed-center .ose-post-actions {
@@ -1566,8 +1781,8 @@ body.ose-lock-scroll {
 }
 
 #openscene-root .ose-feed-center .ose-post-more {
-  margin-left: auto;
-  align-self: flex-end;
+  margin-left: 0;
+  align-self: center;
   margin-right: 0;
 }
 
@@ -1576,10 +1791,11 @@ body.ose-lock-scroll {
 }
 
 #openscene-root .ose-feed-center .ose-post-more-toggle {
-  min-width: 28px;
-  min-height: 44px;
-  width: 28px;
-  padding: 0 4px 0 0;
+  min-width: var(--ose-dot-menu-size);
+  min-height: var(--ose-dot-menu-size);
+  width: var(--ose-dot-menu-size);
+  height: var(--ose-dot-menu-size);
+  padding: 0;
 }
 
 #openscene-root .ose-feed-center .ose-vote-btn {
@@ -1610,8 +1826,14 @@ body.ose-lock-scroll {
 
 @media (max-width: 600px) {
   #openscene-root .ose-feed-center .ose-post-title-row {
-    flex-wrap: wrap;
-    align-items: flex-start;
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+
+  #openscene-root .ose-feed-center .ose-post-side-actions {
+    width: 100%;
+    min-width: 0;
+    justify-content: space-between;
   }
 
   #openscene-root .ose-feed-center .ose-post-comment-inline {
@@ -1632,17 +1854,18 @@ body.ose-lock-scroll {
 }
 
 #openscene-root .ose-widget {
-  border: 0;
-  border-radius: 0;
-  background: transparent;
-  padding: 6px 0 14px;
+  border: 1px solid var(--ose-card-border);
+  border-radius: var(--ose-radius-card);
+  box-shadow: var(--ose-shadow-card);
+  background: var(--ose-card-bg);
+  padding: var(--ose-space-md);
 }
 
 #openscene-root .ose-widget-head {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
+  margin-bottom: var(--ose-space-md);
 }
 
 #openscene-root .ose-widget-head h3 {
@@ -1661,8 +1884,8 @@ body.ose-lock-scroll {
 }
 
 #openscene-root .ose-widget-head span .ose-lucide {
-  width: 15px;
-  height: 15px;
+  width: var(--ose-icon-sm);
+  height: var(--ose-icon-sm);
 }
 
 #openscene-root .ose-widget-icon-events {
@@ -1670,8 +1893,8 @@ body.ose-lock-scroll {
 }
 
 #openscene-root .ose-widget-icon-events .ose-lucide {
-  width: 14px;
-  height: 14px;
+  width: var(--ose-icon-sm);
+  height: var(--ose-icon-sm);
 }
 
 #openscene-root .ose-widget-icon-rules {
@@ -1679,12 +1902,12 @@ body.ose-lock-scroll {
 }
 
 #openscene-root .ose-widget-icon-rules .ose-lucide {
-  width: 14px;
-  height: 14px;
+  width: var(--ose-icon-sm);
+  height: var(--ose-icon-sm);
   transform: rotate(-18deg);
 }
 
-#openscene-root .ose-events { display: grid; gap: 14px; }
+#openscene-root .ose-events { display: grid; gap: var(--ose-space-md); }
 
 #openscene-root .ose-events.is-loading {
   min-height: 262px;
@@ -1692,12 +1915,12 @@ body.ose-lock-scroll {
 
 
 #openscene-root .ose-event {
-  display: grid;
-  grid-template-columns: 56px minmax(0, 1fr);
-  gap: 12px;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--ose-event-gap);
   border: 1px solid var(--ose-border-2);
-  border-radius: 12px;
-  padding: 14px;
+  border-radius: var(--ose-radius-lg);
+  padding: var(--ose-space-md);
   background: #050607;
 }
 
@@ -1740,6 +1963,8 @@ body.ose-lock-scroll {
 }
 
 #openscene-root .ose-event-date {
+  flex: 0 0 var(--ose-event-date-width);
+  width: var(--ose-event-date-width);
   border: 1px solid rgba(188, 19, 254, 0.3);
   border-radius: 6px;
   background: rgba(188, 19, 254, 0.15);
@@ -1749,11 +1974,11 @@ body.ose-lock-scroll {
   justify-content: center;
   gap: 1px;
   text-align: center;
-  padding: 7px 4px;
+  padding: var(--ose-space-sm) var(--ose-space-xs);
 }
 
 #openscene-root .ose-event-month {
-  color: #d680ff;
+  color: var(--ose-color-accent-purple-soft);
   font-size: var(--ose-fs-xs);
   line-height: var(--ose-lh-xs);
   font-weight: var(--ose-fw-bold);
@@ -1762,7 +1987,7 @@ body.ose-lock-scroll {
 }
 
 #openscene-root .ose-event-day {
-  color: #fff;
+  color: var(--ose-color-text);
   font-size: var(--ose-fs-xl);
   line-height: var(--ose-lh-xl);
   font-weight: var(--ose-fw-bold);
@@ -1785,14 +2010,15 @@ body.ose-lock-scroll {
 
 #openscene-root .ose-widget-btn {
   width: auto;
-  margin-top: 14px;
+  margin-top: var(--ose-space-md);
+  margin-left: calc(var(--ose-space-md) + var(--ose-event-date-width) + var(--ose-event-gap));
   height: auto;
   border-radius: 0;
   border: 0;
   background: transparent;
   color: var(--ose-neon);
-  font-size: var(--ose-fs-base);
-  line-height: var(--ose-lh-base);
+  font-size: var(--ose-fs-meta);
+  line-height: var(--ose-lh-meta);
   font-weight: var(--ose-fw-semibold);
   letter-spacing: var(--ose-ls-button);
   padding: 0;
@@ -1809,7 +2035,7 @@ body.ose-lock-scroll {
   margin: 0;
   padding: 0;
   display: grid;
-  gap: 11px;
+  gap: var(--ose-space-sm);
 }
 
 #openscene-root .ose-rules li {
@@ -1826,7 +2052,7 @@ body.ose-lock-scroll {
 
 #openscene-root .ose-rules p {
   margin: 0;
-  color: #8a8a92;
+  color: var(--ose-color-text-dim);
   font-size: var(--ose-fs-md);
   line-height: 1.35;
 }
@@ -1890,7 +2116,7 @@ body.ose-lock-scroll {
 #openscene-root .ose-create-page {
   min-height: 100vh;
   background: var(--ose-bg);
-  color: #fff;
+  color: var(--ose-color-text);
   position: relative;
   overflow: hidden;
 }
@@ -2011,7 +2237,7 @@ body.ose-lock-scroll {
   border-radius: 8px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   background: #102222;
-  color: #fff;
+  color: var(--ose-color-text);
   padding: 0 36px 0 12px;
   outline: none;
   appearance: none;
@@ -2059,7 +2285,7 @@ body.ose-lock-scroll {
 
 #openscene-root .ose-type-tabs button.is-active {
   background: rgba(255, 255, 255, 0.06);
-  color: #fff;
+  color: var(--ose-color-text);
 }
 
 #openscene-root .ose-create-form {
@@ -2071,7 +2297,7 @@ body.ose-lock-scroll {
   border: 0;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   background: transparent;
-  color: #fff;
+  color: var(--ose-color-text);
   font-size: 34px;
   font-weight: 600;
   letter-spacing: -0.02em;
@@ -2200,7 +2426,7 @@ body.ose-lock-scroll {
   width: 100%;
   border: 1px solid rgba(255, 255, 255, 0.14);
   background: rgba(16, 34, 34, 0.6);
-  color: #fff;
+  color: var(--ose-color-text);
   border-radius: 8px;
   padding: 10px 10px;
   font-size: 13px;
@@ -2246,7 +2472,7 @@ body.ose-lock-scroll {
 }
 
 #openscene-root .ose-create-footer-left button:not(:disabled):hover {
-  color: #fff;
+  color: var(--ose-color-text);
 }
 
 #openscene-root .ose-anon {
@@ -2386,7 +2612,7 @@ body.ose-lock-scroll {
   justify-content: center;
   border: 1px solid rgba(255, 255, 255, 0.2);
   background: rgba(255, 255, 255, 0.04);
-  color: #fff;
+  color: var(--ose-color-text);
   border-radius: 8px;
   padding: 10px 14px;
   font-size: 12px;
@@ -2463,7 +2689,7 @@ body.ose-lock-scroll {
 }
 
 #openscene-root .ose-community-row {
-  border: 1px solid #1e1e1e;
+  border: 1px solid var(--ose-color-border-2);
   border-radius: 10px;
   background: #0b0b0b;
   padding: 12px;
@@ -2493,7 +2719,7 @@ body.ose-lock-scroll {
 #openscene-root .ose-community-row-text strong {
   font-size: 16px;
   line-height: 1.2;
-  color: #fff;
+  color: var(--ose-color-text);
   font-weight: 600;
 }
 
@@ -2530,7 +2756,7 @@ body.ose-lock-scroll {
 #openscene-root .ose-community-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 340px;
-  gap: 32px;
+  gap: var(--ose-rail-gap);
 }
 
 #openscene-root .ose-community-header {
@@ -2587,7 +2813,7 @@ body.ose-lock-scroll {
   width: 34px;
   padding: 0;
   border-color: #2d2d2d;
-  color: #8a8a92;
+  color: var(--ose-color-text-dim);
 }
 
 #openscene-root .ose-community-feed-controls {
@@ -2618,7 +2844,7 @@ body.ose-lock-scroll {
 }
 
 #openscene-root .ose-community-sort button.is-active {
-  color: #fff;
+  color: var(--ose-color-text);
   border-bottom-color: var(--ose-purple);
 }
 
@@ -2626,7 +2852,7 @@ body.ose-lock-scroll {
   height: 32px;
   border-radius: 6px;
   background: var(--ose-purple);
-  color: #fff;
+  color: var(--ose-color-text);
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -2681,7 +2907,7 @@ body.ose-lock-scroll {
 
 #openscene-root .ose-community-panel h3 {
   margin: 0 0 14px;
-  color: #8a8a92;
+  color: var(--ose-color-text-dim);
   text-transform: uppercase;
   letter-spacing: 0.16em;
   font-size: 10px;
@@ -2710,7 +2936,7 @@ body.ose-lock-scroll {
 
 #openscene-root .ose-community-panel p {
   margin: 0;
-  color: #8a8a92;
+  color: var(--ose-color-text-dim);
   font-size: 13px;
   line-height: 1.5;
 }
@@ -2741,7 +2967,7 @@ body.ose-lock-scroll {
 
 #openscene-root .ose-community-grid {
   grid-template-columns: minmax(0, 1fr) 414px;
-  gap: 40px;
+  gap: var(--ose-rail-gap);
 }
 
 #openscene-root .ose-community-header {
@@ -2763,10 +2989,9 @@ body.ose-lock-scroll {
 #openscene-root .ose-community-header p {
   margin-top: 0;
   max-width: 680px;
-  font-size: 40px;
-  font-size: clamp(24px, 2.1vw, 40px);
+  font-size: var(--ose-display-hero-xl);
   line-height: 1.3;
-  color: #8b8b92;
+  color: var(--ose-color-text-soft);
 }
 
 #openscene-root .ose-community-actions {
@@ -2800,8 +3025,7 @@ body.ose-lock-scroll {
 }
 
 #openscene-root .ose-community-sort button {
-  font-size: 23px;
-  font-size: clamp(11px, 0.9vw, 23px);
+  font-size: var(--ose-display-kicker-lg);
   letter-spacing: 0.2em;
   padding-bottom: 9px;
 }
@@ -2852,8 +3076,7 @@ body.ose-lock-scroll {
   color: #666670;
   text-transform: uppercase;
   letter-spacing: 0.12em;
-  font-size: 17px;
-  font-size: clamp(10px, 0.68vw, 17px);
+  font-size: var(--ose-display-kicker-md);
   margin-bottom: 8px;
 }
 
@@ -2866,8 +3089,7 @@ body.ose-lock-scroll {
   display: block;
   margin: 0;
   color: #f2f2f2;
-  font-size: 46px;
-  font-size: clamp(24px, 1.95vw, 46px);
+  font-size: var(--ose-display-hero-lg);
   line-height: 1.2;
   letter-spacing: -0.02em;
   font-weight: 500;
@@ -2899,8 +3121,7 @@ body.ose-lock-scroll {
   border: 0;
   background: transparent;
   color: inherit;
-  font-size: 20px;
-  font-size: clamp(11px, 0.78vw, 20px);
+  font-size: var(--ose-display-action-md);
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -2922,12 +3143,12 @@ body.ose-lock-scroll {
 }
 
 #openscene-root .ose-community-post-thumb {
-  width: 104px;
-  height: 72px;
+  width: var(--ose-size-thumb-sm);
+  height: var(--ose-size-thumb-sm-h);
   border-radius: 2px;
   border: 1px solid #212121;
   align-self: center;
-  background: linear-gradient(135deg, rgba(140, 37, 244, 0.35), rgba(0, 245, 212, 0.3));
+  background: var(--ose-gradient-community-thumb);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2935,8 +3156,8 @@ body.ose-lock-scroll {
 }
 
 #openscene-root .ose-community-post-thumb .ose-lucide {
-  width: 20px;
-  height: 20px;
+  width: var(--ose-size-thumb-icon);
+  height: var(--ose-size-thumb-icon);
 }
 
 #openscene-root .ose-community-load-more-wrap {
@@ -3020,9 +3241,10 @@ body.ose-lock-scroll {
   grid-template-columns: 28px minmax(0, 1fr);
   column-gap: 10px;
   padding: 8px 12px;
-  border: 1px solid #171a20;
-  border-radius: 8px;
-  background: var(--ose-bg);
+  border: 1px solid var(--ose-card-border);
+  border-radius: var(--ose-radius-card);
+  box-shadow: var(--ose-shadow-card);
+  background: var(--ose-card-bg);
 }
 
 #openscene-root .ose-community-shell-right {
@@ -3050,7 +3272,7 @@ body.ose-lock-scroll {
 
 #openscene-root .ose-community-grid {
   grid-template-columns: minmax(0, 1fr) var(--ose-right-rail);
-  gap: 24px;
+  gap: var(--ose-rail-gap);
   align-items: start;
 }
 
@@ -3074,8 +3296,8 @@ body.ose-lock-scroll {
 }
 
 #openscene-root .ose-community-shell-main .ose-community-posts.ose-feed-list .ose-feed-post:hover {
-  background: #111111;
-  border-color: #20242c;
+  background: var(--ose-color-surface-3);
+  border-color: var(--ose-color-border-3);
 }
 
 #openscene-root .ose-community-stats {
@@ -3085,8 +3307,7 @@ body.ose-lock-scroll {
 }
 
 #openscene-root .ose-community-stats strong {
-  font-size: 24px;
-  font-size: clamp(18px, 1.1vw, 24px);
+  font-size: var(--ose-display-hero-md);
   font-weight: 700;
 }
 
@@ -3103,7 +3324,7 @@ body.ose-lock-scroll {
 }
 
 #openscene-root .ose-community-panel p {
-  color: #8d8d95;
+  color: var(--ose-color-text-weak);
   font-size: 16px;
   font-size: clamp(13px, 0.72vw, 16px);
   line-height: 1.55;
@@ -3168,7 +3389,7 @@ body.ose-lock-scroll {
 }
 
 #openscene-root .ose-community-curators-btn:hover {
-  color: #fff;
+  color: var(--ose-color-text);
   border-color: #2e2e2e;
 }
 
@@ -3224,7 +3445,7 @@ body.ose-lock-scroll {
 }
 
 #openscene-root .ose-pd-back:hover {
-  color: #fff;
+  color: var(--ose-color-text);
 }
 
 #openscene-root .ose-pd-header {
@@ -3243,7 +3464,7 @@ body.ose-lock-scroll {
   flex-direction: column;
   align-items: center;
   gap: 2px;
-  color: #8a8a92;
+  color: var(--ose-color-text-dim);
   margin: 2px 0 0;
   grid-column: 1;
   grid-row: 1 / span 3;
@@ -3385,8 +3606,8 @@ body.ose-lock-scroll {
   height: auto;
   resize: none;
   overflow-y: hidden;
-  border: 1px solid #1e1e1e;
-  background: #0a0a0a;
+  border: 1px solid var(--ose-color-border-2);
+  background: var(--ose-color-bg);
   color: #e5e5eb;
   padding: 10px 16px;
   border-radius: 999px;
@@ -3489,7 +3710,7 @@ body.ose-lock-scroll {
 
 #openscene-root .ose-pd-reply-box {
   margin-top: 12px;
-  border: 1px solid #1a1a1a;
+  border: 1px solid var(--ose-color-border);
   background: #090909;
   border-radius: 8px;
   padding: 12px;
@@ -3524,7 +3745,7 @@ body.ose-lock-scroll {
 
 #openscene-root .ose-pd-reply-actions button:last-child {
   background: var(--ose-purple);
-  color: #fff;
+  color: var(--ose-color-text);
   border-color: transparent;
 }
 
@@ -3569,7 +3790,7 @@ body.ose-lock-scroll {
 }
 
 #openscene-root .ose-pd-load-more:hover {
-  color: #fff;
+  color: var(--ose-color-text);
 }
 
 #openscene-root .ose-user-page {
@@ -3577,11 +3798,12 @@ body.ose-lock-scroll {
   display: flex;
   max-width: 1400px;
   margin: 0 auto;
+  gap: var(--ose-rail-gap);
 }
 
 #openscene-root .ose-user-sidebar {
   width: 256px;
-  border-right: 1px solid rgba(255, 255, 255, 0.1);
+  border-right: 1px solid var(--ose-color-border-2);
   padding: 24px;
   position: sticky;
   top: 0;
@@ -3591,7 +3813,7 @@ body.ose-lock-scroll {
 }
 
 #openscene-root .ose-user-logo a {
-  color: #fff;
+  color: var(--ose-color-text);
   font-size: clamp(1.75rem, 2vw, 2.25rem);
   font-weight: 700;
   letter-spacing: -0.04em;
@@ -3611,13 +3833,13 @@ body.ose-lock-scroll {
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  color: #8b8b93;
+  color: var(--ose-color-text-soft);
   font-size: var(--ose-fs-body);
 }
 
 #openscene-root .ose-user-nav a:hover,
 #openscene-root .ose-user-nav a.is-active {
-  color: #fff;
+  color: var(--ose-color-text);
 }
 
 #openscene-root .ose-user-nav a.is-active .ose-lucide {
@@ -3630,7 +3852,7 @@ body.ose-lock-scroll {
   height: 42px;
   border-radius: 10px;
   background: var(--ose-neon);
-  color: #000;
+  color: var(--ose-color-bg);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -3656,7 +3878,7 @@ body.ose-lock-scroll {
   width: 132px;
   height: 132px;
   border-radius: 999px;
-  background: linear-gradient(#000, #000) padding-box, linear-gradient(90deg, var(--ose-purple), var(--ose-neon)) border-box;
+  background: linear-gradient(var(--ose-color-bg), var(--ose-color-bg)) padding-box, linear-gradient(90deg, var(--ose-purple), var(--ose-neon)) border-box;
   border: 2px solid transparent;
   padding: 4px;
   flex: 0 0 auto;
@@ -3673,8 +3895,8 @@ body.ose-lock-scroll {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #181818;
-  color: #ddd;
+  background: var(--ose-color-border);
+  color: var(--ose-color-text-muted);
   font-weight: 700;
 }
 
@@ -3697,9 +3919,9 @@ body.ose-lock-scroll {
 }
 
 #openscene-root .ose-user-edit {
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid var(--ose-color-border-soft);
   background: transparent;
-  color: #fff;
+  color: var(--ose-color-text);
   height: 34px;
   padding: 0 14px;
   border-radius: 999px;
@@ -3708,7 +3930,7 @@ body.ose-lock-scroll {
 
 #openscene-root .ose-user-info p {
   margin: 10px 0 12px;
-  color: #9b9ba3;
+  color: var(--ose-color-text-muted);
   font-size: var(--ose-fs-body);
   line-height: 1.5;
 }
@@ -3724,7 +3946,7 @@ body.ose-lock-scroll {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  color: #8c8c95;
+  color: var(--ose-color-text-soft);
   font-size: var(--ose-fs-small);
 }
 
@@ -3736,7 +3958,7 @@ body.ose-lock-scroll {
 #openscene-root .ose-user-tabs {
   max-width: 860px;
   margin: 0 auto;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid var(--ose-color-border-2);
   display: flex;
   gap: 24px;
 }
@@ -3744,7 +3966,7 @@ body.ose-lock-scroll {
 #openscene-root .ose-user-tabs button {
   border: 0;
   background: transparent;
-  color: #8f8f97;
+  color: var(--ose-color-text-soft);
   text-transform: uppercase;
   letter-spacing: var(--ose-ls-kicker);
   font-size: var(--ose-fs-meta);
@@ -3768,7 +3990,7 @@ body.ose-lock-scroll {
 }
 
 #openscene-root .ose-user-controls span {
-  color: #7d7d86;
+  color: var(--ose-color-text-soft);
   text-transform: uppercase;
   letter-spacing: var(--ose-ls-kicker);
   font-size: var(--ose-fs-meta);
@@ -3778,7 +4000,7 @@ body.ose-lock-scroll {
 #openscene-root .ose-user-controls button {
   border: 0;
   background: transparent;
-  color: #d4d4da;
+  color: var(--ose-color-text-muted);
   text-transform: uppercase;
   letter-spacing: var(--ose-ls-kicker);
   font-size: var(--ose-fs-meta);
@@ -3795,12 +4017,12 @@ body.ose-lock-scroll {
 #openscene-root .ose-user-list {
   max-width: 860px;
   margin: 0 auto;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  border-top: 1px solid var(--ose-color-border-faint-2);
 }
 
 #openscene-root .ose-user-item {
   padding: 20px 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid var(--ose-color-border-faint);
 }
 
 #openscene-root .ose-user-item-head {
@@ -3812,7 +4034,7 @@ body.ose-lock-scroll {
 }
 
 #openscene-root .ose-user-item-head a {
-  color: #f0f0f6;
+  color: var(--ose-color-text);
   font-size: var(--ose-fs-title);
   line-height: 1.25;
   font-weight: 600;
@@ -3823,7 +4045,7 @@ body.ose-lock-scroll {
 }
 
 #openscene-root .ose-user-item-head time {
-  color: #8b8b93;
+  color: var(--ose-color-text-soft);
   text-transform: uppercase;
   letter-spacing: var(--ose-ls-kicker);
   font-size: var(--ose-fs-meta);
@@ -3833,7 +4055,7 @@ body.ose-lock-scroll {
 #openscene-root .ose-user-item p,
 #openscene-root .ose-user-comment-body {
   margin: 0 0 10px;
-  color: #9797a0;
+  color: var(--ose-color-text-muted);
   font-size: var(--ose-fs-body);
   line-height: 1.5;
 }
@@ -3842,14 +4064,14 @@ body.ose-lock-scroll {
   display: inline-flex;
   align-items: center;
   gap: 12px;
-  color: #8b8b93;
+  color: var(--ose-color-text-soft);
   text-transform: uppercase;
   letter-spacing: var(--ose-ls-kicker);
   font-size: var(--ose-fs-meta);
 }
 
 #openscene-root .ose-user-item-foot span:first-child {
-  background: rgba(140, 37, 244, 0.2);
+  background: var(--ose-color-accent-purple-tint);
   color: var(--ose-purple);
   padding: 2px 8px;
   border-radius: 6px;
@@ -3870,7 +4092,7 @@ body.ose-lock-scroll {
 #openscene-root .ose-user-more {
   border: 0;
   background: transparent;
-  color: #8d8d96;
+  color: var(--ose-color-text-weak);
   text-transform: uppercase;
   letter-spacing: 0.18em;
   font-size: var(--ose-fs-small);

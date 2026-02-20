@@ -190,7 +190,6 @@ final class TemplateLoader
         if ($route === 'community' && $communitySlug !== '') {
             $community = $communityRepo->findBySlug($communitySlug);
         }
-
         $user = null;
         if ($route === 'user' && $username !== '') {
             $user = $this->loadUserForRoute($username);

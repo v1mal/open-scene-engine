@@ -78,19 +78,19 @@ $brandSuffix = $brandDotPos === false ? '' : substr($brandText, $brandDotPos);
 <body <?php body_class('openscene-app-shell'); ?>>
 <?php wp_body_open(); ?>
 <?php if ($isUnavailableContent) : ?>
-<div style="height:100vh;overflow:hidden;background:#000;color:#f1f5f9;display:flex;flex-direction:column;">
-    <header style="position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid #1f2937;background:rgba(0,0,0,0.92);backdrop-filter:blur(8px);">
-        <a href="/openscene/" style="font-size:34px;line-height:1;font-weight:800;letter-spacing:-0.04em;color:#f8fafc;text-decoration:none;">
+<div class="ose-unavailable">
+    <header class="ose-unavailable-header">
+        <a href="/openscene/" class="ose-unavailable-brand">
             <?php if ($logoUrl !== '') : ?>
-                <img src="<?php echo esc_url($logoUrl); ?>" alt="<?php esc_attr_e('OpenScene Logo', 'open-scene-engine'); ?>" style="height:34px;width:auto;display:block;" />
+                <img src="<?php echo esc_url($logoUrl); ?>" alt="<?php esc_attr_e('OpenScene Logo', 'open-scene-engine'); ?>" class="ose-brand-logo" />
             <?php else : ?>
-                <?php echo esc_html($brandPrimary); ?><?php if ($brandSuffix !== '') : ?><span style="color:#14f1e0;"><?php echo esc_html($brandSuffix); ?></span><?php endif; ?>
+                <?php echo esc_html($brandPrimary); ?><?php if ($brandSuffix !== '') : ?><span><?php echo esc_html($brandSuffix); ?></span><?php endif; ?>
             <?php endif; ?>
         </a>
     </header>
-    <main class="ose-post-detail-main" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:48px 24px;text-align:center;overflow:hidden;">
-        <p style="margin:0 0 16px 0;font-size:20px;line-height:1.5;font-weight:600;"><?php esc_html_e('This content is currently unavailable.', 'open-scene-engine'); ?></p>
-        <a href="/openscene/" style="display:inline-flex;align-items:center;justify-content:center;padding:10px 16px;border:1px solid #334155;border-radius:10px;color:#f8fafc;text-decoration:none;font-size:14px;font-weight:600;"><?php esc_html_e('Go Back', 'open-scene-engine'); ?></a>
+    <main class="ose-unavailable-main">
+        <p class="ose-unavailable-message"><?php esc_html_e('This content is currently unavailable.', 'open-scene-engine'); ?></p>
+        <a href="/openscene/" class="ose-unavailable-back"><?php esc_html_e('Go Back', 'open-scene-engine'); ?></a>
     </main>
 </div>
 <?php elseif ($isRenderablePost) : ?>
@@ -100,7 +100,7 @@ $brandSuffix = $brandDotPos === false ? '' : substr($brandText, $brandDotPos);
         <div class="ose-topbar-left">
             <a class="ose-brand" href="/openscene/">
                 <?php if ($logoUrl !== '') : ?>
-                    <img src="<?php echo esc_url($logoUrl); ?>" alt="<?php esc_attr_e('OpenScene Logo', 'open-scene-engine'); ?>" style="height:34px;width:auto;display:block;" />
+                    <img src="<?php echo esc_url($logoUrl); ?>" alt="<?php esc_attr_e('OpenScene Logo', 'open-scene-engine'); ?>" class="ose-brand-logo" />
                 <?php else : ?>
                     <?php echo esc_html($brandPrimary); ?><?php if ($brandSuffix !== '') : ?><span><?php echo esc_html($brandSuffix); ?></span><?php endif; ?>
                 <?php endif; ?>
@@ -280,7 +280,7 @@ $profileName = trim((string) $ssrUser->display_name) !== '' ? (string) $ssrUser-
         <div class="ose-topbar-left">
             <a class="ose-brand" href="/openscene/">
                 <?php if ($logoUrl !== '') : ?>
-                    <img src="<?php echo esc_url($logoUrl); ?>" alt="<?php esc_attr_e('OpenScene Logo', 'open-scene-engine'); ?>" style="height:34px;width:auto;display:block;" />
+                    <img src="<?php echo esc_url($logoUrl); ?>" alt="<?php esc_attr_e('OpenScene Logo', 'open-scene-engine'); ?>" class="ose-brand-logo" />
                 <?php else : ?>
                     <?php echo esc_html($brandPrimary); ?><?php if ($brandSuffix !== '') : ?><span><?php echo esc_html($brandSuffix); ?></span><?php endif; ?>
                 <?php endif; ?>
