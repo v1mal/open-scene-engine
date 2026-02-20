@@ -3,7 +3,35 @@
 @tailwind utilities;
 
 #openscene-root {
-  background: #000;
-  color: #fff;
-  font-family: 'Spline Sans', 'Inter', system-ui, sans-serif;
+  /* OpenScene global design tokens (source-of-truth scale) */
+  --ose-bg: #0a0a0a;
+  --ose-text: #ffffff;
+  --ose-font-family-base: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --ose-fw-regular: 400;
+  --ose-fw-medium: 500;
+  --ose-fw-semibold: 600;
+  --ose-fw-bold: 700;
+  --ose-fs-brand: 22px;
+  --ose-fs-xl: 24px;
+  --ose-fs-title: 20px;
+  --ose-fs-body: 14px;
+  --ose-fs-base: 13px;
+  --ose-fs-md: 12px;
+  --ose-fs-meta: 11px;
+  --ose-fs-xs: 10px;
+  --ose-lh-brand: 33px;
+  --ose-lh-xl: 24px;
+  --ose-lh-title: 26px;
+  --ose-lh-body: 21px;
+  --ose-lh-base: 19.5px;
+  --ose-lh-md: 18px;
+  --ose-lh-meta: 16.5px;
+  --ose-lh-xs: 15px;
+  --ose-ls-brand: -0.55px;
+  --ose-ls-kicker: 0.8px;
+  --ose-ls-tight: -0.3px;
+  --ose-ls-button: 0.325px;
+  background: var(--ose-bg);
+  color: var(--ose-text);
+  font-family: var(--ose-font-family-base);
 }

@@ -11,15 +11,36 @@
   --ose-neon: #00f5d4;
   --ose-purple: #8c25f4;
   --ose-muted: #666666;
-  /* typography tokens */
+  /* typography scale */
+  --ose-font-family-base: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --ose-fw-regular: 400;
+  --ose-fw-medium: 500;
+  --ose-fw-semibold: 600;
+  --ose-fw-bold: 700;
   --ose-fs-brand: 22px;
-  --ose-fs-h1: clamp(2rem, 2.6vw, 3.25rem);
-  --ose-fs-h2: clamp(1.5rem, 1.8vw, 2.25rem);
+  --ose-fs-xl: 24px;
   --ose-fs-title: 20px;
   --ose-fs-body: 14px;
-  --ose-fs-small: 12px;
+  --ose-fs-base: 13px;
+  --ose-fs-md: 12px;
   --ose-fs-meta: 11px;
+  --ose-fs-xs: 10px;
+  --ose-lh-brand: 33px;
+  --ose-lh-xl: 24px;
+  --ose-lh-title: 26px;
+  --ose-lh-body: 21px;
+  --ose-lh-base: 19.5px;
+  --ose-lh-md: 18px;
+  --ose-lh-meta: 16.5px;
+  --ose-lh-xs: 15px;
+  --ose-ls-brand: -0.55px;
   --ose-ls-kicker: 0.8px;
+  --ose-ls-tight: -0.3px;
+  --ose-ls-button: 0.325px;
+  /* legacy aliases */
+  --ose-fs-h1: clamp(2rem, 2.6vw, 3.25rem);
+  --ose-fs-h2: clamp(1.5rem, 1.8vw, 2.25rem);
+  --ose-fs-small: var(--ose-fs-md);
   /* spacing + layout tokens */
   --ose-space-1: 4px;
   --ose-space-2: 8px;
@@ -37,7 +58,7 @@
   width: 100%;
   background: var(--ose-bg);
   color: var(--ose-text);
-  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: var(--ose-font-family-base);
 }
 
 #openscene-root .ose-avatar-menu {
@@ -70,7 +91,7 @@
 
 #openscene-root .ose-avatar-dropdown a {
   color: #d7d7de;
-  font-size: 12px;
+  font-size: var(--ose-fs-md);
   padding: 7px 9px;
   border-radius: 7px;
 }
@@ -89,7 +110,7 @@
   border: 1px solid rgba(255, 255, 255, 0.18);
   background: transparent;
   color: #c6c6cf;
-  font-size: 11px;
+  font-size: var(--ose-fs-meta);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   padding: 6px 10px;
@@ -133,7 +154,7 @@
 #openscene-root .ose-mod-left h3,
 #openscene-root .ose-mod-right h3 {
   margin: 0 0 12px;
-  font-size: 11px;
+  font-size: var(--ose-fs-meta);
   letter-spacing: 0.16em;
   text-transform: uppercase;
   color: #8b8b93;
@@ -148,7 +169,8 @@
   color: #b5b5be;
   padding: 9px 10px;
   border-radius: 8px;
-  font-size: 13px;
+  font-size: var(--ose-fs-base);
+  line-height: var(--ose-lh-base);
 }
 
 #openscene-root .ose-mod-left button.is-active {
@@ -176,7 +198,8 @@
 
 #openscene-root .ose-mod-head span {
   color: #8d8d96;
-  font-size: 14px;
+  font-size: var(--ose-fs-body);
+  line-height: var(--ose-lh-body);
 }
 
 #openscene-root .ose-mod-list {
@@ -209,7 +232,7 @@
 }
 
 #openscene-root .ose-mod-badge {
-  font-size: 10px;
+  font-size: var(--ose-fs-xs);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   border: 1px solid rgba(255, 255, 255, 0.18);
@@ -241,7 +264,8 @@
   display: flex;
   gap: 12px;
   color: #7f7f89;
-  font-size: 12px;
+  font-size: var(--ose-fs-md);
+  line-height: var(--ose-lh-md);
 }
 
 #openscene-root .ose-mod-actions {
@@ -255,7 +279,7 @@
   border: 1px solid rgba(255, 255, 255, 0.18);
   background: transparent;
   color: #ceced5;
-  font-size: 11px;
+  font-size: var(--ose-fs-meta);
   text-transform: uppercase;
   letter-spacing: 0.08em;
   border-radius: 7px;
@@ -299,13 +323,15 @@
 
 #openscene-root .ose-mod-log-item p {
   margin: 0;
-  font-size: 12px;
+  font-size: var(--ose-fs-md);
+  line-height: var(--ose-lh-md);
   color: #cbccd4;
 }
 
 #openscene-root .ose-mod-log-item small {
   color: #7f7f89;
-  font-size: 10px;
+  font-size: var(--ose-fs-xs);
+  line-height: var(--ose-lh-xs);
 }
 
 #openscene-root * { box-sizing: border-box; }
@@ -382,9 +408,9 @@
 
 #openscene-root .ose-topbar-nav a {
   color: #8d8d95;
-  font-size: 14px;
+  font-size: var(--ose-fs-body);
   line-height: 1.25;
-  font-weight: 600;
+  font-weight: var(--ose-fw-semibold);
 }
 
 #openscene-root .ose-topbar-nav a:hover {
@@ -392,10 +418,10 @@
 }
 
 #openscene-root .ose-brand {
-  font-size: 22px;
-  line-height: 33px;
-  font-weight: 600;
-  letter-spacing: -0.55px;
+  font-size: var(--ose-fs-brand);
+  line-height: var(--ose-lh-brand);
+  font-weight: var(--ose-fw-semibold);
+  letter-spacing: var(--ose-ls-brand);
 }
 
 #openscene-root .ose-brand span { color: var(--ose-neon); }
@@ -428,7 +454,7 @@
   border: 0;
   outline: 0;
   color: #fff;
-  font-size: 14px;
+  font-size: var(--ose-fs-body);
 }
 
 #openscene-root .ose-search input::placeholder { color: #666; }
@@ -657,9 +683,9 @@
 
 #openscene-root .ose-mobile-drawer-head h2 {
   margin: 0;
-  font-size: 14px;
-  line-height: 21px;
-  font-weight: 600;
+  font-size: var(--ose-fs-body);
+  line-height: var(--ose-lh-body);
+  font-weight: var(--ose-fw-semibold);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: #cfd6de;
@@ -702,11 +728,11 @@ body.ose-lock-scroll {
 #openscene-root .ose-side-title {
   margin: 0 0 12px;
   color: var(--ose-muted);
-  font-size: 10px;
-  line-height: 15px;
+  font-size: var(--ose-fs-xs);
+  line-height: var(--ose-lh-xs);
   text-transform: uppercase;
   letter-spacing: 0.8px;
-  font-weight: 600;
+  font-weight: var(--ose-fw-semibold);
 }
 
 #openscene-root .ose-community-list {
@@ -727,9 +753,9 @@ body.ose-lock-scroll {
   align-items: center;
   justify-content: space-between;
   color: #8d8d95;
-  font-size: 13px;
-  line-height: 19.5px;
-  font-weight: 500;
+  font-size: var(--ose-fs-base);
+  line-height: var(--ose-lh-base);
+  font-weight: var(--ose-fw-medium);
   transition: 0.2s ease;
 }
 
@@ -769,7 +795,7 @@ body.ose-lock-scroll {
   border-color: rgba(0, 245, 212, 0.38);
   background: rgba(0, 245, 212, 0.12);
   color: var(--ose-neon);
-  font-weight: 600;
+  font-weight: var(--ose-fw-semibold);
 }
 
 #openscene-root .ose-community-item.ose-community-view-all {
@@ -797,7 +823,7 @@ body.ose-lock-scroll {
 }
 
 #openscene-root .ose-community-count {
-  font-size: 10px;
+  font-size: var(--ose-fs-xs);
   color: #777;
   border-radius: 6px;
   border: 1px solid #242424;
@@ -840,9 +866,9 @@ body.ose-lock-scroll {
   align-items: center;
   gap: 8px;
   color: #d3d8e1;
-  font-size: 11px;
-  line-height: 16px;
-  font-weight: 600;
+  font-size: var(--ose-fs-meta);
+  line-height: var(--ose-lh-meta);
+  font-weight: var(--ose-fw-semibold);
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
@@ -874,7 +900,7 @@ body.ose-lock-scroll {
 #openscene-root .ose-left-activity-list > li > span {
   display: block;
   color: var(--ose-text-subtle);
-  font-size: 13px;
+  font-size: var(--ose-fs-base);
   line-height: 1.45;
 }
 
@@ -888,7 +914,7 @@ body.ose-lock-scroll {
 #openscene-root .ose-left-activity-title-text {
   min-width: 0;
   flex: 1;
-  font-weight: 600;
+  font-weight: var(--ose-fw-semibold);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -898,8 +924,8 @@ body.ose-lock-scroll {
   flex: 0 0 auto;
   white-space: nowrap;
   color: #7e838d;
-  font-size: 11px;
-  line-height: 16px;
+  font-size: var(--ose-fs-meta);
+  line-height: var(--ose-lh-meta);
   letter-spacing: 0.06em;
   text-transform: none;
 }
@@ -911,8 +937,8 @@ body.ose-lock-scroll {
   gap: 6px;
   white-space: nowrap;
   color: #7e838d;
-  font-size: 11px;
-  line-height: 16px;
+  font-size: var(--ose-fs-meta);
+  line-height: var(--ose-lh-meta);
 }
 
 #openscene-root .ose-left-activity-dot {
@@ -926,7 +952,7 @@ body.ose-lock-scroll {
 #openscene-root .ose-left-activity-empty {
   margin: 0 0 6px;
   color: var(--ose-text-subtle);
-  font-size: 13px;
+  font-size: var(--ose-fs-base);
   line-height: 1.45;
 }
 
@@ -978,9 +1004,9 @@ body.ose-lock-scroll {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  font-size: 20px;
-  line-height: 26px;
-  font-weight: 600;
+  font-size: var(--ose-fs-title);
+  line-height: var(--ose-lh-title);
+  font-weight: var(--ose-fw-semibold);
   color: #f3f6fb;
 }
 
@@ -1254,15 +1280,15 @@ body.ose-lock-scroll {
 }
 
 #openscene-root .ose-vote-rail strong {
-  font-size: 12px;
-  font-weight: 700;
+  font-size: var(--ose-fs-md);
+  font-weight: var(--ose-fw-bold);
 }
 
 #openscene-root .ose-post-meta {
   color: #7f858e;
-  font-size: 11px;
-  line-height: 16.5px;
-  font-weight: 400;
+  font-size: var(--ose-fs-meta);
+  line-height: var(--ose-lh-meta);
+  font-weight: var(--ose-fw-regular);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   margin-bottom: 12px;
@@ -1270,9 +1296,9 @@ body.ose-lock-scroll {
 
 #openscene-root .ose-tag {
   color: var(--ose-purple);
-  font-size: 10px;
-  line-height: 15px;
-  font-weight: 700;
+  font-size: var(--ose-fs-xs);
+  line-height: var(--ose-lh-xs);
+  font-weight: var(--ose-fw-bold);
   letter-spacing: 0.8px;
   text-transform: uppercase;
 }
@@ -1288,9 +1314,9 @@ body.ose-lock-scroll {
 #openscene-root .ose-post-title {
   display: block;
   color: #fff;
-  font-size: 20px;
-  line-height: 26px;
-  font-weight: 600;
+  font-size: var(--ose-fs-title);
+  line-height: var(--ose-lh-title);
+  font-weight: var(--ose-fw-semibold);
   letter-spacing: -0.01em;
 }
 
@@ -1299,9 +1325,9 @@ body.ose-lock-scroll {
 #openscene-root .ose-post-body {
   margin: 8px 0 14px;
   color: #a5abb4;
-  font-size: 14px;
-  line-height: 21px;
-  font-weight: 400;
+  font-size: var(--ose-fs-body);
+  line-height: var(--ose-lh-body);
+  font-weight: var(--ose-fw-regular);
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -1315,7 +1341,7 @@ body.ose-lock-scroll {
   gap: 6px;
   margin-bottom: 10px;
   color: #87d9ff;
-  font-size: 11px;
+  font-size: var(--ose-fs-meta);
   letter-spacing: 0.03em;
 }
 
@@ -1344,9 +1370,9 @@ body.ose-lock-scroll {
   border: 0;
   background: transparent;
   color: #85858d;
-  font-size: 12px;
-  line-height: 18px;
-  font-weight: 500;
+  font-size: var(--ose-fs-md);
+  line-height: var(--ose-lh-md);
+  font-weight: var(--ose-fw-medium);
   padding: 0 4px;
   cursor: pointer;
   display: inline-flex;
@@ -1621,10 +1647,10 @@ body.ose-lock-scroll {
 
 #openscene-root .ose-widget-head h3 {
   margin: 0;
-  font-size: 13px;
-  line-height: 19.5px;
-  font-weight: 600;
-  letter-spacing: -0.3px;
+  font-size: var(--ose-fs-base);
+  line-height: var(--ose-lh-base);
+  font-weight: var(--ose-fw-semibold);
+  letter-spacing: var(--ose-ls-tight);
 }
 
 #openscene-root .ose-widget-head span {
@@ -1728,32 +1754,32 @@ body.ose-lock-scroll {
 
 #openscene-root .ose-event-month {
   color: #d680ff;
-  font-size: 10px;
-  line-height: 15px;
-  font-weight: 700;
+  font-size: var(--ose-fs-xs);
+  line-height: var(--ose-lh-xs);
+  font-weight: var(--ose-fw-bold);
   text-transform: uppercase;
   letter-spacing: 0.06em;
 }
 
 #openscene-root .ose-event-day {
   color: #fff;
-  font-size: 24px;
-  line-height: 24px;
-  font-weight: 700;
+  font-size: var(--ose-fs-xl);
+  line-height: var(--ose-lh-xl);
+  font-weight: var(--ose-fw-bold);
 }
 
 #openscene-root .ose-event h4 {
   margin: 0 0 2px;
-  font-size: 14px;
+  font-size: var(--ose-fs-body);
   line-height: 17.5px;
-  font-weight: 600;
+  font-weight: var(--ose-fw-semibold);
 }
 
 #openscene-root .ose-event p {
   margin: 0;
-  font-size: 11px;
+  font-size: var(--ose-fs-meta);
   line-height: 15.4px;
-  font-weight: 400;
+  font-weight: var(--ose-fw-regular);
   color: #888890;
 }
 
@@ -1765,10 +1791,10 @@ body.ose-lock-scroll {
   border: 0;
   background: transparent;
   color: var(--ose-neon);
-  font-size: 13px;
-  line-height: 19.5px;
-  font-weight: 600;
-  letter-spacing: 0.325px;
+  font-size: var(--ose-fs-base);
+  line-height: var(--ose-lh-base);
+  font-weight: var(--ose-fw-semibold);
+  letter-spacing: var(--ose-ls-button);
   padding: 0;
   text-transform: uppercase;
   cursor: pointer;
@@ -1794,14 +1820,14 @@ body.ose-lock-scroll {
 
 #openscene-root .ose-rules span {
   color: var(--ose-neon);
-  font-size: 12px;
-  font-weight: 700;
+  font-size: var(--ose-fs-md);
+  font-weight: var(--ose-fw-bold);
 }
 
 #openscene-root .ose-rules p {
   margin: 0;
   color: #8a8a92;
-  font-size: 12px;
+  font-size: var(--ose-fs-md);
   line-height: 1.35;
 }
 
@@ -1821,18 +1847,18 @@ body.ose-lock-scroll {
 
 #openscene-root .ose-footer nav a {
   color: #6f6f78;
-  font-size: 10px;
-  line-height: 15px;
+  font-size: var(--ose-fs-xs);
+  line-height: var(--ose-lh-xs);
   text-transform: uppercase;
   letter-spacing: 0.8px;
-  font-weight: 600;
+  font-weight: var(--ose-fw-semibold);
 }
 
 #openscene-root .ose-footer p {
   margin: 0;
   color: #6c6c74;
   opacity: 0.65;
-  font-size: 13px;
+  font-size: var(--ose-fs-base);
   line-height: 1.5;
 }
 
@@ -3934,9 +3960,9 @@ body.ose-lock-scroll {
 /* Typography normalization across screens */
 #openscene-root .ose-brand {
   font-size: var(--ose-fs-brand);
-  line-height: 33px;
-  letter-spacing: -0.55px;
-  font-weight: 600;
+  line-height: var(--ose-lh-brand);
+  letter-spacing: var(--ose-ls-brand);
+  font-weight: var(--ose-fw-semibold);
 }
 
 #openscene-root .ose-community-header h1,
@@ -3954,9 +3980,9 @@ body.ose-lock-scroll {
 #openscene-root .ose-post-title,
 #openscene-root .ose-community-post-title {
   font-size: var(--ose-fs-title);
-  line-height: 26px;
+  line-height: var(--ose-lh-title);
   letter-spacing: -0.015em;
-  font-weight: 600;
+  font-weight: var(--ose-fw-semibold);
 }
 
 #openscene-root .ose-post-body,
@@ -3966,7 +3992,7 @@ body.ose-lock-scroll {
 #openscene-root .ose-placeholder-main p,
 #openscene-root .ose-event-detail-body {
   font-size: var(--ose-fs-body);
-  line-height: 21px;
+  line-height: var(--ose-lh-body);
 }
 
 #openscene-root .ose-post-meta,
@@ -3994,13 +4020,13 @@ body.ose-lock-scroll {
 }
 
 #openscene-root .ose-community-item {
-  font-size: 13px;
-  line-height: 19.5px;
-  font-weight: 500;
+  font-size: var(--ose-fs-base);
+  line-height: var(--ose-lh-base);
+  font-weight: var(--ose-fw-medium);
 }
 
 #openscene-root .ose-community-item.is-active {
-  font-weight: 600;
+  font-weight: var(--ose-fw-semibold);
 }
 
 #openscene-root .ose-community-stats strong {
@@ -4009,20 +4035,20 @@ body.ose-lock-scroll {
 
 /* Keep left-rail typography fixed to spec (avoid global type overrides) */
 #openscene-root .ose-left .ose-side-title {
-  font-size: 10px;
-  line-height: 15px;
-  font-weight: 600;
+  font-size: var(--ose-fs-xs);
+  line-height: var(--ose-lh-xs);
+  font-weight: var(--ose-fw-semibold);
   letter-spacing: 0.8px;
 }
 
 #openscene-root .ose-left .ose-community-item {
-  font-size: 13px;
-  line-height: 19.5px;
-  font-weight: 500;
+  font-size: var(--ose-fs-base);
+  line-height: var(--ose-lh-base);
+  font-weight: var(--ose-fw-medium);
 }
 
 #openscene-root .ose-left .ose-community-item.is-active {
-  font-weight: 600;
+  font-weight: var(--ose-fw-semibold);
 }
 
 #openscene-root .ose-create-accent {
@@ -4064,8 +4090,8 @@ body.ose-lock-scroll {
     gap: 22px;
   }
 
-  #openscene-root .ose-post-title { font-size: 20px; line-height: 26px; }
-  #openscene-root .ose-post-body { font-size: 14px; line-height: 21px; }
+  #openscene-root .ose-post-title { font-size: var(--ose-fs-title); line-height: var(--ose-lh-title); }
+  #openscene-root .ose-post-body { font-size: var(--ose-fs-body); line-height: var(--ose-lh-body); }
 }
 
 @media (max-width: 980px) {
@@ -4116,7 +4142,7 @@ body.ose-lock-scroll {
     max-width: none;
   }
 
-  #openscene-root .ose-brand { font-size: 22px; line-height: 33px; }
+  #openscene-root .ose-brand { font-size: var(--ose-fs-brand); line-height: var(--ose-lh-brand); }
 
   #openscene-root .ose-search {
     width: 100%;
@@ -4186,7 +4212,8 @@ body.ose-lock-scroll {
   #openscene-root .ose-feed-tabs button {
     min-height: 34px;
     padding-bottom: 8px;
-    font-size: 14px;
+    font-size: var(--ose-fs-body);
+    line-height: var(--ose-lh-body);
   }
 
   #openscene-root .ose-feed-create-btn {
@@ -4207,9 +4234,9 @@ body.ose-lock-scroll {
     border-radius: 10px;
     background: var(--ose-neon);
     color: #00110d;
-    font-size: 13px;
-    line-height: 19.5px;
-    font-weight: 600;
+    font-size: var(--ose-fs-base);
+    line-height: var(--ose-lh-base);
+    font-weight: var(--ose-fw-semibold);
     letter-spacing: 0.2px;
     transition: opacity 0.18s ease, transform 0.18s ease;
   }
@@ -4246,13 +4273,13 @@ body.ose-lock-scroll {
   }
 
   #openscene-root .ose-post-title {
-    font-size: 18px;
+    font-size: clamp(16px, 4.8vw, 18px);
     line-height: 1.32;
   }
 
   #openscene-root .ose-post-body {
     margin: 6px 0 12px;
-    font-size: 14px;
+    font-size: var(--ose-fs-body);
     line-height: 1.46;
   }
 
@@ -4302,11 +4329,12 @@ body.ose-lock-scroll {
   }
 
   #openscene-root .ose-community-header h1 {
-    font-size: 34px;
+    font-size: clamp(30px, 8vw, 34px);
   }
 
   #openscene-root .ose-community-header p {
-    font-size: 20px;
+    font-size: clamp(18px, 5.6vw, 20px);
+    line-height: var(--ose-lh-title);
   }
 
   #openscene-root .ose-community-feed-controls {
@@ -4423,7 +4451,7 @@ body.ose-lock-scroll {
   }
 
   #openscene-root .ose-create-header h1 {
-    font-size: 30px;
+    font-size: clamp(26px, 7.2vw, 30px);
     margin-bottom: 16px;
   }
 
@@ -4444,12 +4472,12 @@ body.ose-lock-scroll {
   }
 
   #openscene-root .ose-create-title {
-    font-size: 26px;
+    font-size: clamp(22px, 6.8vw, 26px);
   }
 
   #openscene-root .ose-editor {
     min-height: 320px;
-    font-size: 16px;
+    font-size: clamp(14px, 4.2vw, 16px);
     padding: 38px 16px 50px;
   }
 
