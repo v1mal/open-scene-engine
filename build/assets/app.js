@@ -3163,6 +3163,10 @@
     const [sort, setSort] = useState('latest');
     const [postLimit, setPostLimit] = useState(20);
     const [commentLimit, setCommentLimit] = useState(20);
+    const [optimisticVotes, setOptimisticVotes] = useState({});
+    const [deletedPosts, setDeletedPosts] = useState({});
+    const [reportedPosts, setReportedPosts] = useState({});
+    const [savedPosts, setSavedPosts] = useState({});
 
     const activeLimit = tab === 'posts' ? postLimit : commentLimit;
     const activePath = '/openscene/v1/users/' + encodeURIComponent(username) + '/' + (tab === 'posts' ? 'posts' : 'comments') + '?per_page=' + activeLimit + '&offset=0';
@@ -3180,36 +3184,151 @@
 
     const sortedPosts = sortRows(posts);
     const sortedComments = sortRows(comments);
-    const activeRows = tab === 'posts' ? sortedPosts : sortedComments;
     const canLoadMore = tab === 'posts' ? posts.length >= postLimit : comments.length >= commentLimit;
 
+    function loginRedirect() {
+      const redirectTo = encodeURIComponent(window.location.href || '/openscene/');
+      window.location.href = '/wp-login.php?redirect_to=' + redirectTo;
+    }
+
+    function votePost(postId, clickedValue, currentVote) {
+      if (!isFeatureEnabled('voting')) return;
+      if (Number(cfg.userId || 0) <= 0) { loginRedirect(); return; }
+      const effective = (currentVote === clickedValue) ? 0 : clickedValue;
+      const delta = effective - currentVote;
+      setOptimisticVotes(function (prev) {
+        return Object.assign({}, prev, { [postId]: { user_vote: effective, delta: delta, pending: true } });
+      });
+      apiRequest({
+        path: '/openscene/v1/posts/' + postId + '/vote',
+        method: 'POST',
+        data: { value: clickedValue }
+      }).then(function (res) {
+        const payload = res && res.data ? res.data : {};
+        setOptimisticVotes(function (prev) {
+          return Object.assign({}, prev, {
+            [postId]: { user_vote: Number(payload.user_vote || 0), absoluteScore: Number(payload.score || 0), pending: false }
+          });
+        });
+      }).catch(function () {
+        setOptimisticVotes(function (prev) {
+          const copy = Object.assign({}, prev);
+          delete copy[postId];
+          return copy;
+        });
+      });
+    }
+
+    function reportPost(postId) {
+      if (!isFeatureEnabled('reporting')) return;
+      if (!postId || reportedPosts[postId]) return;
+      apiRequest({ path: '/openscene/v1/posts/' + postId + '/report', method: 'POST' }).then(function () {
+        setReportedPosts(function (prev) {
+          const copy = Object.assign({}, prev);
+          copy[postId] = true;
+          return copy;
+        });
+      }).catch(function () {});
+    }
+
+    function deletePost(postId) {
+      if (!postId || !window.confirm('Delete this post?')) return;
+      apiRequest({ path: '/openscene/v1/posts/' + postId, method: 'DELETE' }).then(function () {
+        setDeletedPosts(function (prev) {
+          const copy = Object.assign({}, prev);
+          copy[postId] = true;
+          return copy;
+        });
+      }).catch(function () {});
+    }
+
+    function savePost(postId, isSaved) {
+      if (!isFeatureEnabled('saved_posts')) return;
+      if (!postId) return;
+      if (Number(cfg.userId || 0) <= 0) { loginRedirect(); return; }
+      const nextSaved = !isSaved;
+      setSavedPosts(function (prev) {
+        const copy = Object.assign({}, prev);
+        copy[postId] = nextSaved;
+        return copy;
+      });
+      apiRequest({
+        path: '/openscene/v1/posts/' + postId + '/save',
+        method: nextSaved ? 'POST' : 'DELETE'
+      }).then(function () {
+        if (nextSaved) {
+          showUiToast('Post saved. Find it in Saved Posts.', 'Open Saved Posts', '/openscene/?view=saved');
+        } else {
+          showUiToast('Post removed from Saved Posts.');
+        }
+      }).catch(function () {
+        setSavedPosts(function (prev) {
+          const copy = Object.assign({}, prev);
+          copy[postId] = isSaved;
+          return copy;
+        });
+      });
+    }
+
+    function normalizeProfilePost(row) {
+      const postId = Number(row.id || 0);
+      const optimistic = optimisticVotes[postId] || null;
+      const isDeleted = !!deletedPosts[postId];
+      let score = Number(row.score || 0);
+      let userVote = Number(row.user_vote || 0);
+      if (optimistic) {
+        userVote = Number(optimistic.user_vote || 0);
+        score = (typeof optimistic.absoluteScore === 'number')
+          ? optimistic.absoluteScore
+          : score + Number(optimistic.delta || 0);
+      }
+      return {
+        id: postId,
+        title: isDeleted ? '[removed]' : (row.title || 'Untitled post'),
+        body: isDeleted ? '' : (row.body || ''),
+        comment_count: Number(row.comment_count || 0),
+        score: score,
+        user_vote: isDeleted ? 0 : userVote,
+        status: isDeleted ? 'removed' : String(row.status || 'published'),
+        user_id: Number(row.user_id || 0),
+        created_at: row.created_at || '',
+        reports_count: Number(row.reports_count || 0) + (reportedPosts[postId] ? 1 : 0),
+        user_reported: !!row.user_reported || !!reportedPosts[postId],
+        saved: Object.prototype.hasOwnProperty.call(savedPosts, postId) ? !!savedPosts[postId] : !!row.saved,
+        community_name: row.community_name || row.community_slug || row.type || 'discussion'
+      };
+    }
+
     return h('section', { className: 'ose-user-hydration' },
-        h('section', { className: 'ose-user-tabs' },
+        h('div', { className: 'ose-feed-header ose-community-feed-controls' },
+          h('section', { className: 'ose-user-tabs ose-feed-sort' },
           h('button', { type: 'button', className: tab === 'posts' ? 'is-active' : '', onClick: function () { setTab('posts'); } }, 'Posts'),
           h('button', { type: 'button', className: tab === 'comments' ? 'is-active' : '', onClick: function () { setTab('comments'); } }, 'Comments')
+          ),
+          h('section', { className: 'ose-user-controls' },
+            h('span', null, 'Latest Contributions'),
+            h('button', {
+              type: 'button',
+              onClick: function () { setSort(sort === 'latest' ? 'oldest' : 'latest'); }
+            }, 'Sort: ' + (sort === 'latest' ? 'Latest' : 'Oldest'), Icon('chevron-down'))
+          )
         ),
-        h('section', { className: 'ose-user-controls' },
-          h('span', null, 'Latest Contributions'),
-          h('button', {
-            type: 'button',
-            onClick: function () { setSort(sort === 'latest' ? 'oldest' : 'latest'); }
-          }, 'Sort: ' + (sort === 'latest' ? 'Latest' : 'Oldest'), Icon('chevron-down'))
-        ),
-        h('section', { className: 'ose-user-list' },
-          activeRows.map(function (row) {
-            if (tab === 'posts') {
-              return h('article', { className: 'ose-user-item', key: 'p-' + row.id },
-                h('div', { className: 'ose-user-item-head' },
-                  h('a', { href: '/post/' + row.id }, row.title || 'Untitled post'),
-                  h('time', { className: 'ose-time-ago' }, timeAgo(row.created_at))
-                ),
-                h('p', null, row.body || ''),
-                h('div', { className: 'ose-user-item-foot' },
-                  h('span', null, (row.type || 'discussion').toUpperCase()),
-                  h('span', null, Icon('message-square'), String(row.comment_count || 0))
-                )
-              );
-            }
+        tab === 'posts' ? h('div', { className: 'ose-community-posts ose-feed-list' },
+          sortedPosts.map(function (row) {
+            const merged = normalizeProfilePost(row);
+            return h(FeedPost, {
+              key: 'p-' + merged.id,
+              post: merged,
+              communityName: merged.community_name,
+              onVote: votePost,
+              onReport: reportPost,
+              onDelete: deletePost,
+              onSave: savePost
+            });
+          })
+        ) : null,
+        tab === 'comments' ? h('section', { className: 'ose-user-list' },
+          sortedComments.map(function (row) {
             return h('article', { className: 'ose-user-item', key: 'c-' + row.id },
               h('div', { className: 'ose-user-item-head' },
                 h('a', { href: '/post/' + row.post_id + '#comment-' + row.id }, 'Comment on thread #' + row.post_id),
@@ -3222,7 +3341,7 @@
               )
             );
           })
-        ),
+        ) : null,
         activeRes.loading ? h('p', { className: 'ose-events-note' }, 'Loading contributions...') : null,
         activeRes.error ? h('p', { className: 'ose-events-note ose-events-error' }, activeRes.error) : null,
         h('div', { className: 'ose-user-more-wrap' },

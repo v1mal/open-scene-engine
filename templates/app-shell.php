@@ -139,18 +139,28 @@ $brandSuffix = $brandDotPos === false ? '' : substr($brandText, $brandDotPos);
     </header>
     <div class="ose-scene-grid">
         <aside class="ose-left">
-            <h3 class="ose-side-title"><?php esc_html_e('Communities', 'open-scene-engine'); ?></h3>
-            <nav class="ose-community-list">
-                <?php foreach ($communityRows as $communityRow) : ?>
-                <?php $communityIcon = trim((string) ($communityRow['icon'] ?? '')); ?>
-                <a class="ose-community-item" href="<?php echo esc_url(home_url('/c/' . rawurlencode((string) ($communityRow['slug'] ?? '')))); ?>">
-                    <span class="ose-community-name"><i data-lucide="<?php echo esc_attr($communityIcon !== '' ? $communityIcon : 'music-4'); ?>" class="ose-lucide ose-community-icon"></i><?php echo esc_html((string) ($communityRow['name'] ?? '')); ?></span>
-                </a>
-                <?php endforeach; ?>
-                <a class="ose-community-item ose-community-view-all" href="/openscene/?view=communities">
-                    <span class="ose-community-name"><i data-lucide="plus" class="ose-lucide ose-community-icon"></i><?php esc_html_e('View All', 'open-scene-engine'); ?></span>
-                </a>
-            </nav>
+            <div class="ose-left-inner">
+                <h3 class="ose-side-title"><?php esc_html_e('Communities', 'open-scene-engine'); ?></h3>
+                <nav class="ose-community-list">
+                    <?php foreach ($communityRows as $communityRow) : ?>
+                    <?php $communityIcon = trim((string) ($communityRow['icon'] ?? '')); ?>
+                    <a class="ose-community-item" href="<?php echo esc_url(home_url('/c/' . rawurlencode((string) ($communityRow['slug'] ?? '')))); ?>">
+                        <span class="ose-community-name"><i data-lucide="<?php echo esc_attr($communityIcon !== '' ? $communityIcon : 'music-4'); ?>" class="ose-lucide ose-community-icon"></i><?php echo esc_html((string) ($communityRow['name'] ?? '')); ?></span>
+                    </a>
+                    <?php endforeach; ?>
+                    <a class="ose-community-item ose-community-view-all" href="/openscene/?view=communities">
+                        <span class="ose-community-name"><i data-lucide="plus" class="ose-lucide ose-community-icon"></i><?php esc_html_e('View All', 'open-scene-engine'); ?></span>
+                    </a>
+                </nav>
+                <section class="ose-left-activity">
+                    <h4 class="ose-left-activity-title"><i data-lucide="history" class="ose-lucide ose-left-activity-icon"></i><?php esc_html_e('Recent Activity', 'open-scene-engine'); ?></h4>
+                    <ul class="ose-left-activity-list">
+                        <li class="ose-left-activity-empty-row">
+                            <p class="ose-left-activity-empty"><?php esc_html_e('Use the feed to see recent activity.', 'open-scene-engine'); ?></p>
+                        </li>
+                    </ul>
+                </section>
+            </div>
         </aside>
         <main class="ose-center ose-center-scroll">
             <section class="ose-center-pane ose-post-detail-main">
@@ -319,104 +329,60 @@ $profileName = trim((string) $ssrUser->display_name) !== '' ? (string) $ssrUser-
     </header>
     <div class="ose-scene-grid">
         <aside class="ose-left">
-            <h3 class="ose-side-title"><?php esc_html_e('Communities', 'open-scene-engine'); ?></h3>
-            <nav class="ose-community-list">
-                <?php foreach ($communityRows as $communityRow) : ?>
-                <?php $communityIcon = trim((string) ($communityRow['icon'] ?? '')); ?>
-                <a class="ose-community-item" href="<?php echo esc_url(home_url('/c/' . rawurlencode((string) ($communityRow['slug'] ?? '')))); ?>">
-                    <span class="ose-community-name"><i data-lucide="<?php echo esc_attr($communityIcon !== '' ? $communityIcon : 'music-4'); ?>" class="ose-lucide ose-community-icon"></i><?php echo esc_html((string) ($communityRow['name'] ?? '')); ?></span>
-                </a>
-                <?php endforeach; ?>
-                <a class="ose-community-item ose-community-view-all" href="/openscene/?view=communities">
-                    <span class="ose-community-name"><i data-lucide="plus" class="ose-lucide ose-community-icon"></i><?php esc_html_e('View All', 'open-scene-engine'); ?></span>
-                </a>
-            </nav>
+            <div class="ose-left-inner">
+                <h3 class="ose-side-title"><?php esc_html_e('Communities', 'open-scene-engine'); ?></h3>
+                <nav class="ose-community-list">
+                    <?php foreach ($communityRows as $communityRow) : ?>
+                    <?php $communityIcon = trim((string) ($communityRow['icon'] ?? '')); ?>
+                    <a class="ose-community-item" href="<?php echo esc_url(home_url('/c/' . rawurlencode((string) ($communityRow['slug'] ?? '')))); ?>">
+                        <span class="ose-community-name"><i data-lucide="<?php echo esc_attr($communityIcon !== '' ? $communityIcon : 'music-4'); ?>" class="ose-lucide ose-community-icon"></i><?php echo esc_html((string) ($communityRow['name'] ?? '')); ?></span>
+                    </a>
+                    <?php endforeach; ?>
+                    <a class="ose-community-item ose-community-view-all" href="/openscene/?view=communities">
+                        <span class="ose-community-name"><i data-lucide="plus" class="ose-lucide ose-community-icon"></i><?php esc_html_e('View All', 'open-scene-engine'); ?></span>
+                    </a>
+                </nav>
+                <section class="ose-left-activity">
+                    <h4 class="ose-left-activity-title"><i data-lucide="history" class="ose-lucide ose-left-activity-icon"></i><?php esc_html_e('Recent Activity', 'open-scene-engine'); ?></h4>
+                    <ul class="ose-left-activity-list">
+                        <li class="ose-left-activity-empty-row">
+                            <p class="ose-left-activity-empty"><?php esc_html_e('Use the feed to see recent activity.', 'open-scene-engine'); ?></p>
+                        </li>
+                    </ul>
+                </section>
+            </div>
         </aside>
-        <main class="ose-center ose-user-center">
-            <section class="ose-user-profile-head">
-                <div class="ose-user-avatar-wrap">
-                    <?php if (is_string($avatarUrl) && $avatarUrl !== '') : ?>
-                    <img class="ose-user-avatar" src="<?php echo esc_url($avatarUrl); ?>" alt="<?php echo esc_attr($routeUsername . ' avatar'); ?>" />
-                    <?php else : ?>
-                    <div class="ose-user-avatar ose-user-avatar-fallback"><?php echo esc_html($avatarFallback); ?></div>
-                    <?php endif; ?>
-                </div>
-                <div class="ose-user-info">
-                    <div class="ose-user-head-row">
-                        <h1><?php echo esc_html($profileName); ?></h1>
-                        <?php if ($canEditProfile) : ?>
-                        <button type="button" class="ose-user-edit"><?php esc_html_e('Edit Profile', 'open-scene-engine'); ?></button>
-                        <?php endif; ?>
-                    </div>
-                    <p><?php echo esc_html($bio !== '' ? $bio : __('No bio added yet.', 'open-scene-engine')); ?></p>
-                    <div class="ose-user-meta">
-                        <span><i data-lucide="calendar-days" class="ose-lucide"></i><?php echo esc_html__('Joined ', 'open-scene-engine') . esc_html(date_i18n('F Y', strtotime((string) $ssrUser->user_registered))); ?></span>
-                        <span><i data-lucide="map-pin" class="ose-lucide"></i><?php esc_html_e('OpenScene', 'open-scene-engine'); ?></span>
-                    </div>
-                </div>
+        <main class="ose-center ose-center-scroll">
+            <section class="ose-center-pane ose-community-shell-main ose-feed-center">
+                <header class="ose-community-header">
+                    <section class="ose-user-profile-head">
+                        <div class="ose-user-avatar-wrap">
+                            <?php if (is_string($avatarUrl) && $avatarUrl !== '') : ?>
+                            <img class="ose-user-avatar" src="<?php echo esc_url($avatarUrl); ?>" alt="<?php echo esc_attr($routeUsername . ' avatar'); ?>" />
+                            <?php else : ?>
+                            <div class="ose-user-avatar ose-user-avatar-fallback"><?php echo esc_html($avatarFallback); ?></div>
+                            <?php endif; ?>
+                        </div>
+                        <div class="ose-user-info">
+                            <div class="ose-user-head-row">
+                                <h1><?php echo esc_html($profileName); ?></h1>
+                                <?php if ($canEditProfile) : ?>
+                                <button type="button" class="ose-user-edit"><?php esc_html_e('Edit Profile', 'open-scene-engine'); ?></button>
+                                <?php endif; ?>
+                            </div>
+                            <p><?php echo esc_html($bio !== '' ? $bio : __('No bio added yet.', 'open-scene-engine')); ?></p>
+                            <div class="ose-user-meta">
+                                <span><i data-lucide="calendar-days" class="ose-lucide"></i><?php echo esc_html__('Joined ', 'open-scene-engine') . esc_html(date_i18n('F Y', strtotime((string) $ssrUser->user_registered))); ?></span>
+                                <span><i data-lucide="map-pin" class="ose-lucide"></i><?php esc_html_e('OpenScene', 'open-scene-engine'); ?></span>
+                            </div>
+                        </div>
+                    </section>
+                </header>
+                <div id="openscene-user-content-root" data-openscene-context="<?php echo esc_attr((string) wp_json_encode($context)); ?>"></div>
             </section>
-            <div id="openscene-user-content-root" data-openscene-context="<?php echo esc_attr((string) wp_json_encode($context)); ?>"></div>
         </main>
         <aside class="ose-right">
-            <div class="ose-right-rail">
-                <section class="ose-widget">
-                    <div class="ose-widget-head">
-                        <h3><?php esc_html_e('Upcoming Bangalore Events', 'open-scene-engine'); ?></h3>
-                        <span class="ose-widget-icon ose-widget-icon-events"><i data-lucide="calendar-days" class="ose-lucide"></i></span>
-                    </div>
-                    <div class="ose-events">
-                        <?php if (! empty($eventRows)) : ?>
-                            <?php foreach ($eventRows as $eventRow) : ?>
-                                <?php
-                                $eventDateRaw = (string) ($eventRow['event_date'] ?? '');
-                                $eventTimestamp = strtotime($eventDateRaw . ' UTC');
-                                $eventMonth = $eventTimestamp ? strtoupper(gmdate('M', $eventTimestamp)) : 'NA';
-                                $eventDay = $eventTimestamp ? gmdate('d', $eventTimestamp) : '--';
-                                $eventTitle = (string) ($eventRow['title'] ?? 'Untitled event');
-                                $eventVenue = (string) ($eventRow['venue_name'] ?? ($eventRow['venue_address'] ?? __('Venue TBA', 'open-scene-engine')));
-                                $eventTime = $eventTimestamp ? gmdate('M j, Y H:i', $eventTimestamp) . ' UTC' : '';
-                                ?>
-                            <article class="ose-event">
-                                <div class="ose-event-date">
-                                    <span class="ose-event-month"><?php echo esc_html($eventMonth); ?></span>
-                                    <span class="ose-event-day"><?php echo esc_html($eventDay); ?></span>
-                                </div>
-                                <div>
-                                    <h4><a href="<?php echo esc_url('/openscene/?view=event&id=' . (int) ($eventRow['id'] ?? 0)); ?>"><?php echo esc_html($eventTitle); ?></a></h4>
-                                    <p><?php echo esc_html(trim($eventVenue . ($eventTime !== '' ? ' · ' . $eventTime : ''))); ?></p>
-                                </div>
-                            </article>
-                            <?php endforeach; ?>
-                        <?php else : ?>
-                            <p class="ose-events-note"><?php esc_html_e('No upcoming events.', 'open-scene-engine'); ?></p>
-                        <?php endif; ?>
-                    </div>
-                    <a class="ose-widget-btn" href="/openscene/?view=events"><?php esc_html_e('View Calendar', 'open-scene-engine'); ?></a>
-                </section>
-                <section class="ose-widget">
-                    <div class="ose-widget-head">
-                        <h3><?php esc_html_e('Community Rules', 'open-scene-engine'); ?></h3>
-                        <span class="ose-widget-icon ose-widget-icon-rules"><i data-lucide="gavel" class="ose-lucide"></i></span>
-                    </div>
-                    <ol class="ose-rules">
-                        <?php foreach ($rules as $index => $rule) : ?>
-                        <li>
-                            <span><?php echo esc_html(str_pad((string) ($index + 1), 2, '0', STR_PAD_LEFT)); ?></span>
-                            <p><?php echo esc_html($rule); ?></p>
-                        </li>
-                        <?php endforeach; ?>
-                    </ol>
-                </section>
-                <footer class="ose-footer">
-                    <nav>
-                        <a href="#"><?php esc_html_e('About', 'open-scene-engine'); ?></a>
-                        <a href="#"><?php esc_html_e('Guidelines', 'open-scene-engine'); ?></a>
-                        <a href="#"><?php esc_html_e('Privacy', 'open-scene-engine'); ?></a>
-                        <a href="#"><?php esc_html_e('Manifesto', 'open-scene-engine'); ?></a>
-                    </nav>
-                    <p><?php esc_html_e('© 2026 scene.wtf — Bangalore Underground Collective', 'open-scene-engine'); ?></p>
-                </footer>
-            </div>
+            <div class="ose-right-rail"></div>
         </aside>
     </div>
 </div>

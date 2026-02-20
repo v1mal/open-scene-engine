@@ -3874,8 +3874,6 @@ body.ose-lock-scroll {
 }
 
 #openscene-root .ose-user-profile-head {
-  max-width: 860px;
-  margin: 0 auto 28px;
   display: flex;
   gap: var(--ose-space-5);
   align-items: flex-start;
@@ -4023,13 +4021,17 @@ body.ose-lock-scroll {
 
 #openscene-root .ose-user-list {
   max-width: 860px;
-  margin: 0 auto;
-  border-top: 1px solid var(--ose-color-border-faint-2);
+  margin: var(--ose-space-4) auto 0;
+  border-top: 0;
+  display: grid;
+  gap: var(--ose-space-3);
 }
 
 #openscene-root .ose-user-item {
-  padding: 20px 0;
-  border-bottom: 1px solid var(--ose-color-border-faint);
+  padding: var(--ose-space-4);
+  border: 1px solid var(--ose-color-border-faint);
+  border-radius: var(--ose-radius-lg);
+  background: var(--ose-color-surface);
 }
 
 #openscene-root .ose-user-item-head {
@@ -4112,38 +4114,30 @@ body.ose-lock-scroll {
   opacity: 0.5;
 }
 
-/* User profile inside global shell */
-#openscene-root .ose-user-center {
-  min-width: 0;
-}
-
-#openscene-root .ose-user-center .ose-user-profile-head {
-  max-width: none;
-  margin: var(--ose-space-1) 0 20px;
-  padding-bottom: 18px;
-  border-bottom: 1px solid var(--ose-border);
+/* User profile inside community shell contract */
+#openscene-root .ose-community-shell-main .ose-user-profile-head {
   gap: 18px;
 }
 
-#openscene-root .ose-user-center .ose-user-avatar-wrap {
+#openscene-root .ose-community-shell-main .ose-user-avatar-wrap {
   width: 112px;
   height: 112px;
 }
 
-#openscene-root .ose-user-center .ose-user-head-row h1 {
+#openscene-root .ose-community-shell-main .ose-user-head-row h1 {
   font-size: var(--ose-fs-h2);
   line-height: 1.1;
   letter-spacing: -0.02em;
 }
 
-#openscene-root .ose-user-center .ose-user-info p {
+#openscene-root .ose-community-shell-main .ose-user-info p {
   margin: var(--ose-space-2) 0 10px;
   font-size: var(--ose-fs-body);
   color: var(--ose-color-text-muted);
   line-height: 1.45;
 }
 
-#openscene-root .ose-user-center .ose-user-edit {
+#openscene-root .ose-community-shell-main .ose-user-edit {
   height: 32px;
   padding: 0 var(--ose-space-3);
   font-size: var(--ose-fs-meta);
@@ -4152,37 +4146,39 @@ body.ose-lock-scroll {
   font-weight: 700;
 }
 
-#openscene-root .ose-user-center #openscene-user-content-root {
+#openscene-root .ose-community-shell-main #openscene-user-content-root {
   display: block;
 }
 
-#openscene-root .ose-user-center .ose-user-tabs,
-#openscene-root .ose-user-center .ose-user-controls,
-#openscene-root .ose-user-center .ose-user-list,
-#openscene-root .ose-user-center .ose-user-more-wrap {
+#openscene-root .ose-community-shell-main .ose-user-tabs,
+#openscene-root .ose-community-shell-main .ose-user-controls,
+#openscene-root .ose-community-shell-main .ose-user-more-wrap {
   max-width: none;
   margin-left: 0;
   margin-right: 0;
 }
 
-#openscene-root .ose-user-center .ose-user-tabs button {
+#openscene-root .ose-community-shell-main .ose-user-tabs button {
   padding-bottom: 10px;
 }
 
-#openscene-root .ose-user-center .ose-user-controls {
+#openscene-root .ose-community-shell-main .ose-user-controls {
   margin: 14px 0 10px;
 }
 
-#openscene-root .ose-user-center .ose-user-item {
-  padding: 18px 0;
+#openscene-root .ose-community-shell-main .ose-user-item {
+  padding: var(--ose-space-4);
+  border: 1px solid var(--ose-color-border-faint);
+  border-radius: var(--ose-radius-lg);
+  background: var(--ose-color-surface);
 }
 
-#openscene-root .ose-user-center .ose-user-item-head a {
+#openscene-root .ose-community-shell-main .ose-user-item-head a {
   font-size: clamp(1.12rem, 1.15vw, 1.35rem);
 }
 
-#openscene-root .ose-user-center .ose-user-item p,
-#openscene-root .ose-user-center .ose-user-comment-body {
+#openscene-root .ose-community-shell-main .ose-user-item p,
+#openscene-root .ose-community-shell-main .ose-user-comment-body {
   font-size: var(--ose-fs-body);
 }
 
@@ -4620,7 +4616,6 @@ body.ose-lock-scroll {
     flex-direction: column;
     align-items: center;
     text-align: center;
-    margin-bottom: 20px;
   }
 
   #openscene-root .ose-user-head-row {
@@ -4642,26 +4637,24 @@ body.ose-lock-scroll {
     flex-direction: column;
   }
 
-  #openscene-root .ose-user-center .ose-user-profile-head {
-    margin: 0 0 var(--ose-space-4);
-    padding-bottom: 14px;
+  #openscene-root .ose-community-shell-main .ose-user-profile-head {
     flex-direction: column;
     align-items: flex-start;
     text-align: left;
   }
 
-  #openscene-root .ose-user-center .ose-user-avatar-wrap {
+  #openscene-root .ose-community-shell-main .ose-user-avatar-wrap {
     width: 96px;
     height: 96px;
   }
 
-  #openscene-root .ose-user-center .ose-user-head-row {
+  #openscene-root .ose-community-shell-main .ose-user-head-row {
     width: 100%;
     flex-direction: row;
     align-items: center;
   }
 
-  #openscene-root .ose-user-center .ose-user-meta {
+  #openscene-root .ose-community-shell-main .ose-user-meta {
     justify-content: flex-start;
   }
 
