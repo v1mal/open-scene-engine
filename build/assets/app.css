@@ -21,8 +21,17 @@
   --ose-color-scrollbar: #1d1d1d;
   --ose-color-overlay: rgba(0, 0, 0, 0.55);
   --ose-color-topbar-bg: rgba(10, 10, 10, 0.9);
+  --ose-color-focus: #0e95ff;
   --ose-color-report-bg: rgba(140, 37, 244, 0.16);
   --ose-color-report-border: rgba(140, 37, 244, 0.8);
+  --ose-color-white-a01: rgba(255, 255, 255, 0.01);
+  --ose-color-white-a06: rgba(255, 255, 255, 0.06);
+  --ose-color-white-a10: rgba(255, 255, 255, 0.1);
+  --ose-color-white-a20: rgba(255, 255, 255, 0.2);
+  --ose-color-white-a45: rgba(255, 255, 255, 0.45);
+  --ose-color-white-a55: rgba(255, 255, 255, 0.55);
+  --ose-color-accent-a20: rgba(140, 37, 244, 0.2);
+  --ose-color-accent-a35: rgba(140, 37, 244, 0.35);
   --ose-color-border-soft: rgba(255, 255, 255, 0.16);
   --ose-color-border-faint: rgba(255, 255, 255, 0.06);
   --ose-color-border-faint-2: rgba(255, 255, 255, 0.05);
@@ -255,8 +264,8 @@ body.openscene-app-shell {
   min-width: 170px;
   border: 1px solid var(--ose-border);
   background: var(--ose-color-surface);
-  border-radius: 10px;
-  padding: 8px;
+  border-radius: var(--ose-radius-lg);
+  padding: var(--ose-space-2);
   display: grid;
   gap: 2px;
   z-index: 60;
@@ -287,7 +296,7 @@ body.openscene-app-shell {
   letter-spacing: 0.08em;
   text-transform: uppercase;
   padding: 6px 10px;
-  border-radius: 6px;
+  border-radius: var(--ose-radius-sm);
 }
 
 #openscene-root .ose-pd-report-btn:hover {
@@ -310,10 +319,10 @@ body.openscene-app-shell {
   width: min(1440px, calc(100% - 48px));
   max-width: none;
   margin: 0 auto;
-  padding: 24px 0;
+  padding: var(--ose-space-5) 0;
   display: grid;
   grid-template-columns: 220px minmax(0, 1fr) 300px;
-  gap: 24px;
+  gap: var(--ose-space-5);
 }
 
 #openscene-root .ose-mod-left,
@@ -326,7 +335,7 @@ body.openscene-app-shell {
 
 #openscene-root .ose-mod-left h3,
 #openscene-root .ose-mod-right h3 {
-  margin: 0 0 12px;
+  margin: 0 0 var(--ose-space-3);
   font-size: var(--ose-fs-meta);
   letter-spacing: 0.16em;
   text-transform: uppercase;
@@ -341,7 +350,7 @@ body.openscene-app-shell {
   background: transparent;
   color: var(--ose-color-text-weak);
   padding: 9px 10px;
-  border-radius: 8px;
+  border-radius: var(--ose-radius-md);
   font-size: var(--ose-fs-base);
   line-height: var(--ose-lh-base);
 }
@@ -377,14 +386,14 @@ body.openscene-app-shell {
 
 #openscene-root .ose-mod-list {
   display: grid;
-  gap: 12px;
+  gap: var(--ose-space-3);
 }
 
 #openscene-root .ose-mod-card {
   border: 1px solid var(--ose-border);
   background: var(--ose-color-surface-2);
   border-radius: 12px;
-  padding: 14px 16px;
+  padding: 14px var(--ose-space-4);
 }
 
 #openscene-root .ose-mod-card.is-removed {
@@ -395,7 +404,7 @@ body.openscene-app-shell {
   display: flex;
   justify-content: space-between;
   gap: 10px;
-  margin-bottom: 8px;
+  margin-bottom: var(--ose-space-2);
 }
 
 #openscene-root .ose-mod-badges {
@@ -433,18 +442,18 @@ body.openscene-app-shell {
 }
 
 #openscene-root .ose-mod-meta {
-  margin-top: 12px;
+  margin-top: var(--ose-space-3);
   display: flex;
-  gap: 12px;
+  gap: var(--ose-space-3);
   color: var(--ose-color-text-soft);
   font-size: var(--ose-fs-md);
   line-height: var(--ose-lh-md);
 }
 
 #openscene-root .ose-mod-actions {
-  margin-top: 12px;
+  margin-top: var(--ose-space-3);
   display: flex;
-  gap: 8px;
+  gap: var(--ose-space-2);
   flex-wrap: wrap;
 }
 
@@ -470,7 +479,7 @@ body.openscene-app-shell {
 }
 
 #openscene-root .ose-mod-pagination {
-  margin-top: 12px;
+  margin-top: var(--ose-space-3);
   display: flex;
   align-items: center;
   gap: 10px;
@@ -480,13 +489,13 @@ body.openscene-app-shell {
   border: 1px solid var(--ose-border);
   background: transparent;
   color: var(--ose-color-text-muted);
-  border-radius: 6px;
+  border-radius: var(--ose-radius-sm);
   padding: 5px 10px;
 }
 
 #openscene-root .ose-mod-log {
   display: grid;
-  gap: 8px;
+  gap: var(--ose-space-2);
 }
 
 #openscene-root .ose-mod-log-item {
@@ -604,7 +613,7 @@ body.openscene-app-shell {
   border-radius: var(--ose-radius-card);
   display: flex;
   align-items: center;
-  padding: 0 12px;
+  padding: 0 var(--ose-space-3);
   background: var(--ose-color-surface);
   margin-left: 0;
   margin-right: 0;
@@ -633,10 +642,10 @@ body.openscene-app-shell {
   display: none;
   border: 0;
   background: transparent;
-  color: #d2d7de;
+  color: var(--ose-color-text-muted);
   width: 40px;
   height: 40px;
-  border-radius: 8px;
+  border-radius: var(--ose-radius-md);
   align-items: center;
   justify-content: center;
   cursor: pointer;
@@ -644,13 +653,13 @@ body.openscene-app-shell {
 }
 
 #openscene-root .ose-mobile-drawer-toggle .ose-lucide {
-  width: 22px;
-  height: 22px;
+  width: var(--ose-icon-lg);
+  height: var(--ose-icon-lg);
   stroke-width: 2.15;
 }
 
 #openscene-root .ose-mobile-drawer-toggle:hover {
-  background: #111217;
+  background: var(--ose-color-surface-2);
   color: var(--ose-color-text);
 }
 
@@ -679,12 +688,12 @@ body.openscene-app-shell {
   align-items: center;
   gap: 10px;
   max-width: min(420px, calc(100vw - 32px));
-  padding: 10px 12px;
-  border: 1px solid #2d323c;
-  border-radius: 10px;
+  padding: 10px var(--ose-space-3);
+  border: 1px solid var(--ose-color-border-3);
+  border-radius: var(--ose-radius-lg);
   background: rgba(24, 27, 34, 0.96);
-  color: #e1e6ee;
-  font-size: 12px;
+  color: var(--ose-color-text);
+  font-size: var(--ose-fs-md);
   line-height: 1.4;
 }
 
@@ -693,7 +702,7 @@ body.openscene-app-shell {
 }
 
 #openscene-root .ose-toast a {
-  color: #00f5d4;
+  color: var(--ose-color-accent-neon);
   font-weight: 600;
   text-decoration: none;
   white-space: nowrap;
@@ -721,22 +730,22 @@ body.openscene-app-shell {
   height: 34px;
   border-radius: 999px;
   border: 2px solid var(--ose-purple);
-  box-shadow: 0 0 0 2px #0e95ff;
+  box-shadow: 0 0 0 2px var(--ose-color-focus);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 11px;
+  font-size: var(--ose-fs-meta);
   font-weight: 700;
   text-transform: uppercase;
   background: #e8d6c3;
-  color: #222;
+  color: var(--ose-color-bg);
 }
 
 #openscene-root .ose-avatar.ose-avatar-icon {
   border: 0;
   box-shadow: none;
   background: transparent;
-  color: #c8cbd3;
+  color: var(--ose-color-text-muted);
   width: 36px;
   height: 36px;
 }
@@ -757,16 +766,16 @@ body.openscene-app-shell {
   gap: 6px;
   background: #b017f2;
   color: var(--ose-color-text);
-  font-size: 13px;
-  line-height: 19.5px;
+  font-size: var(--ose-fs-base);
+  line-height: var(--ose-lh-base);
   font-weight: 600;
   letter-spacing: 0.325px;
   text-transform: uppercase;
 }
 
 #openscene-root .ose-join-icon {
-  width: 14px;
-  height: 14px;
+  width: var(--ose-icon-sm);
+  height: var(--ose-icon-sm);
 }
 
 #openscene-root .ose-join-btn:hover {
@@ -792,7 +801,7 @@ body.openscene-app-shell {
 
 #openscene-root .ose-center-scroll {
   overflow-y: auto;
-  padding: 0 0 24px;
+  padding: 0 0 var(--ose-space-5);
 }
 
 #openscene-root .ose-center-pane {
@@ -820,8 +829,8 @@ body.openscene-app-shell {
   top: 0;
   height: 100%;
   width: min(88vw, 360px);
-  background: #07090b;
-  border-left: 1px solid #1b1f25;
+  background: var(--ose-color-bg);
+  border-left: 1px solid var(--ose-color-border-2);
   overflow-y: auto;
   padding: 14px 14px 22px;
   transform: translateX(100%);
@@ -848,7 +857,7 @@ body.openscene-app-shell {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 12px;
+  margin-bottom: var(--ose-space-3);
 }
 
 #openscene-root .ose-mobile-drawer-head h2 {
@@ -858,16 +867,16 @@ body.openscene-app-shell {
   font-weight: var(--ose-fw-semibold);
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #cfd6de;
+  color: var(--ose-color-text-muted);
 }
 
 #openscene-root .ose-mobile-drawer-close {
   border: 0;
   background: transparent;
-  color: #c6ccd4;
+  color: var(--ose-color-text-muted);
   width: 34px;
   height: 34px;
-  border-radius: 8px;
+  border-radius: var(--ose-radius-md);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -875,19 +884,19 @@ body.openscene-app-shell {
 }
 
 #openscene-root .ose-mobile-drawer-close:hover {
-  background: #141821;
+  background: var(--ose-color-surface-3);
   color: var(--ose-color-text);
 }
 
 #openscene-root .ose-mobile-block {
-  margin-bottom: 16px;
+  margin-bottom: var(--ose-space-4);
   padding-bottom: 14px;
-  border-bottom: 1px solid #171a20;
+  border-bottom: 1px solid var(--ose-color-border-2);
 }
 
 #openscene-root .ose-mobile-block:last-of-type {
   border-bottom: 0;
-  margin-bottom: 4px;
+  margin-bottom: var(--ose-space-1);
 }
 
 #openscene-root.ose-lock-scroll,
@@ -896,7 +905,7 @@ body.ose-lock-scroll {
 }
 
 #openscene-root .ose-side-title {
-  margin: 0 0 12px;
+  margin: 0 0 var(--ose-space-3);
   color: var(--ose-muted);
   font-size: var(--ose-fs-xs);
   line-height: var(--ose-lh-xs);
@@ -915,8 +924,8 @@ body.ose-lock-scroll {
 
 #openscene-root .ose-community-item {
   height: 40px;
-  padding: 0 12px;
-  border-radius: 8px;
+  padding: 0 var(--ose-space-3);
+  border-radius: var(--ose-radius-md);
   box-sizing: border-box;
   border: 1px solid transparent;
   display: flex;
@@ -930,7 +939,7 @@ body.ose-lock-scroll {
 }
 
 #openscene-root .ose-community-item:hover {
-  background: #0b0b0b;
+  background: var(--ose-color-surface-2);
   color: var(--ose-color-text);
 }
 
@@ -945,8 +954,8 @@ body.ose-lock-scroll {
 }
 
 #openscene-root .ose-community-icon-skeleton {
-  width: 14px;
-  height: 14px;
+  width: var(--ose-icon-sm);
+  height: var(--ose-icon-sm);
   border-radius: 4px;
   background: var(--ose-color-skeleton);
   animation: osePulse 1.2s ease-in-out infinite;
@@ -956,7 +965,7 @@ body.ose-lock-scroll {
   display: inline-block;
   width: 118px;
   height: 12px;
-  border-radius: 6px;
+  border-radius: var(--ose-radius-sm);
   background: var(--ose-color-skeleton);
   animation: osePulse 1.2s ease-in-out infinite;
 }
@@ -969,7 +978,7 @@ body.ose-lock-scroll {
 }
 
 #openscene-root .ose-community-item.ose-community-view-all {
-  color: #9aa0aa;
+  color: var(--ose-color-text-muted);
 }
 
 #openscene-root .ose-community-item.ose-community-view-all:hover {
@@ -979,7 +988,7 @@ body.ose-lock-scroll {
 #openscene-root .ose-community-name {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--ose-space-2);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -987,23 +996,23 @@ body.ose-lock-scroll {
 }
 
 #openscene-root .ose-community-icon {
-  width: 14px;
-  height: 14px;
+  width: var(--ose-icon-sm);
+  height: var(--ose-icon-sm);
   flex: 0 0 auto;
 }
 
 #openscene-root .ose-community-count {
   font-size: var(--ose-fs-xs);
-  color: #777;
-  border-radius: 6px;
-  border: 1px solid #242424;
+  color: var(--ose-color-text-subtle);
+  border-radius: var(--ose-radius-sm);
+  border: 1px solid var(--ose-color-border-2);
   padding: 2px 6px;
 }
 
 #openscene-root .ose-left {
   background: var(--ose-bg);
   border-right: 1px solid var(--ose-border-2);
-  padding: 14px 16px;
+  padding: 14px var(--ose-space-4);
   position: sticky;
   top: 56px;
   height: calc(100vh - 56px);
@@ -1011,14 +1020,14 @@ body.ose-lock-scroll {
 }
 
 #openscene-root .ose-left-inner {
-  padding-top: 8px;
+  padding-top: var(--ose-space-2);
   display: flex;
   flex-direction: column;
   height: 100%;
 }
 
 #openscene-root .ose-left-activity {
-  margin: 16px 4px 0;
+  margin: var(--ose-space-4) var(--ose-space-1) 0;
   border: 1px solid var(--ose-card-border);
   border-radius: var(--ose-radius-card);
   box-shadow: var(--ose-shadow-card);
@@ -1032,11 +1041,11 @@ body.ose-lock-scroll {
 }
 
 #openscene-root .ose-left-activity-title {
-  margin: 0 0 8px;
+  margin: 0 0 var(--ose-space-2);
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  color: #d3d8e1;
+  gap: var(--ose-space-2);
+  color: var(--ose-color-text-muted);
   font-size: var(--ose-fs-meta);
   line-height: var(--ose-lh-meta);
   font-weight: var(--ose-fw-semibold);
@@ -1045,8 +1054,8 @@ body.ose-lock-scroll {
 }
 
 #openscene-root .ose-left-activity-icon {
-  width: 14px;
-  height: 14px;
+  width: var(--ose-icon-sm);
+  height: var(--ose-icon-sm);
 }
 
 #openscene-root .ose-left-activity-list {
@@ -1059,12 +1068,12 @@ body.ose-lock-scroll {
 
 #openscene-root .ose-left-activity-list li {
   min-width: 0;
-  padding: 6px 2px 8px;
+  padding: 6px 2px var(--ose-space-2);
 }
 
 #openscene-root .ose-left-activity-list li:not(:last-child) {
-  border-bottom: 1px solid #1a1f26;
-  margin-bottom: 4px;
+  border-bottom: 1px solid var(--ose-color-border-2);
+  margin-bottom: var(--ose-space-1);
 }
 
 #openscene-root .ose-left-activity-list > li > a,
@@ -1078,7 +1087,7 @@ body.ose-lock-scroll {
 #openscene-root .ose-left-activity-line {
   display: flex;
   align-items: baseline;
-  gap: 8px;
+  gap: var(--ose-space-2);
   min-width: 0;
 }
 
@@ -1094,7 +1103,7 @@ body.ose-lock-scroll {
 #openscene-root .ose-left-activity-time {
   flex: 0 0 auto;
   white-space: nowrap;
-  color: #7e838d;
+  color: var(--ose-color-text-soft);
   font-size: var(--ose-fs-meta);
   line-height: var(--ose-lh-meta);
   letter-spacing: 0.06em;
@@ -1107,7 +1116,7 @@ body.ose-lock-scroll {
   align-items: center;
   gap: 6px;
   white-space: nowrap;
-  color: #7e838d;
+  color: var(--ose-color-text-soft);
   font-size: var(--ose-fs-meta);
   line-height: var(--ose-lh-meta);
 }
@@ -1141,8 +1150,8 @@ body.ose-lock-scroll {
 
 #openscene-root .ose-left-activity-skeleton-line {
   display: block;
-  border-radius: 6px;
-  background: #121924;
+  border-radius: var(--ose-radius-sm);
+  background: var(--ose-color-surface-3);
   animation: osePulse 1.2s ease-in-out infinite;
 }
 
@@ -1174,16 +1183,16 @@ body.ose-lock-scroll {
   margin: 0;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--ose-space-2);
   font-size: var(--ose-fs-title);
   line-height: var(--ose-lh-title);
   font-weight: var(--ose-fw-semibold);
-  color: #f3f6fb;
+  color: var(--ose-color-text);
 }
 
 #openscene-root .ose-saved-title .ose-lucide {
-  width: 16px;
-  height: 16px;
+  width: var(--ose-icon-md);
+  height: var(--ose-icon-md);
 }
 
 #openscene-root .ose-feed-list {
@@ -1210,27 +1219,27 @@ body.ose-lock-scroll {
 
 #openscene-root .ose-feed-list::-webkit-scrollbar-thumb {
   background: var(--ose-color-scrollbar);
-  border-radius: 8px;
+  border-radius: var(--ose-radius-md);
 }
 
 #openscene-root .ose-feed-status {
   border: 1px solid var(--ose-color-border);
-  border-radius: 10px;
-  padding: 16px;
+  border-radius: var(--ose-radius-lg);
+  padding: var(--ose-space-4);
   color: var(--ose-color-text-weak);
-  font-size: 14px;
+  font-size: var(--ose-fs-body);
 }
 
 #openscene-root .ose-feed-empty {
   border: 1px solid var(--ose-color-border);
-  border-radius: 10px;
+  border-radius: var(--ose-radius-lg);
   min-height: 220px;
   display: grid;
   place-items: center;
   gap: 14px;
   text-align: center;
-  color: #9b9ba4;
-  padding: 24px;
+  color: var(--ose-color-text-muted);
+  padding: var(--ose-space-5);
 }
 
 #openscene-root .ose-feed-empty p {
@@ -1244,13 +1253,13 @@ body.ose-lock-scroll {
   justify-content: center;
   min-height: 40px;
   padding: 0 14px;
-  border: 1px solid #2b2b2b;
-  border-radius: 8px;
-  font-size: 12px;
+  border: 1px solid var(--ose-color-border-2);
+  border-radius: var(--ose-radius-md);
+  font-size: var(--ose-fs-md);
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #d3d3da;
+  color: var(--ose-color-text-muted);
 }
 
 #openscene-root .ose-feed-empty-cta:hover {
@@ -1260,21 +1269,21 @@ body.ose-lock-scroll {
 
 #openscene-root .ose-feed-skeletons {
   display: grid;
-  gap: 24px;
+  gap: var(--ose-space-5);
 }
 
 #openscene-root .ose-feed-skeleton {
-  border: 1px solid #181818;
-  border-radius: 10px;
-  padding: 16px;
+  border: 1px solid var(--ose-color-surface-3);
+  border-radius: var(--ose-radius-lg);
+  padding: var(--ose-space-4);
   display: grid;
   gap: 10px;
 }
 
 #openscene-root .ose-sk-line {
   display: block;
-  border-radius: 8px;
-  background: #101010;
+  border-radius: var(--ose-radius-md);
+  background: var(--ose-color-surface-2);
   animation: osePulse 1.25s ease-in-out infinite;
 }
 
@@ -1331,11 +1340,11 @@ body.ose-lock-scroll {
 #openscene-root .ose-feed-tabs button {
   border: 0;
   background: transparent;
-  color: #a4a9b1;
+  color: var(--ose-color-text-muted);
   font-size: 16px;
   font-weight: 600;
   min-height: 44px;
-  padding: 0 0 12px;
+  padding: 0 0 var(--ose-space-3);
   letter-spacing: 0.01em;
   cursor: pointer;
   border-bottom: 2px solid transparent;
@@ -1346,12 +1355,12 @@ body.ose-lock-scroll {
 }
 
 #openscene-root .ose-feed-tabs button.is-active {
-  color: #f2f5f8;
+  color: var(--ose-color-text);
   border-bottom: 2px solid var(--ose-neon);
 }
 
 #openscene-root .ose-feed-tabs button:hover {
-  color: #e4e4ea;
+  color: var(--ose-color-text);
 }
 
 #openscene-root .ose-feed-tabs button:focus-visible {
@@ -1361,22 +1370,22 @@ body.ose-lock-scroll {
 }
 
 #openscene-root .ose-tab-icon {
-  width: 14px;
-  height: 14px;
+  width: var(--ose-icon-sm);
+  height: var(--ose-icon-sm);
   opacity: 0.95;
 }
 
 #openscene-root .ose-feed-create-btn {
   height: 40px;
-  border-radius: 10px;
+  border-radius: var(--ose-radius-lg);
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--ose-space-2);
   padding: 0 18px;
   background: var(--ose-neon);
-  color: #00110d;
-  font-size: 13px;
-  line-height: 19.5px;
+  color: var(--ose-color-bg);
+  font-size: var(--ose-fs-base);
+  line-height: var(--ose-lh-base);
   font-weight: 600;
   letter-spacing: 0.325px;
 }
@@ -1388,7 +1397,7 @@ body.ose-lock-scroll {
 #openscene-root .ose-filter-btn {
   border: 0;
   background: transparent;
-  color: #777;
+  color: var(--ose-color-text-subtle);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1398,12 +1407,12 @@ body.ose-lock-scroll {
 #openscene-root .ose-feed-post {
   display: grid;
   grid-template-columns: 32px minmax(0, 1fr);
-  column-gap: 12px;
+  column-gap: var(--ose-space-3);
   row-gap: 0;
   height: auto;
   min-height: 0;
   align-self: start;
-  padding: 18px 22px 16px;
+  padding: 18px 22px var(--ose-space-4);
   border: 0;
   border-bottom: 1px solid var(--ose-border-2);
   border-radius: 0;
@@ -1411,7 +1420,7 @@ body.ose-lock-scroll {
   transition: background 0.2s ease;
 }
 
-#openscene-root .ose-feed-post:hover { background: rgba(255, 255, 255, 0.01); }
+#openscene-root .ose-feed-post:hover { background: var(--ose-color-white-a01); }
 
 #openscene-root .ose-vote-rail {
   display: inline-flex;
@@ -1428,7 +1437,7 @@ body.ose-lock-scroll {
 #openscene-root .ose-vote-btn {
   border: 0;
   background: transparent;
-  color: #70707a;
+  color: var(--ose-color-text-subtle);
   cursor: pointer;
   display: inline-flex;
   align-items: center;
@@ -1499,7 +1508,7 @@ body.ose-lock-scroll {
 
 #openscene-root .ose-post-body {
   margin: var(--ose-space-sm) 0 var(--ose-space-md);
-  color: #a5abb4;
+  color: var(--ose-color-text-muted);
   font-size: var(--ose-fs-body);
   line-height: var(--ose-lh-body);
   font-weight: var(--ose-fw-regular);
@@ -1507,7 +1516,7 @@ body.ose-lock-scroll {
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  mask-image: linear-gradient(to bottom, #000 75%, rgba(0, 0, 0, 0));
+  mask-image: linear-gradient(to bottom, var(--ose-color-bg) 75%, rgba(0, 0, 0, 0));
 }
 
 #openscene-root .ose-event-summary-inline {
@@ -1536,7 +1545,7 @@ body.ose-lock-scroll {
 #openscene-root .ose-post-actions > :first-child {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--ose-space-2);
   margin-right: auto;
 }
 
@@ -1562,8 +1571,8 @@ body.ose-lock-scroll {
 }
 
 #openscene-root .ose-post-actions .ose-lucide {
-  width: 14px;
-  height: 14px;
+  width: var(--ose-icon-sm);
+  height: var(--ose-icon-sm);
   opacity: 0.95;
 }
 
@@ -1627,7 +1636,7 @@ body.ose-lock-scroll {
 #openscene-root .ose-post-more-menu button {
   border: 0;
   background: transparent;
-  color: #b7bcc5;
+  color: var(--ose-color-text-muted);
   min-height: 30px;
   display: inline-flex;
   align-items: center;
@@ -1656,7 +1665,7 @@ body.ose-lock-scroll {
   align-items: center;
   gap: 5px;
   color: var(--ose-color-warning);
-  font-size: 11px;
+  font-size: var(--ose-fs-meta);
   font-weight: 600;
   letter-spacing: 0.02em;
   white-space: nowrap;
@@ -1678,7 +1687,7 @@ body.ose-lock-scroll {
 
 #openscene-root .ose-feed-center .ose-feed-list {
   gap: 10px;
-  padding: 10px 12px 18px;
+  padding: 10px var(--ose-space-3) 18px;
 }
 
 #openscene-root .ose-feed-center .ose-feed-post {
@@ -1711,8 +1720,8 @@ body.ose-lock-scroll {
 }
 
 #openscene-root .ose-feed-center .ose-vote-rail strong {
-  font-size: 13px;
-  color: #e7ebf3;
+  font-size: var(--ose-fs-base);
+  color: var(--ose-color-text);
 }
 
 #openscene-root .ose-feed-center .ose-feed-post .ose-post-meta {
@@ -1761,8 +1770,8 @@ body.ose-lock-scroll {
 }
 
 #openscene-root .ose-feed-center .ose-feed-post .ose-post-comment-inline .ose-lucide {
-  width: 14px;
-  height: 14px;
+  width: var(--ose-icon-sm);
+  height: var(--ose-icon-sm);
 }
 
 #openscene-root .ose-feed-center .ose-feed-post .ose-post-body {
@@ -1807,21 +1816,21 @@ body.ose-lock-scroll {
   display: inline-flex;
   width: max-content;
   max-width: 100%;
-  margin-bottom: 8px;
-  border: 1px solid #2d323a;
-  border-radius: 6px;
-  background: #13161b;
-  color: #c5ccd8;
-  font-size: 11px;
+  margin-bottom: var(--ose-space-2);
+  border: 1px solid var(--ose-color-border-3);
+  border-radius: var(--ose-radius-sm);
+  background: var(--ose-color-surface-3);
+  color: var(--ose-color-text-muted);
+  font-size: var(--ose-fs-meta);
   line-height: 16px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  padding: 6px 8px;
+  padding: 6px var(--ose-space-2);
 }
 
 #openscene-root .ose-feed-center .ose-feed-post:has(.ose-post-removed-banner) .ose-post-title {
-  color: #8d939f;
+  color: var(--ose-color-text-soft);
 }
 
 @media (max-width: 600px) {
@@ -1921,12 +1930,12 @@ body.ose-lock-scroll {
   border: 1px solid var(--ose-border-2);
   border-radius: var(--ose-radius-lg);
   padding: var(--ose-space-md);
-  background: #050607;
+  background: var(--ose-color-bg);
 }
 
 
 #openscene-root .ose-event-skeleton {
-  border-color: #151a20;
+  border-color: var(--ose-color-border-3);
 }
 
 #openscene-root .ose-event-skeleton .ose-event-date {
@@ -1936,19 +1945,19 @@ body.ose-lock-scroll {
 
 #openscene-root .ose-event-skeleton .ose-event-month,
 #openscene-root .ose-event-skeleton .ose-event-day {
-  color: #9aa3b2;
+  color: var(--ose-color-text-muted);
 }
 
 #openscene-root .ose-event-skeleton-body {
   display: grid;
-  gap: 8px;
+  gap: var(--ose-space-2);
   align-content: center;
 }
 
 #openscene-root .ose-event-skeleton-line {
   display: block;
-  border-radius: 6px;
-  background: #121924;
+  border-radius: var(--ose-radius-sm);
+  background: var(--ose-color-surface-3);
   animation: osePulse 1.2s ease-in-out infinite;
 }
 
@@ -1966,7 +1975,7 @@ body.ose-lock-scroll {
   flex: 0 0 var(--ose-event-date-width);
   width: var(--ose-event-date-width);
   border: 1px solid rgba(188, 19, 254, 0.3);
-  border-radius: 6px;
+  border-radius: var(--ose-radius-sm);
   background: rgba(188, 19, 254, 0.15);
   display: flex;
   flex-direction: column;
@@ -2005,7 +2014,7 @@ body.ose-lock-scroll {
   font-size: var(--ose-fs-meta);
   line-height: 15.4px;
   font-weight: var(--ose-fw-regular);
-  color: #888890;
+  color: var(--ose-color-text-soft);
 }
 
 #openscene-root .ose-widget-btn {
@@ -2072,7 +2081,7 @@ body.ose-lock-scroll {
 }
 
 #openscene-root .ose-footer nav a {
-  color: #6f6f78;
+  color: var(--ose-color-text-subtle);
   font-size: var(--ose-fs-xs);
   line-height: var(--ose-lh-xs);
   text-transform: uppercase;
@@ -2082,7 +2091,7 @@ body.ose-lock-scroll {
 
 #openscene-root .ose-footer p {
   margin: 0;
-  color: #6c6c74;
+  color: var(--ose-color-text-subtle);
   opacity: 0.65;
   font-size: var(--ose-fs-base);
   line-height: 1.5;
@@ -2095,21 +2104,21 @@ body.ose-lock-scroll {
 
 #openscene-root .ose-placeholder-main {
   width: min(900px, 92vw);
-  margin: 24px auto;
+  margin: var(--ose-space-5) auto;
   border: 1px solid var(--ose-border);
   border-radius: 14px;
-  padding: 24px;
+  padding: var(--ose-space-5);
   background: var(--ose-surface);
 }
 
 #openscene-root .ose-placeholder-main h1 {
-  margin: 0 0 8px;
+  margin: 0 0 var(--ose-space-2);
   font-size: 28px;
 }
 
 #openscene-root .ose-placeholder-main p {
   margin: 0;
-  color: #8b8b92;
+  color: var(--ose-color-text-soft);
   font-size: 16px;
 }
 
@@ -2125,9 +2134,9 @@ body.ose-lock-scroll {
   position: sticky;
   top: 0;
   z-index: 25;
-  background: rgba(10, 10, 10, 0.9);
+  background: var(--ose-color-topbar-bg);
   backdrop-filter: blur(10px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid var(--ose-color-white-a10);
 }
 
 #wpadminbar ~ #openscene-root .ose-create-nav {
@@ -2141,7 +2150,7 @@ body.ose-lock-scroll {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  gap: var(--ose-space-4);
 }
 
 #openscene-root .ose-create-brand-wrap {
@@ -2159,21 +2168,21 @@ body.ose-lock-scroll {
 }
 
 #openscene-root .ose-create-badge {
-  font-size: 10px;
+  font-size: var(--ose-fs-xs);
   line-height: 1;
   letter-spacing: 0.12em;
   font-weight: 700;
   color: var(--ose-purple);
   border: 1px solid rgba(188, 19, 254, 0.3);
   background: rgba(188, 19, 254, 0.15);
-  border-radius: 6px;
-  padding: 4px 6px;
+  border-radius: var(--ose-radius-sm);
+  padding: var(--ose-space-1) 6px;
 }
 
 #openscene-root .ose-create-main {
   width: min(1440px, calc(100% - 48px));
   margin: 0 auto;
-  padding: 40px 0 56px;
+  padding: var(--ose-space-7) 0 56px;
   position: relative;
   z-index: 1;
 }
@@ -2205,7 +2214,7 @@ body.ose-lock-scroll {
 
 #openscene-root .ose-right-rail {
   display: grid;
-  gap: 16px;
+  gap: var(--ose-space-4);
   width: 100%;
   max-width: 380px;
   margin-left: auto;
@@ -2220,7 +2229,7 @@ body.ose-lock-scroll {
 
 #openscene-root .ose-create-controls {
   display: flex;
-  gap: 12px;
+  gap: var(--ose-space-3);
   align-items: center;
   flex-wrap: wrap;
 }
@@ -2234,17 +2243,17 @@ body.ose-lock-scroll {
 #openscene-root .ose-create-select-wrap select {
   width: 100%;
   height: 44px;
-  border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--ose-radius-md);
+  border: 1px solid var(--ose-color-white-a10);
   background: #102222;
   color: var(--ose-color-text);
-  padding: 0 36px 0 12px;
+  padding: 0 36px 0 var(--ose-space-3);
   outline: none;
   appearance: none;
 }
 
 #openscene-root .ose-create-select-wrap select:focus {
-  border-color: rgba(188, 19, 254, 0.9);
+  border-color: var(--ose-accent-glow-purple);
   box-shadow: 0 0 0 1px rgba(188, 19, 254, 0.4);
 }
 
@@ -2253,21 +2262,21 @@ body.ose-lock-scroll {
   right: 12px;
   top: 50%;
   transform: translateY(-50%);
-  color: rgba(255, 255, 255, 0.45);
+  color: var(--ose-color-white-a45);
   pointer-events: none;
 }
 
 #openscene-root .ose-create-select-icon .ose-lucide {
-  width: 14px;
-  height: 14px;
+  width: var(--ose-icon-sm);
+  height: var(--ose-icon-sm);
 }
 
 #openscene-root .ose-type-tabs {
   height: 44px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--ose-color-white-a10);
   background: #102222;
-  border-radius: 8px;
-  padding: 4px;
+  border-radius: var(--ose-radius-md);
+  padding: var(--ose-space-1);
   display: inline-flex;
   gap: 2px;
 }
@@ -2275,16 +2284,16 @@ body.ose-lock-scroll {
 #openscene-root .ose-type-tabs button {
   border: 0;
   background: transparent;
-  color: rgba(255, 255, 255, 0.55);
-  border-radius: 6px;
+  color: var(--ose-color-white-a55);
+  border-radius: var(--ose-radius-sm);
   padding: 0 18px;
-  font-size: 14px;
+  font-size: var(--ose-fs-body);
   font-weight: 500;
   cursor: pointer;
 }
 
 #openscene-root .ose-type-tabs button.is-active {
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--ose-color-white-a06);
   color: var(--ose-color-text);
 }
 
@@ -2295,7 +2304,7 @@ body.ose-lock-scroll {
 #openscene-root .ose-create-title {
   width: 100%;
   border: 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid var(--ose-color-white-a10);
   background: transparent;
   color: var(--ose-color-text);
   font-size: 34px;
@@ -2306,11 +2315,11 @@ body.ose-lock-scroll {
 }
 
 #openscene-root .ose-create-title::placeholder {
-  color: rgba(255, 255, 255, 0.2);
+  color: var(--ose-color-white-a20);
 }
 
 #openscene-root .ose-create-title:focus {
-  border-bottom-color: rgba(188, 19, 254, 0.9);
+  border-bottom-color: var(--ose-accent-glow-purple);
 }
 
 #openscene-root .ose-editor-wrap {
@@ -2323,7 +2332,7 @@ body.ose-lock-scroll {
   top: 16px;
   left: 16px;
   color: rgba(255, 255, 255, 0.26);
-  font-size: 10px;
+  font-size: var(--ose-fs-xs);
   letter-spacing: 0.14em;
   text-transform: uppercase;
   pointer-events: none;
@@ -2333,22 +2342,22 @@ body.ose-lock-scroll {
   width: 100%;
   min-height: 420px;
   border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--ose-color-white-a10);
   background: rgba(16, 34, 34, 0.3);
   color: rgba(255, 255, 255, 0.84);
   font-size: 18px;
   line-height: 1.5;
-  padding: 40px 24px 52px;
+  padding: var(--ose-space-7) var(--ose-space-5) 52px;
   outline: none;
   resize: vertical;
 }
 
 #openscene-root .ose-editor::placeholder {
-  color: rgba(255, 255, 255, 0.2);
+  color: var(--ose-color-white-a20);
 }
 
 #openscene-root .ose-editor:focus {
-  border-color: rgba(188, 19, 254, 0.9);
+  border-color: var(--ose-accent-glow-purple);
   box-shadow: 0 0 0 1px rgba(188, 19, 254, 0.38);
 }
 
@@ -2358,7 +2367,7 @@ body.ose-lock-scroll {
   bottom: 14px;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--ose-space-3);
 }
 
 #openscene-root .ose-editor-tools button {
@@ -2376,8 +2385,8 @@ body.ose-lock-scroll {
 }
 
 #openscene-root .ose-editor-tools .ose-lucide {
-  width: 16px;
-  height: 16px;
+  width: var(--ose-icon-md);
+  height: var(--ose-icon-md);
 }
 
 #openscene-root .ose-editor-divider {
@@ -2389,7 +2398,7 @@ body.ose-lock-scroll {
 
 #openscene-root .ose-editor-count {
   color: rgba(255, 255, 255, 0.35);
-  font-size: 10px;
+  font-size: var(--ose-fs-xs);
   letter-spacing: 0.08em;
 }
 
@@ -2400,13 +2409,13 @@ body.ose-lock-scroll {
   background: rgba(188, 19, 254, 0.06);
   border-radius: 12px;
   display: grid;
-  gap: 12px;
+  gap: var(--ose-space-3);
 }
 
 #openscene-root .ose-event-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
+  gap: var(--ose-space-3);
 }
 
 #openscene-root .ose-event-field {
@@ -2415,7 +2424,7 @@ body.ose-lock-scroll {
 }
 
 #openscene-root .ose-event-field span {
-  font-size: 11px;
+  font-size: var(--ose-fs-meta);
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: rgba(255, 255, 255, 0.6);
@@ -2425,18 +2434,18 @@ body.ose-lock-scroll {
 #openscene-root .ose-event-field textarea {
   width: 100%;
   border: 1px solid rgba(255, 255, 255, 0.14);
-  background: rgba(16, 34, 34, 0.6);
+  background: var(--ose-accent-panel-bg-strong);
   color: var(--ose-color-text);
-  border-radius: 8px;
+  border-radius: var(--ose-radius-md);
   padding: 10px 10px;
-  font-size: 13px;
+  font-size: var(--ose-fs-base);
   outline: none;
 }
 
 #openscene-root .ose-event-field input:focus,
 #openscene-root .ose-event-field textarea:focus {
-  border-color: rgba(188, 19, 254, 0.9);
-  box-shadow: 0 0 0 1px rgba(188, 19, 254, 0.35);
+  border-color: var(--ose-accent-glow-purple);
+  box-shadow: 0 0 0 1px var(--ose-accent-glow-purple-soft);
 }
 
 #openscene-root .ose-create-footer {
@@ -2452,14 +2461,14 @@ body.ose-lock-scroll {
 #openscene-root .ose-create-footer-right {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--ose-space-3);
 }
 
 #openscene-root .ose-create-footer-left button {
   border: 0;
   background: transparent;
   color: rgba(255, 255, 255, 0.46);
-  font-size: 13px;
+  font-size: var(--ose-fs-base);
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -2478,9 +2487,9 @@ body.ose-lock-scroll {
 #openscene-root .ose-anon {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  color: rgba(255, 255, 255, 0.55);
-  font-size: 12px;
+  gap: var(--ose-space-2);
+  color: var(--ose-color-white-a55);
+  font-size: var(--ose-fs-md);
 }
 
 #openscene-root .ose-anon input {
@@ -2490,12 +2499,12 @@ body.ose-lock-scroll {
 
 #openscene-root .ose-publish-btn {
   border: 0;
-  border-radius: 8px;
+  border-radius: var(--ose-radius-md);
   padding: 0 22px;
   height: 42px;
   background: var(--ose-neon);
-  color: #001111;
-  font-size: 14px;
+  color: var(--ose-color-bg);
+  font-size: var(--ose-fs-body);
   font-weight: 700;
   cursor: pointer;
   box-shadow: 0 0 20px rgba(13, 242, 242, 0.2);
@@ -2507,8 +2516,8 @@ body.ose-lock-scroll {
 }
 
 #openscene-root .ose-create-status {
-  margin: 12px 0 0;
-  font-size: 13px;
+  margin: var(--ose-space-3) 0 0;
+  font-size: var(--ose-fs-base);
 }
 
 #openscene-root .ose-create-status.is-error {
@@ -2531,7 +2540,7 @@ body.ose-lock-scroll {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 12px;
+  gap: var(--ose-space-3);
   margin-bottom: 18px;
 }
 
@@ -2543,21 +2552,21 @@ body.ose-lock-scroll {
 
 #openscene-root .ose-events-scope {
   display: inline-flex;
-  gap: 8px;
+  gap: var(--ose-space-2);
 }
 
 #openscene-root .ose-events-scope button {
   border: 1px solid rgba(255, 255, 255, 0.12);
   background: rgba(255, 255, 255, 0.02);
   color: rgba(255, 255, 255, 0.65);
-  border-radius: 8px;
-  padding: 8px 12px;
-  font-size: 12px;
+  border-radius: var(--ose-radius-md);
+  padding: var(--ose-space-2) var(--ose-space-3);
+  font-size: var(--ose-fs-md);
   cursor: pointer;
 }
 
 #openscene-root .ose-events-scope button.is-active {
-  color: #001818;
+  color: var(--ose-color-bg);
   background: var(--ose-neon);
   border-color: transparent;
   font-weight: 700;
@@ -2565,7 +2574,7 @@ body.ose-lock-scroll {
 
 #openscene-root .ose-events-note {
   color: rgba(255, 255, 255, 0.64);
-  font-size: 14px;
+  font-size: var(--ose-fs-body);
 }
 
 #openscene-root .ose-events-error {
@@ -2574,13 +2583,13 @@ body.ose-lock-scroll {
 
 #openscene-root .ose-events-list {
   display: grid;
-  gap: 12px;
+  gap: var(--ose-space-3);
 }
 
 #openscene-root .ose-events-item {
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--ose-color-white-a10);
   border-radius: 12px;
-  padding: 16px;
+  padding: var(--ose-space-4);
   background: rgba(16, 34, 34, 0.25);
 }
 
@@ -2589,8 +2598,8 @@ body.ose-lock-scroll {
   align-items: center;
   gap: 6px;
   color: #8fe7ff;
-  font-size: 12px;
-  margin-bottom: 8px;
+  font-size: var(--ose-fs-md);
+  margin-bottom: var(--ose-space-2);
 }
 
 #openscene-root .ose-events-item h3 {
@@ -2602,7 +2611,7 @@ body.ose-lock-scroll {
 #openscene-root .ose-events-item p {
   margin: 0;
   color: rgba(255, 255, 255, 0.72);
-  font-size: 14px;
+  font-size: var(--ose-fs-body);
 }
 
 #openscene-root .ose-load-more {
@@ -2610,12 +2619,12 @@ body.ose-lock-scroll {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid var(--ose-color-white-a20);
   background: rgba(255, 255, 255, 0.04);
   color: var(--ose-color-text);
-  border-radius: 8px;
+  border-radius: var(--ose-radius-md);
   padding: 10px 14px;
-  font-size: 12px;
+  font-size: var(--ose-fs-md);
   cursor: pointer;
 }
 
@@ -2624,22 +2633,22 @@ body.ose-lock-scroll {
 }
 
 #openscene-root .ose-event-detail-card {
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--ose-color-white-a10);
   border-radius: 14px;
-  background: rgba(16, 34, 34, 0.26);
+  background: var(--ose-accent-panel-bg);
   padding: 20px;
 }
 
 #openscene-root .ose-event-detail-kicker {
-  margin: 0 0 8px;
+  margin: 0 0 var(--ose-space-2);
   color: var(--ose-neon);
-  font-size: 11px;
+  font-size: var(--ose-fs-meta);
   letter-spacing: 0.12em;
   text-transform: uppercase;
 }
 
 #openscene-root .ose-event-detail-card h1 {
-  margin: 0 0 12px;
+  margin: 0 0 var(--ose-space-3);
   font-size: 32px;
   letter-spacing: -0.02em;
 }
@@ -2647,7 +2656,7 @@ body.ose-lock-scroll {
 #openscene-root .ose-event-detail-meta {
   margin: 0 0 6px;
   color: rgba(255, 255, 255, 0.75);
-  font-size: 14px;
+  font-size: var(--ose-fs-body);
 }
 
 #openscene-root .ose-event-detail-body {
@@ -2658,7 +2667,7 @@ body.ose-lock-scroll {
 }
 
 #openscene-root .ose-event-detail-actions {
-  margin-top: 16px;
+  margin-top: var(--ose-space-4);
   display: flex;
   gap: 10px;
   flex-wrap: wrap;
@@ -2667,7 +2676,7 @@ body.ose-lock-scroll {
 #openscene-root .ose-communities-card {
   border: 1px solid var(--ose-border);
   border-radius: 14px;
-  background: #070707;
+  background: var(--ose-color-bg);
   padding: 22px;
 }
 
@@ -2678,9 +2687,9 @@ body.ose-lock-scroll {
 }
 
 #openscene-root .ose-communities-header p {
-  margin: 8px 0 16px;
-  color: #8b8b92;
-  font-size: 14px;
+  margin: var(--ose-space-2) 0 var(--ose-space-4);
+  color: var(--ose-color-text-soft);
+  font-size: var(--ose-fs-body);
 }
 
 #openscene-root .ose-communities-list {
@@ -2690,24 +2699,24 @@ body.ose-lock-scroll {
 
 #openscene-root .ose-community-row {
   border: 1px solid var(--ose-color-border-2);
-  border-radius: 10px;
-  background: #0b0b0b;
-  padding: 12px;
+  border-radius: var(--ose-radius-lg);
+  background: var(--ose-color-surface-2);
+  padding: var(--ose-space-3);
   display: grid;
   grid-template-columns: 20px minmax(0, 1fr) auto;
   align-items: center;
-  gap: 12px;
+  gap: var(--ose-space-3);
 }
 
 #openscene-root .ose-community-row:hover {
-  border-color: #2c2c2c;
-  background: #101010;
+  border-color: var(--ose-color-border-2);
+  background: var(--ose-color-surface-2);
 }
 
 #openscene-root .ose-community-row-icon .ose-lucide {
-  width: 14px;
-  height: 14px;
-  color: #8e8e96;
+  width: var(--ose-icon-sm);
+  height: var(--ose-icon-sm);
+  color: var(--ose-color-text-soft);
 }
 
 #openscene-root .ose-community-row-text {
@@ -2724,13 +2733,13 @@ body.ose-lock-scroll {
 }
 
 #openscene-root .ose-community-row-text small {
-  color: #7a7a82;
-  font-size: 12px;
+  color: var(--ose-color-text-soft);
+  font-size: var(--ose-fs-md);
 }
 
 #openscene-root .ose-community-row-open {
   color: var(--ose-neon);
-  font-size: 12px;
+  font-size: var(--ose-fs-md);
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -2744,13 +2753,13 @@ body.ose-lock-scroll {
 #openscene-root .ose-community-main {
   width: min(1440px, calc(100% - 48px));
   margin: 0 auto;
-  padding: 30px 0 40px;
+  padding: 30px 0 var(--ose-space-7);
 }
 
 #openscene-root .ose-community-main-shell {
   width: 100%;
   margin: 0;
-  padding: 18px 0 32px;
+  padding: 18px 0 var(--ose-space-6);
 }
 
 #openscene-root .ose-community-grid {
@@ -2760,16 +2769,16 @@ body.ose-lock-scroll {
 }
 
 #openscene-root .ose-community-header {
-  border-bottom: 1px solid #161616;
+  border-bottom: 1px solid var(--ose-color-border);
   padding-bottom: 20px;
-  margin-bottom: 16px;
+  margin-bottom: var(--ose-space-4);
 }
 
 #openscene-root .ose-community-kicker {
   color: var(--ose-purple);
   text-transform: uppercase;
   letter-spacing: 0.18em;
-  font-size: 10px;
+  font-size: var(--ose-fs-xs);
   font-weight: 700;
   margin-bottom: 10px;
 }
@@ -2782,14 +2791,14 @@ body.ose-lock-scroll {
 
 #openscene-root .ose-community-header p {
   margin: 10px 0 0;
-  color: #808088;
-  font-size: 14px;
+  color: var(--ose-color-text-soft);
+  font-size: var(--ose-fs-body);
   line-height: 1.6;
   max-width: 720px;
 }
 
 #openscene-root .ose-community-actions {
-  margin-top: 16px;
+  margin-top: var(--ose-space-4);
   display: flex;
   align-items: center;
   gap: 10px;
@@ -2797,11 +2806,11 @@ body.ose-lock-scroll {
 
 #openscene-root .ose-community-actions button {
   height: 34px;
-  border-radius: 6px;
+  border-radius: var(--ose-radius-sm);
   border: 1px solid rgba(13, 242, 204, 0.6);
   background: transparent;
   color: var(--ose-neon);
-  font-size: 11px;
+  font-size: var(--ose-fs-meta);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   font-weight: 700;
@@ -2812,7 +2821,7 @@ body.ose-lock-scroll {
 #openscene-root .ose-community-actions .ose-community-notify {
   width: 34px;
   padding: 0;
-  border-color: #2d2d2d;
+  border-color: var(--ose-color-border-2);
   color: var(--ose-color-text-dim);
 }
 
@@ -2820,26 +2829,26 @@ body.ose-lock-scroll {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 8px;
+  gap: var(--ose-space-3);
+  margin-bottom: var(--ose-space-2);
 }
 
 #openscene-root .ose-community-sort {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: var(--ose-space-4);
 }
 
 #openscene-root .ose-community-sort button {
   border: 0;
   background: transparent;
-  color: #717178;
-  font-size: 11px;
+  color: var(--ose-color-text-subtle);
+  font-size: var(--ose-fs-meta);
   letter-spacing: 0.12em;
   text-transform: uppercase;
   font-weight: 700;
   border-bottom: 2px solid transparent;
-  padding: 0 0 8px;
+  padding: 0 0 var(--ose-space-2);
   cursor: pointer;
 }
 
@@ -2850,41 +2859,41 @@ body.ose-lock-scroll {
 
 #openscene-root .ose-community-new-thread {
   height: 32px;
-  border-radius: 6px;
+  border-radius: var(--ose-radius-sm);
   background: var(--ose-purple);
   color: var(--ose-color-text);
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 0 12px;
-  font-size: 11px;
+  padding: 0 var(--ose-space-3);
+  font-size: var(--ose-fs-meta);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   font-weight: 700;
 }
 
 #openscene-root .ose-community-new-thread .ose-lucide {
-  width: 14px;
-  height: 14px;
+  width: var(--ose-icon-sm);
+  height: var(--ose-icon-sm);
 }
 
 #openscene-root .ose-community-posts .ose-feed-post {
-  border-bottom-color: #161616;
-  padding: 16px 0;
+  border-bottom-color: var(--ose-color-border);
+  padding: var(--ose-space-4) 0;
 }
 
 #openscene-root .ose-community-load-more-wrap {
   text-align: center;
-  padding-top: 16px;
+  padding-top: var(--ose-space-4);
 }
 
 #openscene-root .ose-community-load-more {
   border: 0;
   background: transparent;
-  color: #6c6c74;
+  color: var(--ose-color-text-subtle);
   text-transform: uppercase;
   letter-spacing: 0.16em;
-  font-size: 11px;
+  font-size: var(--ose-fs-meta);
   font-weight: 700;
   cursor: pointer;
 }
@@ -2895,14 +2904,14 @@ body.ose-lock-scroll {
 
 #openscene-root .ose-community-right {
   display: grid;
-  gap: 16px;
+  gap: var(--ose-space-4);
 }
 
 #openscene-root .ose-community-panel {
-  border: 1px solid #171717;
+  border: 1px solid var(--ose-color-border);
   border-radius: 12px;
-  background: #070707;
-  padding: 16px;
+  background: var(--ose-color-bg);
+  padding: var(--ose-space-4);
 }
 
 #openscene-root .ose-community-panel h3 {
@@ -2910,7 +2919,7 @@ body.ose-lock-scroll {
   color: var(--ose-color-text-dim);
   text-transform: uppercase;
   letter-spacing: 0.16em;
-  font-size: 10px;
+  font-size: var(--ose-fs-xs);
   font-weight: 700;
 }
 
@@ -2918,7 +2927,7 @@ body.ose-lock-scroll {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
-  margin-bottom: 12px;
+  margin-bottom: var(--ose-space-3);
 }
 
 #openscene-root .ose-community-stats strong {
@@ -2928,7 +2937,7 @@ body.ose-lock-scroll {
 }
 
 #openscene-root .ose-community-stats span {
-  color: #777781;
+  color: var(--ose-color-text-subtle);
   text-transform: uppercase;
   letter-spacing: 0.08em;
   font-size: 9px;
@@ -2937,7 +2946,7 @@ body.ose-lock-scroll {
 #openscene-root .ose-community-panel p {
   margin: 0;
   color: var(--ose-color-text-dim);
-  font-size: 13px;
+  font-size: var(--ose-fs-base);
   line-height: 1.5;
 }
 
@@ -2957,7 +2966,7 @@ body.ose-lock-scroll {
 
 #openscene-root .ose-community-guidelines span {
   color: var(--ose-purple);
-  font-size: 12px;
+  font-size: var(--ose-fs-md);
   font-weight: 700;
 }
 
@@ -2971,13 +2980,13 @@ body.ose-lock-scroll {
 }
 
 #openscene-root .ose-community-header {
-  padding-bottom: 24px;
+  padding-bottom: var(--ose-space-5);
   margin-bottom: 22px;
 }
 
 #openscene-root .ose-community-kicker {
   letter-spacing: 0.24em;
-  margin-bottom: 12px;
+  margin-bottom: var(--ose-space-3);
 }
 
 #openscene-root .ose-community-header h1 {
@@ -3011,8 +3020,8 @@ body.ose-lock-scroll {
 
 #openscene-root .ose-community-actions .ose-community-notify {
   width: 40px;
-  border-color: #2a2a2a;
-  color: #83838a;
+  border-color: var(--ose-color-border-2);
+  color: var(--ose-color-text-soft);
   padding: 0;
 }
 
@@ -3037,20 +3046,20 @@ body.ose-lock-scroll {
 #openscene-root .ose-community-new-thread {
   height: 40px;
   border-radius: 2px;
-  font-size: 11px;
+  font-size: var(--ose-fs-meta);
   letter-spacing: 0.1em;
   padding: 0 18px;
 }
 
 #openscene-root .ose-community-posts {
-  border-top: 1px solid #121212;
+  border-top: 1px solid var(--ose-color-surface-3);
 }
 
 #openscene-root .ose-community-post-item {
   display: grid;
   grid-template-columns: 28px minmax(0, 1fr) 108px;
   gap: 14px;
-  border-bottom: 1px solid #141414;
+  border-bottom: 1px solid var(--ose-color-surface-3);
   padding: 22px 0;
 }
 
@@ -3058,12 +3067,12 @@ body.ose-lock-scroll {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: var(--ose-space-1);
   padding-top: 2px;
 }
 
 #openscene-root .ose-community-vote strong {
-  color: #82828a;
+  color: var(--ose-color-text-soft);
   font-size: 18px;
   font-size: clamp(11px, 0.74vw, 18px);
   font-weight: 700;
@@ -3072,12 +3081,12 @@ body.ose-lock-scroll {
 #openscene-root .ose-community-post-meta {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  color: #666670;
+  gap: var(--ose-space-2);
+  color: var(--ose-color-text-subtle);
   text-transform: uppercase;
   letter-spacing: 0.12em;
   font-size: var(--ose-display-kicker-md);
-  margin-bottom: 8px;
+  margin-bottom: var(--ose-space-2);
 }
 
 #openscene-root .ose-community-post-meta i {
@@ -3088,7 +3097,7 @@ body.ose-lock-scroll {
 #openscene-root .ose-community-post-title {
   display: block;
   margin: 0;
-  color: #f2f2f2;
+  color: var(--ose-color-text);
   font-size: var(--ose-display-hero-lg);
   line-height: 1.2;
   letter-spacing: -0.02em;
@@ -3100,20 +3109,20 @@ body.ose-lock-scroll {
 }
 
 #openscene-root .ose-community-post-excerpt {
-  margin: 8px 0 0;
-  color: #767680;
-  font-size: 13px;
+  margin: var(--ose-space-2) 0 0;
+  color: var(--ose-color-text-subtle);
+  font-size: var(--ose-fs-base);
   line-height: 1.5;
   max-width: 92%;
 }
 
 #openscene-root .ose-community-post-actions {
-  margin-top: 12px;
+  margin-top: var(--ose-space-3);
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 16px;
-  color: #707079;
+  gap: var(--ose-space-4);
+  color: var(--ose-color-text-subtle);
 }
 
 #openscene-root .ose-community-post-actions a,
@@ -3130,29 +3139,29 @@ body.ose-lock-scroll {
 
 #openscene-root .ose-community-post-actions a:hover,
 #openscene-root .ose-community-post-actions button:hover {
-  color: #c6c6cc;
+  color: var(--ose-color-text-muted);
 }
 
 #openscene-root .ose-community-post-actions .ose-lucide {
-  width: 14px;
-  height: 14px;
+  width: var(--ose-icon-sm);
+  height: var(--ose-icon-sm);
 }
 
 #openscene-root .ose-community-post-actions .ose-report-badge {
-  color: #fbbf24;
+  color: var(--ose-color-warning);
 }
 
 #openscene-root .ose-community-post-thumb {
   width: var(--ose-size-thumb-sm);
   height: var(--ose-size-thumb-sm-h);
   border-radius: 2px;
-  border: 1px solid #212121;
+  border: 1px solid var(--ose-color-border-2);
   align-self: center;
   background: var(--ose-gradient-community-thumb);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #a3a3ac;
+  color: var(--ose-color-text-muted);
 }
 
 #openscene-root .ose-community-post-thumb .ose-lucide {
@@ -3182,9 +3191,9 @@ body.ose-lock-scroll {
 #openscene-root .ose-community-panel h3 {
   margin-bottom: 18px;
   letter-spacing: 0.3em;
-  font-size: 14px;
+  font-size: var(--ose-fs-body);
   font-size: clamp(10px, 0.52vw, 14px);
-  color: #6f6f79;
+  color: var(--ose-color-text-subtle);
   display: flex;
   align-items: center;
   gap: 14px;
@@ -3195,7 +3204,7 @@ body.ose-lock-scroll {
   display: block;
   height: 1px;
   flex: 1;
-  background: #161616;
+  background: var(--ose-color-border);
 }
 
 #openscene-root .ose-community-shell-main {
@@ -3208,22 +3217,20 @@ body.ose-lock-scroll {
 #openscene-root .ose-community-shell-main .ose-community-header {
   border-bottom: 1px solid var(--ose-border);
   margin: 0;
-  padding: 18px 22px 16px;
+  padding: 18px 22px var(--ose-space-4);
 }
 
 #openscene-root .ose-community-shell-main .ose-community-header h1 {
   margin: 0;
-  font-size: 36px;
-  line-height: 1.12;
-  letter-spacing: -0.03em;
+  font-size: var(--ose-fs-h1);
 }
 
 #openscene-root .ose-community-shell-main .ose-community-header p {
-  margin: 8px 0 0;
+  margin: var(--ose-space-2) 0 0;
   max-width: 720px;
-  color: #8b8b92;
-  font-size: 14px;
-  line-height: 21px;
+  color: var(--ose-color-text-soft);
+  font-size: var(--ose-fs-body);
+  line-height: var(--ose-lh-body);
 }
 
 #openscene-root .ose-community-shell-main .ose-community-actions {
@@ -3240,7 +3247,7 @@ body.ose-lock-scroll {
 #openscene-root .ose-community-shell-main .ose-community-posts.ose-feed-list .ose-feed-post {
   grid-template-columns: 28px minmax(0, 1fr);
   column-gap: 10px;
-  padding: 8px 12px;
+  padding: var(--ose-space-2) var(--ose-space-3);
   border: 1px solid var(--ose-card-border);
   border-radius: var(--ose-radius-card);
   box-shadow: var(--ose-shadow-card);
@@ -3254,13 +3261,13 @@ body.ose-lock-scroll {
 #openscene-root .ose-community-shell-right .ose-community-right {
   display: grid;
   gap: 18px;
-  margin-bottom: 16px;
+  margin-bottom: var(--ose-space-4);
 }
 
 #openscene-root .ose-community-shell-right .ose-right-rail {
   margin-left: 0;
   max-width: none;
-  margin-top: 40px;
+  margin-top: var(--ose-space-7);
 }
 
 #openscene-root .ose-community-main-shell {
@@ -3286,7 +3293,7 @@ body.ose-lock-scroll {
 
 #openscene-root .ose-community-shell-main .ose-community-posts.ose-feed-list {
   gap: 10px;
-  padding: 10px 12px 18px;
+  padding: 10px var(--ose-space-3) 18px;
   margin-left: 0;
   margin-right: 0;
   height: auto;
@@ -3301,9 +3308,9 @@ body.ose-lock-scroll {
 }
 
 #openscene-root .ose-community-stats {
-  margin-bottom: 16px;
+  margin-bottom: var(--ose-space-4);
   padding-bottom: 14px;
-  border-bottom: 1px solid #171717;
+  border-bottom: 1px solid var(--ose-color-border);
 }
 
 #openscene-root .ose-community-stats strong {
@@ -3318,7 +3325,7 @@ body.ose-lock-scroll {
 #openscene-root .ose-community-stats span {
   margin-top: 6px;
   display: block;
-  font-size: 13px;
+  font-size: var(--ose-fs-base);
   font-size: clamp(9px, 0.46vw, 13px);
   letter-spacing: 0.14em;
 }
@@ -3336,7 +3343,7 @@ body.ose-lock-scroll {
 
 #openscene-root .ose-community-guidelines li {
   grid-template-columns: 22px minmax(0, 1fr);
-  gap: 12px;
+  gap: var(--ose-space-3);
 }
 
 #openscene-root .ose-community-guidelines span {
@@ -3346,7 +3353,7 @@ body.ose-lock-scroll {
 }
 
 #openscene-root .ose-community-guidelines p {
-  font-size: 13px;
+  font-size: var(--ose-fs-base);
   font-size: clamp(11px, 0.56vw, 13px);
   line-height: 1.5;
 }
@@ -3363,15 +3370,15 @@ body.ose-lock-scroll {
 }
 
 #openscene-root .ose-community-curators span {
-  color: #b8b8bf;
-  font-size: 14px;
+  color: var(--ose-color-text-muted);
+  font-size: var(--ose-fs-body);
 }
 
 #openscene-root .ose-community-curators small {
-  color: #666670;
+  color: var(--ose-color-text-subtle);
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  font-size: 10px;
+  font-size: var(--ose-fs-xs);
   font-weight: 700;
 }
 
@@ -3379,10 +3386,10 @@ body.ose-lock-scroll {
   width: 100%;
   height: 36px;
   margin-top: 14px;
-  border: 1px solid #1b1b1b;
+  border: 1px solid var(--ose-color-border);
   background: transparent;
-  color: #767681;
-  font-size: 10px;
+  color: var(--ose-color-text-subtle);
+  font-size: var(--ose-fs-xs);
   text-transform: uppercase;
   letter-spacing: 0.16em;
   font-weight: 700;
@@ -3390,35 +3397,35 @@ body.ose-lock-scroll {
 
 #openscene-root .ose-community-curators-btn:hover {
   color: var(--ose-color-text);
-  border-color: #2e2e2e;
+  border-color: var(--ose-color-border-2);
 }
 
 #openscene-root .ose-community-side-footer {
-  padding-top: 4px;
+  padding-top: var(--ose-space-1);
 }
 
 #openscene-root .ose-community-side-footer nav {
   display: flex;
   flex-wrap: wrap;
-  gap: 16px;
+  gap: var(--ose-space-4);
 }
 
 #openscene-root .ose-community-side-footer nav a {
-  color: #6c6c76;
-  font-size: 10px;
+  color: var(--ose-color-text-subtle);
+  font-size: var(--ose-fs-xs);
   letter-spacing: 0.11em;
   text-transform: uppercase;
   font-weight: 700;
 }
 
 #openscene-root .ose-community-side-footer nav a:hover {
-  color: #9f9fa8;
+  color: var(--ose-color-text-muted);
 }
 
 #openscene-root .ose-community-side-footer p {
   margin-top: 10px;
-  color: #4f4f57;
-  font-size: 10px;
+  color: var(--ose-color-text-dim);
+  font-size: var(--ose-fs-xs);
   text-transform: uppercase;
   letter-spacing: 0.1em;
 }
@@ -3437,8 +3444,8 @@ body.ose-lock-scroll {
 #openscene-root .ose-pd-back {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  color: #8a8a93;
+  gap: var(--ose-space-2);
+  color: var(--ose-color-text-soft);
   font-size: var(--ose-fs-small);
   margin-bottom: 22px;
   letter-spacing: 0.02em;
@@ -3453,9 +3460,9 @@ body.ose-lock-scroll {
   display: grid;
   grid-template-columns: 28px minmax(0, 1fr);
   column-gap: 10px;
-  padding: 12px;
-  border: 1px solid #171a20;
-  border-radius: 8px;
+  padding: var(--ose-space-3);
+  border: 1px solid var(--ose-color-border-2);
+  border-radius: var(--ose-radius-md);
   background: var(--ose-bg);
 }
 
@@ -3474,7 +3481,7 @@ body.ose-lock-scroll {
 #openscene-root .ose-pd-post-vote button {
   border: 0;
   background: transparent;
-  color: #70707a;
+  color: var(--ose-color-text-subtle);
   cursor: pointer;
   display: inline-flex;
   align-items: center;
@@ -3487,13 +3494,13 @@ body.ose-lock-scroll {
 }
 
 #openscene-root .ose-pd-post-vote button .ose-lucide {
-  width: 14px;
-  height: 14px;
+  width: var(--ose-icon-sm);
+  height: var(--ose-icon-sm);
 }
 
 #openscene-root .ose-pd-post-vote .ose-pd-post-vote-score {
-  color: #e7ebf3;
-  font-size: 13px;
+  color: var(--ose-color-text);
+  font-size: var(--ose-fs-base);
   font-weight: 700;
   line-height: 1;
 }
@@ -3509,8 +3516,8 @@ body.ose-lock-scroll {
 #openscene-root .ose-pd-meta {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  color: #8b9099;
+  gap: var(--ose-space-2);
+  color: var(--ose-color-text-soft);
   font-size: var(--ose-fs-meta);
   letter-spacing: var(--ose-ls-kicker);
   text-transform: uppercase;
@@ -3523,12 +3530,12 @@ body.ose-lock-scroll {
 }
 
 #openscene-root .ose-pd-author {
-  color: #c9ced9;
+  color: var(--ose-color-text-muted);
   font-weight: 600;
 }
 
 #openscene-root .ose-pd-header h1 {
-  margin: 0 0 8px;
+  margin: 0 0 var(--ose-space-2);
   font-size: var(--ose-fs-title);
   line-height: 1.3;
   letter-spacing: -0.01em;
@@ -3537,19 +3544,19 @@ body.ose-lock-scroll {
 }
 
 #openscene-root .ose-pd-body {
-  color: #9ca2ae;
+  color: var(--ose-color-text-muted);
   font-size: var(--ose-fs-body);
   line-height: 1.5;
   display: grid;
-  gap: 8px;
+  gap: var(--ose-space-2);
   grid-column: 2;
 }
 
 #openscene-root .ose-pd-body blockquote {
   border-left: 2px solid var(--ose-purple);
-  margin: 4px 0;
-  padding-left: 16px;
-  color: #94949d;
+  margin: var(--ose-space-1) 0;
+  padding-left: var(--ose-space-4);
+  color: var(--ose-color-text-muted);
   font-style: italic;
 }
 
@@ -3560,8 +3567,8 @@ body.ose-lock-scroll {
 }
 
 #openscene-root .ose-pd-comments-wrap {
-  border-top: 1px solid rgba(140, 37, 244, 0.2);
-  padding-top: 24px;
+  border-top: 1px solid var(--ose-color-accent-a20);
+  padding-top: var(--ose-space-5);
 }
 
 #openscene-root .ose-pd-comments-head {
@@ -3569,7 +3576,7 @@ body.ose-lock-scroll {
   align-items: center;
   justify-content: flex-end;
   gap: 14px;
-  margin-bottom: 12px;
+  margin-bottom: var(--ose-space-3);
 }
 
 #openscene-root .ose-pd-comment-sort {
@@ -3582,7 +3589,7 @@ body.ose-lock-scroll {
 #openscene-root .ose-pd-comment-sort button {
   border: 0;
   background: transparent;
-  color: #777780;
+  color: var(--ose-color-text-subtle);
   text-transform: uppercase;
   letter-spacing: var(--ose-ls-kicker);
   font-size: var(--ose-fs-meta);
@@ -3608,8 +3615,8 @@ body.ose-lock-scroll {
   overflow-y: hidden;
   border: 1px solid var(--ose-color-border-2);
   background: var(--ose-color-bg);
-  color: #e5e5eb;
-  padding: 10px 16px;
+  color: var(--ose-color-text);
+  padding: 10px var(--ose-space-4);
   border-radius: 999px;
   line-height: 1.35;
   outline: 0;
@@ -3617,21 +3624,21 @@ body.ose-lock-scroll {
 
 #openscene-root .ose-pd-comment-editor textarea:focus {
   border-color: var(--ose-purple);
-  box-shadow: 0 0 0 1px rgba(140, 37, 244, 0.35);
+  box-shadow: 0 0 0 1px var(--ose-color-accent-a35);
 }
 
 #openscene-root .ose-pd-comment-editor-actions {
   display: flex;
   justify-content: flex-end;
-  margin-top: 12px;
+  margin-top: var(--ose-space-3);
 }
 
 #openscene-root .ose-pd-comment-editor-actions button {
   height: 34px;
   border: 0;
-  border-radius: 6px;
+  border-radius: var(--ose-radius-sm);
   background: var(--ose-neon);
-  color: #000;
+  color: var(--ose-color-bg);
   padding: 0 14px;
   text-transform: uppercase;
   letter-spacing: 0.1em;
@@ -3641,13 +3648,13 @@ body.ose-lock-scroll {
 
 #openscene-root .ose-pd-status {
   margin-top: 10px;
-  color: #8e8e97;
+  color: var(--ose-color-text-soft);
   font-size: var(--ose-fs-small);
 }
 
 #openscene-root .ose-pd-comments-list {
   display: grid;
-  gap: 16px;
+  gap: var(--ose-space-4);
 }
 
 #openscene-root .ose-pd-comment-node {
@@ -3658,7 +3665,7 @@ body.ose-lock-scroll {
 
 #openscene-root .ose-pd-comment-node.is-highlighted {
   background: rgba(140, 37, 244, 0.12);
-  border-radius: 8px;
+  border-radius: var(--ose-radius-md);
   transition: background 0.3s ease;
 }
 
@@ -3672,7 +3679,7 @@ body.ose-lock-scroll {
 }
 
 #openscene-root .ose-pd-comment-meta {
-  color: #8c8c96;
+  color: var(--ose-color-text-soft);
   font-size: var(--ose-fs-meta);
   letter-spacing: var(--ose-ls-kicker);
   text-transform: uppercase;
@@ -3680,14 +3687,14 @@ body.ose-lock-scroll {
 }
 
 #openscene-root .ose-pd-comment-body {
-  color: #c5c5cc;
+  color: var(--ose-color-text-muted);
   font-size: var(--ose-fs-small);
   line-height: 1.58;
 }
 
 #openscene-root .ose-pd-comment-actions {
   display: flex;
-  gap: 12px;
+  gap: var(--ose-space-3);
   margin-top: 9px;
 }
 
@@ -3703,17 +3710,17 @@ body.ose-lock-scroll {
 }
 
 #openscene-root .ose-pd-children {
-  margin-top: 12px;
+  margin-top: var(--ose-space-3);
   display: grid;
-  gap: 12px;
+  gap: var(--ose-space-3);
 }
 
 #openscene-root .ose-pd-reply-box {
-  margin-top: 12px;
+  margin-top: var(--ose-space-3);
   border: 1px solid var(--ose-color-border);
-  background: #090909;
-  border-radius: 8px;
-  padding: 12px;
+  background: var(--ose-color-bg);
+  border-radius: var(--ose-radius-md);
+  padding: var(--ose-space-3);
 }
 
 #openscene-root .ose-pd-reply-box textarea {
@@ -3721,7 +3728,7 @@ body.ose-lock-scroll {
   min-height: 74px;
   border: 0;
   background: transparent;
-  color: #e2e2e8;
+  color: var(--ose-color-text);
   resize: vertical;
   outline: 0;
 }
@@ -3729,16 +3736,16 @@ body.ose-lock-scroll {
 #openscene-root .ose-pd-reply-actions {
   display: flex;
   justify-content: flex-end;
-  gap: 8px;
-  margin-top: 8px;
+  gap: var(--ose-space-2);
+  margin-top: var(--ose-space-2);
 }
 
 #openscene-root .ose-pd-reply-actions button {
   height: 30px;
-  border-radius: 6px;
-  border: 1px solid #272727;
+  border-radius: var(--ose-radius-sm);
+  border: 1px solid var(--ose-color-border-2);
   background: transparent;
-  color: #c2c2c9;
+  color: var(--ose-color-text-muted);
   padding: 0 10px;
   font-size: var(--ose-fs-meta);
 }
@@ -3751,15 +3758,15 @@ body.ose-lock-scroll {
 
 #openscene-root .ose-pd-inline-note {
   margin: 0;
-  color: #8b8b95;
+  color: var(--ose-color-text-soft);
   font-size: var(--ose-fs-meta);
 }
 
 #openscene-root .ose-pd-child-error {
-  margin-top: 8px;
+  margin-top: var(--ose-space-2);
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--ose-space-2);
   color: #ff9ca8;
   font-size: var(--ose-fs-meta);
 }
@@ -3782,7 +3789,7 @@ body.ose-lock-scroll {
 #openscene-root .ose-pd-load-more {
   border: 0;
   background: transparent;
-  color: #7d7d86;
+  color: var(--ose-color-text-soft);
   text-transform: uppercase;
   letter-spacing: 0.22em;
   font-size: var(--ose-fs-meta);
@@ -3804,7 +3811,7 @@ body.ose-lock-scroll {
 #openscene-root .ose-user-sidebar {
   width: 256px;
   border-right: 1px solid var(--ose-color-border-2);
-  padding: 24px;
+  padding: var(--ose-space-5);
   position: sticky;
   top: 0;
   height: 100vh;
@@ -3826,7 +3833,7 @@ body.ose-lock-scroll {
 #openscene-root .ose-user-nav {
   margin-top: 34px;
   display: grid;
-  gap: 16px;
+  gap: var(--ose-space-4);
 }
 
 #openscene-root .ose-user-nav a {
@@ -3850,27 +3857,27 @@ body.ose-lock-scroll {
   margin-top: auto;
   width: 100%;
   height: 42px;
-  border-radius: 10px;
+  border-radius: var(--ose-radius-lg);
   background: var(--ose-neon);
   color: var(--ose-color-bg);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: var(--ose-space-2);
   font-size: var(--ose-fs-body);
   font-weight: 700;
 }
 
 #openscene-root .ose-user-main {
   flex: 1;
-  padding: 28px 32px 48px;
+  padding: 28px var(--ose-space-6) var(--ose-space-8);
 }
 
 #openscene-root .ose-user-profile-head {
   max-width: 860px;
   margin: 0 auto 28px;
   display: flex;
-  gap: 24px;
+  gap: var(--ose-space-5);
   align-items: flex-start;
 }
 
@@ -3880,7 +3887,7 @@ body.ose-lock-scroll {
   border-radius: 999px;
   background: linear-gradient(var(--ose-color-bg), var(--ose-color-bg)) padding-box, linear-gradient(90deg, var(--ose-purple), var(--ose-neon)) border-box;
   border: 2px solid transparent;
-  padding: 4px;
+  padding: var(--ose-space-1);
   flex: 0 0 auto;
 }
 
@@ -3909,7 +3916,7 @@ body.ose-lock-scroll {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: var(--ose-space-3);
 }
 
 #openscene-root .ose-user-head-row h1 {
@@ -3929,7 +3936,7 @@ body.ose-lock-scroll {
 }
 
 #openscene-root .ose-user-info p {
-  margin: 10px 0 12px;
+  margin: 10px 0 var(--ose-space-3);
   color: var(--ose-color-text-muted);
   font-size: var(--ose-fs-body);
   line-height: 1.5;
@@ -3938,7 +3945,7 @@ body.ose-lock-scroll {
 #openscene-root .ose-user-meta {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: var(--ose-space-4);
   flex-wrap: wrap;
 }
 
@@ -3951,8 +3958,8 @@ body.ose-lock-scroll {
 }
 
 #openscene-root .ose-user-meta .ose-lucide {
-  width: 14px;
-  height: 14px;
+  width: var(--ose-icon-sm);
+  height: var(--ose-icon-sm);
 }
 
 #openscene-root .ose-user-tabs {
@@ -3960,7 +3967,7 @@ body.ose-lock-scroll {
   margin: 0 auto;
   border-bottom: 1px solid var(--ose-color-border-2);
   display: flex;
-  gap: 24px;
+  gap: var(--ose-space-5);
 }
 
 #openscene-root .ose-user-tabs button {
@@ -3971,7 +3978,7 @@ body.ose-lock-scroll {
   letter-spacing: var(--ose-ls-kicker);
   font-size: var(--ose-fs-meta);
   font-weight: 700;
-  padding: 0 0 12px;
+  padding: 0 0 var(--ose-space-3);
   border-bottom: 2px solid transparent;
 }
 
@@ -3982,7 +3989,7 @@ body.ose-lock-scroll {
 
 #openscene-root .ose-user-controls {
   max-width: 860px;
-  margin: 16px auto 12px;
+  margin: var(--ose-space-4) auto var(--ose-space-3);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -4006,12 +4013,12 @@ body.ose-lock-scroll {
   font-size: var(--ose-fs-meta);
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--ose-space-1);
 }
 
 #openscene-root .ose-user-controls button .ose-lucide {
-  width: 14px;
-  height: 14px;
+  width: var(--ose-icon-sm);
+  height: var(--ose-icon-sm);
 }
 
 #openscene-root .ose-user-list {
@@ -4030,7 +4037,7 @@ body.ose-lock-scroll {
   justify-content: space-between;
   align-items: flex-start;
   gap: 10px;
-  margin-bottom: 8px;
+  margin-bottom: var(--ose-space-2);
 }
 
 #openscene-root .ose-user-item-head a {
@@ -4063,7 +4070,7 @@ body.ose-lock-scroll {
 #openscene-root .ose-user-item-foot {
   display: inline-flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--ose-space-3);
   color: var(--ose-color-text-soft);
   text-transform: uppercase;
   letter-spacing: var(--ose-ls-kicker);
@@ -4073,8 +4080,8 @@ body.ose-lock-scroll {
 #openscene-root .ose-user-item-foot span:first-child {
   background: var(--ose-color-accent-purple-tint);
   color: var(--ose-purple);
-  padding: 2px 8px;
-  border-radius: 6px;
+  padding: 2px var(--ose-space-2);
+  border-radius: var(--ose-radius-sm);
 }
 
 #openscene-root .ose-user-item-foot .ose-lucide {
@@ -4112,7 +4119,7 @@ body.ose-lock-scroll {
 
 #openscene-root .ose-user-center .ose-user-profile-head {
   max-width: none;
-  margin: 4px 0 20px;
+  margin: var(--ose-space-1) 0 20px;
   padding-bottom: 18px;
   border-bottom: 1px solid var(--ose-border);
   gap: 18px;
@@ -4130,15 +4137,15 @@ body.ose-lock-scroll {
 }
 
 #openscene-root .ose-user-center .ose-user-info p {
-  margin: 8px 0 10px;
+  margin: var(--ose-space-2) 0 10px;
   font-size: var(--ose-fs-body);
-  color: #9595a0;
+  color: var(--ose-color-text-muted);
   line-height: 1.45;
 }
 
 #openscene-root .ose-user-center .ose-user-edit {
   height: 32px;
-  padding: 0 12px;
+  padding: 0 var(--ose-space-3);
   font-size: var(--ose-fs-meta);
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -4325,7 +4332,7 @@ body.ose-lock-scroll {
     width: calc(100% - 16px);
     height: auto;
     min-height: 56px;
-    padding: 8px 0 10px;
+    padding: var(--ose-space-2) 0 10px;
     display: block;
     position: sticky;
   }
@@ -4347,13 +4354,13 @@ body.ose-lock-scroll {
     display: flex;
     flex-direction: column;
     align-items: flex-end;
-    gap: 4px;
+    gap: var(--ose-space-1);
   }
 
   #openscene-root .ose-topbar-account {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
+    gap: var(--ose-space-2);
   }
 
   #openscene-root .ose-toast {
@@ -4371,7 +4378,7 @@ body.ose-lock-scroll {
     max-width: none;
     height: 40px;
     margin-top: 6px;
-    padding-right: 40px;
+    padding-right: var(--ose-space-7);
     position: relative;
   }
 
@@ -4387,7 +4394,7 @@ body.ose-lock-scroll {
     gap: 0;
     height: auto;
     overflow: visible;
-    padding-bottom: 24px;
+    padding-bottom: var(--ose-space-5);
   }
 
   #openscene-root .ose-left,
@@ -4418,7 +4425,7 @@ body.ose-lock-scroll {
     height: auto;
     min-height: 52px;
     padding: 6px 0 0;
-    gap: 8px;
+    gap: var(--ose-space-2);
     top: 86px;
     z-index: 18;
   }
@@ -4433,7 +4440,7 @@ body.ose-lock-scroll {
 
   #openscene-root .ose-feed-tabs button {
     min-height: 34px;
-    padding-bottom: 8px;
+    padding-bottom: var(--ose-space-2);
     font-size: var(--ose-fs-body);
     line-height: var(--ose-lh-body);
   }
@@ -4450,12 +4457,12 @@ body.ose-lock-scroll {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
+    gap: var(--ose-space-2);
     min-height: 40px;
     padding: 0 14px;
-    border-radius: 10px;
+    border-radius: var(--ose-radius-lg);
     background: var(--ose-neon);
-    color: #00110d;
+    color: var(--ose-color-bg);
     font-size: var(--ose-fs-base);
     line-height: var(--ose-lh-base);
     font-weight: var(--ose-fw-semibold);
@@ -4464,8 +4471,8 @@ body.ose-lock-scroll {
   }
 
   #openscene-root .ose-mobile-create-fab .ose-lucide {
-    width: 14px;
-    height: 14px;
+    width: var(--ose-icon-sm);
+    height: var(--ose-icon-sm);
   }
 
   #openscene-root .ose-mobile-create-fab.is-hidden {
@@ -4500,7 +4507,7 @@ body.ose-lock-scroll {
   }
 
   #openscene-root .ose-post-body {
-    margin: 6px 0 12px;
+    margin: 6px 0 var(--ose-space-3);
     font-size: var(--ose-fs-body);
     line-height: 1.46;
   }
@@ -4527,7 +4534,7 @@ body.ose-lock-scroll {
 
   #openscene-root .ose-create-layout {
     grid-template-columns: 1fr;
-    gap: 16px;
+    gap: var(--ose-space-4);
   }
 
   #openscene-root .ose-right-rail {
@@ -4547,7 +4554,7 @@ body.ose-lock-scroll {
 
   #openscene-root .ose-community-grid {
     grid-template-columns: 1fr;
-    gap: 16px;
+    gap: var(--ose-space-4);
   }
 
   #openscene-root .ose-community-header h1 {
@@ -4582,14 +4589,14 @@ body.ose-lock-scroll {
     width: 100%;
     height: auto;
     border-right: 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid var(--ose-color-white-a10);
     padding: 14px 0;
   }
 
   #openscene-root .ose-user-nav {
-    margin-top: 12px;
+    margin-top: var(--ose-space-3);
     grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 8px;
+    gap: var(--ose-space-2);
   }
 
   #openscene-root .ose-user-nav a {
@@ -4602,11 +4609,11 @@ body.ose-lock-scroll {
   }
 
   #openscene-root .ose-user-new-post {
-    margin-top: 12px;
+    margin-top: var(--ose-space-3);
   }
 
   #openscene-root .ose-user-main {
-    padding: 18px 0 48px;
+    padding: 18px 0 var(--ose-space-8);
   }
 
   #openscene-root .ose-user-profile-head {
@@ -4636,7 +4643,7 @@ body.ose-lock-scroll {
   }
 
   #openscene-root .ose-user-center .ose-user-profile-head {
-    margin: 0 0 16px;
+    margin: 0 0 var(--ose-space-4);
     padding-bottom: 14px;
     flex-direction: column;
     align-items: flex-start;
@@ -4674,7 +4681,7 @@ body.ose-lock-scroll {
 
   #openscene-root .ose-create-header h1 {
     font-size: clamp(26px, 7.2vw, 30px);
-    margin-bottom: 16px;
+    margin-bottom: var(--ose-space-4);
   }
 
   #openscene-root .ose-create-controls {
@@ -4700,7 +4707,7 @@ body.ose-lock-scroll {
   #openscene-root .ose-editor {
     min-height: 320px;
     font-size: clamp(14px, 4.2vw, 16px);
-    padding: 38px 16px 50px;
+    padding: 38px var(--ose-space-4) 50px;
   }
 
   #openscene-root .ose-event-grid {
