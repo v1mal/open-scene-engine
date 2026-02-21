@@ -4117,11 +4117,21 @@ body.ose-lock-scroll {
 /* User profile inside community shell contract */
 #openscene-root .ose-community-shell-main .ose-user-profile-head {
   gap: 18px;
+  align-items: center;
 }
 
 #openscene-root .ose-community-shell-main .ose-user-avatar-wrap {
   width: 112px;
   height: 112px;
+}
+
+#openscene-root .ose-community-shell-main .ose-user-info {
+  display: grid;
+  gap: var(--ose-space-2);
+}
+
+#openscene-root .ose-community-shell-main .ose-user-head-row {
+  align-items: center;
 }
 
 #openscene-root .ose-community-shell-main .ose-user-head-row h1 {
@@ -4131,7 +4141,7 @@ body.ose-lock-scroll {
 }
 
 #openscene-root .ose-community-shell-main .ose-user-info p {
-  margin: var(--ose-space-2) 0 10px;
+  margin: 0;
   font-size: var(--ose-fs-body);
   color: var(--ose-color-text-muted);
   line-height: 1.45;
