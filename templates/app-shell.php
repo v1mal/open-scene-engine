@@ -58,6 +58,10 @@ $profileHref = $currentUsername !== '' ? home_url(user_trailingslashit('u/' . ra
 $logoutHref = wp_logout_url(home_url('/openscene/'));
 $joinUrl = (string) get_option('openscene_join_url', '');
 $adminSettings = get_option('openscene_admin_settings', []);
+$rawFlags = is_array($adminSettings) && isset($adminSettings['feature_flags']) && is_array($adminSettings['feature_flags'])
+    ? $adminSettings['feature_flags']
+    : [];
+$savedPostsEnabled = (bool) ($rawFlags['saved_posts'] ?? false);
 $logoAttachmentId = is_array($adminSettings) ? (int) ($adminSettings['logo_attachment_id'] ?? 0) : 0;
 $logoUrl = $logoAttachmentId > 0 ? (string) wp_get_attachment_image_url($logoAttachmentId, 'full') : '';
 $brandTextRaw = is_array($adminSettings) ? trim((string) ($adminSettings['brand_text'] ?? '')) : '';
@@ -126,6 +130,9 @@ $brandSuffix = $brandDotPos === false ? '' : substr($brandText, $brandDotPos);
                 </summary>
                 <div class="ose-avatar-dropdown">
                     <a href="<?php echo esc_url($profileHref); ?>"><?php esc_html_e('Profile', 'open-scene-engine'); ?></a>
+                    <?php if ($savedPostsEnabled) : ?>
+                    <a href="/openscene/?view=saved"><?php esc_html_e('Saved Posts', 'open-scene-engine'); ?></a>
+                    <?php endif; ?>
                     <?php if ($canModerate) : ?>
                     <a href="/moderator/"><?php esc_html_e('Moderator Panel', 'open-scene-engine'); ?></a>
                     <?php endif; ?>
@@ -316,6 +323,9 @@ $profileName = trim((string) $ssrUser->display_name) !== '' ? (string) $ssrUser-
                 </summary>
                 <div class="ose-avatar-dropdown">
                     <a href="<?php echo esc_url($profileHref); ?>"><?php esc_html_e('Profile', 'open-scene-engine'); ?></a>
+                    <?php if ($savedPostsEnabled) : ?>
+                    <a href="/openscene/?view=saved"><?php esc_html_e('Saved Posts', 'open-scene-engine'); ?></a>
+                    <?php endif; ?>
                     <?php if ($canModerate) : ?>
                     <a href="/moderator/"><?php esc_html_e('Moderator Panel', 'open-scene-engine'); ?></a>
                     <?php endif; ?>

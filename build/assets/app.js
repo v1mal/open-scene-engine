@@ -3167,6 +3167,7 @@
     const [deletedPosts, setDeletedPosts] = useState({});
     const [reportedPosts, setReportedPosts] = useState({});
     const [savedPosts, setSavedPosts] = useState({});
+    const [toast, setToast] = useState(null);
 
     const activeLimit = tab === 'posts' ? postLimit : commentLimit;
     const activePath = '/openscene/v1/users/' + encodeURIComponent(username) + '/' + (tab === 'posts' ? 'posts' : 'comments') + '?per_page=' + activeLimit + '&offset=0';
@@ -3185,6 +3186,33 @@
     const sortedPosts = sortRows(posts);
     const sortedComments = sortRows(comments);
     const canLoadMore = tab === 'posts' ? posts.length >= postLimit : comments.length >= commentLimit;
+
+    useEffect(function () {
+      let timer = null;
+      function onToast(event) {
+        const detail = event && event.detail ? event.detail : null;
+        if (!detail || !detail.message) return;
+        if (timer) {
+          window.clearTimeout(timer);
+          timer = null;
+        }
+        setToast({
+          id: Number(detail.id || Date.now()),
+          message: String(detail.message || ''),
+          actionLabel: String(detail.actionLabel || ''),
+          actionHref: String(detail.actionHref || '')
+        });
+        timer = window.setTimeout(function () {
+          setToast(null);
+          timer = null;
+        }, 3200);
+      }
+      window.addEventListener('ose:toast', onToast);
+      return function () {
+        window.removeEventListener('ose:toast', onToast);
+        if (timer) window.clearTimeout(timer);
+      };
+    }, []);
 
     function loginRedirect() {
       const redirectTo = encodeURIComponent(window.location.href || '/openscene/');
@@ -3357,7 +3385,13 @@
             },
             disabled: !canLoadMore
           }, 'View More', Icon('arrow-down'))
-        )
+        ),
+        toast ? h('div', { className: 'ose-toast', role: 'status', 'aria-live': 'polite' },
+          h('span', null, toast.message),
+          (toast.actionLabel && toast.actionHref)
+            ? h('a', { href: toast.actionHref }, toast.actionLabel)
+            : null
+        ) : null
     );
   }
 
